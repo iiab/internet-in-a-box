@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html>
+    
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>
+        </title>
+        <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/jquery.mobile/1.1.1/jquery.mobile-1.1.1.min.css"
+        />
+        <link rel="stylesheet" href="my.css" />
+        <style>
+            /* App custom styles */
+        </style>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js">
+        </script>
+        <script src="https://ajax.aspnetcdn.com/ajax/jquery.mobile/1.1.1/jquery.mobile-1.1.1.min.js">
+        </script>
+        <script src="my.js">
+        </script>
+    </head>
+    
+    <body>
+        <!-- Home -->
+        <div data-role="page" data-theme="b" id="page1">
+            <div data-theme="b" data-role="header">
+                <h3>
+                    Heritage
+                </h3>
+            </div>
+            <div data-role="content">
+                <ul data-role="listview" data-divider-theme="b" data-inset="true">
+                    <li data-role="list-divider" role="heading">
+                        Subjects
+                    </li>
+                    <li data-theme="c">
+                        <a href="#page2" data-transition="slide">
+                            Wikipedia
+                        </a>
+                    </li>
+                    <li data-theme="c">
+                        <a href="#page4" data-transition="slide">
+                            Books
+                        </a>
+                    </li>
+                    <li data-theme="c">
+                        <a href="#page3" data-transition="slide">
+                            Maps
+                        </a>
+                    </li>
+                    <li data-theme="c">
+                        <a href="#page5" data-transition="slide">
+                            Video
+                        </a>
+                    </li>
+                    <li data-theme="c">
+                        <a href="#page7" data-transition="slide">
+                            Software
+                        </a>
+                    </li>
+                </ul>
+                <div data-role="fieldcontain">
+                    <fieldset data-role="controlgroup">
+                        <label for="searchinput1">
+                        </label>
+                        <input name="" id="searchinput1" placeholder="" value="" type="search">
+                    </fieldset>
+                </div>
+            </div>
+            <div data-theme="c" data-role="footer" data-position="fixed">
+                <div>
+                    <p>
+                        <b>
+                            Hello world how are you today?&nbsp; This is a chat message.
+                            <span data-mce-bogus="1" id="_mce_caret">
+                                <span data-mce-bogus="1" style="color: rgb(0, 0, 255);">
+                                    ​ -Braddock
+                                </span>
+                            </span>
+                            <br>
+                        </b>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <!-- Wikipedia -->
+        <div data-role="page" id="page2">
+            <div data-theme="a" data-role="header">
+                <a data-role="button" data-direction="reverse" data-rel="back" data-transition="slide"
+                href="#page1" class="ui-btn-left">
+                    Back
+                </a>
+                <h3>
+                    Wikipedia
+                </h3>
+            </div>
+            <div data-role="content">
+                <div data-role="fieldcontain">
+                    <fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
+                        <legend>
+                        </legend>
+                        <input id="radio1" name="Language" value="radio1" type="radio">
+                        <label for="radio1">
+                            En
+                        </label>
+                        <input id="radio5" name="Language" value="radio5" type="radio">
+                        <label for="radio5">
+                            Es
+                        </label>
+                        <input id="radio2" name="Language" value="radio2" type="radio">
+                        <label for="radio2">
+                            Fr
+                        </label>
+                        <input id="radio3" name="Language" value="radio3" type="radio">
+                        <label for="radio3">
+                            Ru
+                        </label>
+                        <input id="radio4" name="Language" value="radio4" type="radio">
+                        <label for="radio4">
+                            De
+                        </label>
+                    </fieldset>
+                </div>
+                <div data-role="fieldcontain">
+                    <fieldset data-role="controlgroup">
+                        <label for="searchinput3">
+                        </label>
+                        <input name="" id="searchinput3" placeholder="" value="" type="search">
+                    </fieldset>
+                </div>
+            </div>
+        </div>
+        <!-- Maps -->
+        <div data-role="page" id="page3">
+            <div data-theme="a" data-role="header">
+                <a data-role="button" data-direction="reverse" data-rel="back" data-transition="slide"
+                href="#page1" class="ui-btn-left">
+                    Back
+                </a>
+                <h3>
+                    Maps
+                </h3>
+            </div>
+            <div data-role="content">
+                <div data-role="fieldcontain">
+                    <fieldset data-role="controlgroup">
+                        <label for="searchinput4">
+                        </label>
+                        <input name="" id="searchinput4" placeholder="" value="" type="search">
+                    </fieldset>
+                </div>
+                <img src="https://maps.googleapis.com/maps/api/staticmap?center=Madison,%20WI&amp;zoom=14&amp;size=288x400&amp;markers=Madison,%20WI&amp;sensor=false"
+                height="400" width="288">
+            </div>
+        </div>
+        <!-- Books -->
+        <div data-role="page" id="page4">
+            <div data-theme="a" data-role="header">
+                <h3>
+                    Books
+                </h3>
+                <a data-role="button" data-direction="reverse" data-rel="back" data-transition="slide"
+                href="#page1" class="ui-btn-left">
+                    Back
+                </a>
+            </div>
+            <div data-role="content">
+                <div data-role="fieldcontain">
+                    <fieldset data-role="controlgroup">
+                        <label for="searchinput2">
+                        </label>
+                        <input name="" id="searchinput2" placeholder="" value="" type="search">
+                    </fieldset>
+                </div>
+            </div>
+        </div>
+        <!-- Video -->
+        <div data-role="page" id="page5">
+            <div data-theme="a" data-role="header">
+                <h3>
+                    Video
+                </h3>
+                <a data-role="button" data-direction="reverse" data-rel="back" data-transition="slide"
+                href="#page1" class="ui-btn-left">
+                    Back
+                </a>
+            </div>
+            <div data-role="content">
+                <div data-role="fieldcontain">
+                    <fieldset data-role="controlgroup">
+                        <label for="searchinput5">
+                        </label>
+                        <input name="" id="searchinput5" placeholder="" value="" type="search">
+                    </fieldset>
+                </div>
+                <div data-role="fieldcontain">
+                    <label for="selectmenu1">
+                        Choose:
+                    </label>
+                    <select name="">
+                        <option value="option1">
+                            Option 1
+                        </option>
+                        <option value="value">
+                            Option
+                        </option>
+                        <option value="value">
+                            Option
+                        </option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <!-- Software -->
+        <div data-role="page" id="page7">
+            <div data-theme="a" data-role="header">
+                <a data-role="button" data-direction="reverse" data-rel="back" data-transition="slide"
+                href="#page1" class="ui-btn-left">
+                    Back
+                </a>
+                <h3>
+                    Software
+                </h3>
+            </div>
+            <div data-role="content">
+                <a data-role="button" data-theme="b" href="#page7">
+                    Download Linux
+                </a>
+                <div data-role="fieldcontain">
+                    <fieldset data-role="controlgroup">
+                        <label for="searchinput7">
+                        </label>
+                        <input name="" id="searchinput7" placeholder="" value="" type="search">
+                    </fieldset>
+                </div>
+            </div>
+        </div>
+        <!-- Chat -->
+        <div data-role="page" id="page8">
+            <div data-role="content">
+            </div>
+        </div>
+        <!-- Search-based Home -->
+        <div data-role="page" id="page9">
+            <div data-theme="a" data-role="header">
+                <h3>
+                    Heritage
+                </h3>
+            </div>
+            <div data-role="content">
+                <div data-role="fieldcontain">
+                    <fieldset data-role="controlgroup" data-type="horizontal">
+                        <legend>
+                        </legend>
+                        <input id="radio12" name="" value="radio1" type="radio">
+                        <label for="radio12">
+                            Wikipedia
+                        </label>
+                        <input id="radio13" name="" value="radio14" type="radio">
+                        <label for="radio13">
+                            Maps
+                        </label>
+                        <input id="radio14" name="" value="radio15" type="radio">
+                        <label for="radio14">
+                            Books
+                        </label>
+                        <input id="radio18" name="" value="radio18" type="radio">
+                        <label for="radio18">
+                            Video
+                        </label>
+                        <input id="radio19" name="" value="radio19" type="radio">
+                        <label for="radio19">
+                            Software
+                        </label>
+                        <input id="radio20" name="" value="radio20" type="radio">
+                        <label for="radio20">
+                            Chat
+                        </label>
+                    </fieldset>
+                </div>
+                <div data-role="fieldcontain">
+                    <fieldset data-role="controlgroup">
+                        <label for="searchinput8">
+                        </label>
+                        <input name="" id="searchinput8" placeholder="" value="" type="search">
+                    </fieldset>
+                </div>
+                <div data-role="collapsible-set">
+                    <div data-role="collapsible" data-collapsed="true">
+                        <h3>
+                            Wizard of Oz
+                        </h3>
+                    </div>
+                    <div data-role="collapsible" data-collapsed="true">
+                        <h3>
+                            Kansas City, KA
+                        </h3>
+                    </div>
+                    <div data-role="collapsible" data-collapsed="true">
+                        <h3>
+                            Tornado
+                        </h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
+              //App custom javascript
+        </script>
+    </body>
+
+</html>
