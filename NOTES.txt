@@ -193,3 +193,12 @@ Total tiles handled: Rendered 88 tiles in 10608.57 seconds (0.01 tiles/s)
 real    176m48.617s
 
 ----
+python lxml
+
+et2 = etree.parse("/home/braddock/tmp/sample.xml")
+et2.findall(".//{%s}goof" % "mynamespace")
+
+or
+
+goof=et2.findall(".//my:goof",namespaces = goof[0].nsmap)
+
