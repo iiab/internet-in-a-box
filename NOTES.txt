@@ -1,0 +1,195 @@
+Wikipedia Install - 8/18/2012
+
+Wikipedia instructions from:
+http://www.igeek.co.za/2009/10/16/how-to-mirror-wikipedia/
+
+apt-get install apache2 php5 libapache2-mod-php5 mysql-server mysql-client php5-mysql phpmyadmin
+
+Had to recover my mysql root password.
+
+Moved /var/lib/mysql to /mnt/data2/mysql
+Had to inform AppArmor of the new path.
+
+cat >>/etc/apparmor.d/local/usr.sbin.mysqld  <<EOF
+/mnt/data2/mysql rwk,
+/mnt/data2/mysql/** rwk,
+EOF
+
+
+Used phpmyadmin to create 'wikidb'.
+Do not create 'wikiuser', allow the mediawiki setup page to do so.
+
+# mediawiki from the repo is probably out of date (<ref> issues in wikipedia import).
+# Try the current tarball in future.
+apt-get install mediawiki
+
+Downloaded (cut and paste of code) mwimport script from:
+http://meta.wikimedia.org/wiki/Data_dumps/mwimport
+
+Had to modify mwimport script to support schema 0.7 (only supported 0.6)
+(see mwimport.diff)
+
+bzcat enwiki-20120802-pages-articles-multistream.xml.bz2 | ./mwimport | mysql -f -u wikiuser -p wikidb
+
+----
+Ubuntu repository mirror - 8/21/12
+
+apt-get install apt-mirror
+apt-mirror mirror.list
+(will mirror into /public2/knowledge/ubuntu/12.04)
+
+----
+rsync to GoFlex Home - 8/21/12
+
+cd /public2/
+rsync -avrP knowledge/ knowledge:/mnt/data/knowledge
+
+----
+OpenStreetMap - 8/23/12
+
+apt-get install python-software-properties
+apt-get autoremove
+add-apt-repository ppa:kakrueger/openstreetmap
+apt-get update
+apt-get install libapache2-mod-tile
+
+# Be sure to get osm2pgsql version 0.80.0 or higher from the correct repo!
+# The one in the main repo is old!
+wget http://ppa.launchpad.net/kakrueger/openstreetmap/ubuntu/pool/main/o/osm2pgsql/osm2pgsql_0.80.0-12~precise1_amd64.deb
+apt-get install libprotobuf
+dpkg -i osm2pgsql*.deb
+
+# osm2pgsql -v
+osm2pgsql SVN version 0.80.0 (32bit id space)
+
+osm2pgsql -C 8000 maryland.osm.bz2 
+
+vim /var/www/osm/slippymap.html
+remove http://localhost and change line to:
+var newLayer = new OpenLayers.Layer.OSM("Local Tiles", "/osm/${z}/${x}/${y}.png", {numZoomLevels: 19});
+
+http://orlop/osm/slippymap.html
+(must click "Local Tiles" on web page - the Mapnik option renders off the
+internet)
+
+----
+Gutenberg download command:
+
+while (true); do (date; . ../../NOTES.txt; sleep 3600) | tee -a 20120823.log; done
+
+----
+GoFlex Satellite Arch chroot - 8/24/2012
+
+Power on, associate with wifi, go to any web page, click "connect to internet",
+configure for local wifi.
+
+telnet goflexsatellite
+user: root
+pw: goflex
+
+Followed TouchPad chroot instructions at:
+http://archlinuxarm.org/forum/viewtopic.php?t=1361
+
+The TouchPad image worked, but was outdated
+    # Note: I used the Touchpad chroot image - lucky first pick
+    wget http://us.mirror.archlinuxarm.org/os/touchpad/ArchLinuxARM-2011.08-armv7h-chroot.tar.gz
+
+Instead, use the latest:
+ArchLinuxARM-armv5te-latest.tar.gz
+
+    cd /media/sda1
+    mkdir arch
+    dd if=/dev/zero of=alarm.img seek=749999999 bs=1 count=1 #750MB image file
+    mke2fs -F alarm.img
+    losetup /dev/loop1 alarm.img
+    mount -t ext2 /dev/loop1 arch/
+    cd arch
+
+    wget http://us.mirror.archlinuxarm.org/os/ArchLinuxARM-armv5te-latest.tar.gz
+
+    tar xzf ArchLinuxARM-*.tar.gz
+    mount -o bind /dev/ /media/sda1/arch/dev
+    chroot . /bin/bash
+    echo "nameserver 8.8.8.8" > /etc/resolv.conf
+    mount -t proc proc /proc
+    mount -t sysfs sysfs /sys
+    pacman -Syu # upgrades...
+
+
+----
+Swapfile - 8/24/2012
+
+To create a swap file follow:
+http://www.linux.com/news/software/applications/8208-all-about-linux-swap-space
+
+----
+Cross-compilation on ARM using distcc - 8/26/12
+
+On slave:
+apt-get install distcc
+download Arch ARM cross compiler binary tar.xz
+cd expire
+xzcat | tar xvf -
+chmod a+x /home/braddock
+chmod a+x /home/braddock/expire
+
+Edit /etc/init.d/distcc
+Add line:
+PATH=/home/braddock/expire/x-tools/arm-unknown-linux-gnueabi/bin:$PATH
+
+This daemon will log to /var/log/distccd.log
+
+
+On master (the ARM device):
+packman -Sy distcc
+Edit /etc/distcc/hosts
+remove 'localhost', add 'orlop'
+
+Not sure this is necessary if you edit /etc/distcc/hosts
+export DISTCC_HOSTS='orlop'
+If you want verbose DISTCC output:
+export DISTCC_VERBOSE=1
+
+If you want DISTCC output to a file instead of stderr
+export DISTCC_LOG="distcc.log"
+
+make -j8 CC=distcc
+
+----
+time (osm2pgsql --slim -C 14000 planet-120704.osm.pbf)
+wget -A '*nshowcat*' -A '*btdownload*' -A '*nshowmovie.html*' -r http://publicdomaintorrents.info 
+
+----
+OSM Planet Import
+time osm2pgsql --slim -C 14000 planet-120704.osm.pbf
+
+
+[...]
+Copying planet_osm_line to cluster by geometry finished
+Creating indexes on  planet_osm_line finished
+All indexes on  planet_osm_line created  in 208317s
+Completed planet_osm_line
+Copying planet_osm_polygon to cluster by geometry finished
+Creating indexes on  planet_osm_polygon finished
+All indexes on  planet_osm_polygon created  in 263905s
+Completed planet_osm_polygon
+
+Stopped table: planet_osm_ways in 843061s
+
+Osm2pgsql took 1600854s overall
+
+real    26680m54.194s
+user    309m10.935s
+sys     52m56.523s
+
+-----
+time render_list -a -z 0 -Z 6 -n 8 -s /var/run/renderd/renderd.sock
+
+Total for all tiles rendered
+Meta tiles rendered: Rendered 88 tiles in 10608.57 seconds (0.01 tiles/s)
+Total tiles rendered: Rendered 5632 tiles in 10608.57 seconds (0.53 tiles/s)
+Total tiles handled: Rendered 88 tiles in 10608.57 seconds (0.01 tiles/s)
+
+real    176m48.617s
+
+----

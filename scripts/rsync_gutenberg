@@ -1,0 +1,12 @@
+rsync --progress -avHSz --delete --delete-after  \
+    --exclude='*.zip' \
+    --exclude='*.mp3' \
+    --exclude='*.ogg' \
+    --exclude='*.iso' \
+    --exclude='*.ISO' \
+    --exclude='*pgdvd*' \
+    --exclude='*.rar' \
+    --exclude='*.mpeg' \
+    --exclude='*.m4b' \
+    --exclude='*.wav' \
+    ftp@ftp.ibiblio.org::gutenberg .
