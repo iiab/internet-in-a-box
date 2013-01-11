@@ -202,3 +202,138 @@ or
 
 goof=et2.findall(".//my:goof",namespaces = goof[0].nsmap)
 
+----
+1/9/2013 - Arch Linux chroot install
+
+General instructions from:
+https://wiki.archlinux.org/index.php/Install_from_Existing_Linux
+
+
+cd /mnt/data2/tmp
+wget http://tokland.googlecode.com/svn/trunk/archlinux/arch-bootstrap.sh
+chmod a+x arch-bootstrap.sh
+sudo ./arch-bootstrap.sh -a x86_64 chroot
+
+
+cat <<EOF >arch-chroot.sh
+mount -t proc none /mnt/data2/tmp/chroot/proc
+mount -t sysfs none /mnt/data2/tmp/chroot/sys
+mount -o bind /dev /mnt//data2/tmp/chroot/dev
+mount -o bind /dev/pts /mnt/data2/tmp/chroot/dev/pts # important for pacman (for signature check)
+EOF
+chmod a+x arch-chroot.sh
+
+cat <<EOF >arch-umount.sh
+umount /mnt/data2/tmp/chroot/proc
+umount /mnt/data2/tmp/chroot/sys
+umount /mnt/data2/tmp/chroot/dev
+umount /mnt/data2/tmp/chroot/dev/pts
+EOF
+chmod a+x arch-umount.sh
+
+
+# Enter our chroot
+sudo ./arch-chroot.sh
+sudo chroot chroot
+
+
+# Must initialize pacman
+pacman-key --init  # takes several minutes
+pacman-key --populate archlinux
+
+pacman -S base base-devel
+
+# Install useful things
+pacman -S vim python2 git rsync sudo screen links nano mtr python2-pip 
+pacman -S mediawiki texvc mysql postgresql postgis phpmyadmin php php-apache
+pip2 install flask
+ 
+pacman -S apache
+vim /etc/httpd/apache.conf
+(change port number if necessary)
+
+PROBLEM: systemd will not run in chroot (why??)
+
+Arch is a waste of time!
+
+----
+1/10/2013 - Debian Linux chroot install
+
+debootstrap 
+
+cat <<EOF >deb-chroot.sh
+mount -t proc none /mnt/data2/tmp/stable-chroot/proc
+mount -t sysfs none /mnt/data2/tmp/stable-chroot/sys
+mount -o bind /dev /mnt//data2/tmp/stable-chroot/dev
+mount -o bind /dev/pts /mnt/data2/tmp/stable-chroot/dev/pts # important for pacman (for signature check)
+cd /mnt/data2/tmp
+chroot stable-chroot
+EOF
+
+cat <<EOF >deb-umount.sh
+DIR=/mnt/data2/tmp/stable-chroot
+umount ${DIR}/proc
+umount ${DIR}/sys
+umount ${DIR}/dev
+umount ${DIR}/dev/pts # important for pacman (for signature check)
+EOF
+
+
+apt-get install vim python git rsync sudo screen links nano mtr python-pip ipython telnet
+
+----
+1/10/2013 - Wikipedia mirror (redux)
+
+Set root mysql password:
+mysqladmin -u root password cent386
+
+apt-get install wikimedia phpmyadmin
+
+echo "Include /etc/phpmyadmin/apache.conf" >>/etc/apache2/apache2.conf
+
+http://localhost/phpmyadmin
+
+Create database named 'wikien'
+Priviledges -> Create New User
+Username: wikimirror
+Grant full access to wikien database
+
+Although we installed wikimedia via apt-get, we only did that to get all
+dependencies.
+
+wget http://download.wikimedia.org/mediawiki/1.20/mediawiki-1.20.2.tar.gz
+cd /var/www
+tar xvzf mediawiki-1.20.2.tar.gz 
+mv mediawiki-1.20.2/ wikien
+
+http://localhost/wikien
+
+Set up the wiki -> Continue
+Database name: wikien
+Database username: wikimirror
+Database password: whatever
+Storage Engine: InnoDB (?)
+Database character set: Binary(?)
+Name of wiki: wikien
+Project Namespace: same as wiki name (?)
+Administrator Account:
+    Your name: wikimirror
+    Password: whatever
+"I'm bored already, just install the Wiki"
+...
+Download LocalSettings.php
+Copy to /var/www/wikien/
+
+    
+(From september: should probably use updated mwimport and updated wikipedia dump)
+
+Downloaded (cut and paste of code) mwimport script from:
+http://meta.wikimedia.org/wiki/Data_dumps/mwimport
+
+Had to modify mwimport script to support schema 0.7 (only supported 0.6)
+(see mwimport.diff)
+
+bzcat enwiki-20120802-pages-articles-multistream.xml.bz2 | ./mwimport | mysql -f -u wikimirror -p wikien
+
+
+----
