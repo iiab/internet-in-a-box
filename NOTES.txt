@@ -284,10 +284,14 @@ apt-get install vim python git rsync sudo screen links nano mtr python-pip ipyth
 ----
 1/10/2013 - Wikipedia mirror (redux)
 
-Set root mysql password:
-mysqladmin -u root password cent386
+(Mostly) following instructions from:
+http://www.extremetech.com/computing/114387-how-to-set-up-your-own-copy-of-wikipedia/2
 
-apt-get install wikimedia phpmyadmin
+
+Set root mysql password:
+mysqladmin -u root password whatever
+
+apt-get install wikimedia phpmyadmin bzip2
 
 echo "Include /etc/phpmyadmin/apache.conf" >>/etc/apache2/apache2.conf
 
