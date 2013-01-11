@@ -279,7 +279,8 @@ umount ${DIR}/dev/pts # important for pacman (for signature check)
 EOF
 
 
-apt-get install vim python git rsync sudo screen links nano mtr python-pip ipython telnet
+apt-get install vim python git rsync sudo screen links \
+    nano mtr python-pip ipython telnet 
 
 ----
 1/10/2013 - Wikipedia mirror (redux)
@@ -341,3 +342,44 @@ bzcat enwiki-20120802-pages-articles-multistream.xml.bz2 | ./mwimport | mysql -f
 
 
 ----
+1/10/2013 - OpenStreetMap mod_tile (without Mapnik) in chroot debian
+
+In general, follow instructions at:
+http://wiki.openstreetmap.org/wiki/Mod_tile
+
+apt-get install subversion build-essentials automake libtool \
+    libboost-dev libicu-dev apache2-threaded-dev
+
+svn co http://svn.openstreetmap.org/applications/utils/mod_tile/
+
+cd mod_tile
+./autogen.sh
+LDFLAGS="-lapr-1" CFLAGS="-I/usr/include/apr-1.0 -I/usr/include/apache2" CXXFLAGS=-I/usr/include/apache2/ ./configure --with-libmapnik=no
+make mod_tile.o
+make install-mod_tile
+ldconfig
+
+
+For configuration information see:
+http://wiki.openstreetmap.org/wiki/HowTo_mod_tile
+
+
+echo "LoadModule tile_module /usr/lib/apache2/modules/mod_tile.so" >/etc/apache2/conf.d/mod_tile
+
+Add to /etc/apache2/sites-enables/000-default:
+
+LoadTileConfigFile /etc/renderd.conf
+ModTileRenderdSocketName /tmp/osm-renderd
+# Timeout before giving up for a tile to be rendered
+ModTileRequestTimeout 3
+# Timeout before giving up for a tile to be rendered that is otherwise missing
+ModTileMissingRequestTimeout 30
+
+touch /etc/renderd.conf
+mkdir /var/lib/mod_tile
+Copy tiles into /var/lib/mod_tile/default
+Copy slippymap.html /var/www/osm/
+
+/etc/init.d/apache restart
+
+
