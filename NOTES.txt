@@ -378,8 +378,14 @@ ModTileMissingRequestTimeout 30
 touch /etc/renderd.conf
 mkdir /var/lib/mod_tile
 Copy tiles into /var/lib/mod_tile/default
+
+Alternatively, to mount the main installation's mod_tile directory into the chroot:
+(from outside of chroot)
+mount -o bind /mnt/data2/tmp/mod_tile/ /mnt/ssd/expire/stable-chroot/var/lib/mod_tile/
+
 Copy slippymap.html /var/www/osm/
 
 /etc/init.d/apache restart
 
 
+----
