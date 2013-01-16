@@ -1,4 +1,5 @@
 Wikipedia Install - 8/18/2012
+(Don't follow these - See newer instructions from January '13 below)
 
 Wikipedia instructions from:
 http://www.igeek.co.za/2009/10/16/how-to-mirror-wikipedia/
@@ -243,6 +244,7 @@ pacman-key --populate archlinux
 
 pacman -S base base-devel
 
+apt-get install locales
 # Install useful things
 pacman -S vim python2 git rsync sudo screen links nano mtr python2-pip 
 pacman -S mediawiki texvc mysql postgresql postgis phpmyadmin php php-apache
@@ -259,49 +261,47 @@ Arch is a waste of time!
 ----
 1/10/2013 - Debian Linux chroot install
 
-debootstrap 
+debootstrap stable ./chroot http://ftp.us.debian.org/debian
 
-cat <<EOF >deb-chroot.sh
-mount -t proc none /mnt/data2/tmp/stable-chroot/proc
-mount -t sysfs none /mnt/data2/tmp/stable-chroot/sys
-mount -o bind /dev /mnt//data2/tmp/stable-chroot/dev
-mount -o bind /dev/pts /mnt/data2/tmp/stable-chroot/dev/pts # important for pacman (for signature check)
-cd /mnt/data2/tmp
-chroot stable-chroot
-EOF
+see Heritage/scripts/deb-chroot.sh
+and Heritage/scripts/deb-umount.sh
 
-cat <<EOF >deb-umount.sh
-DIR=/mnt/data2/tmp/stable-chroot
-umount ${DIR}/proc
-umount ${DIR}/sys
-umount ${DIR}/dev
-umount ${DIR}/dev/pts # important for pacman (for signature check)
-EOF
-
-
+apt-get update
+apt-get upgrade
 apt-get install vim python git rsync sudo screen links \
-    nano mtr python-pip ipython telnet 
+    nano mtr python-pip ipython telnet locales
+dpkg-reconfigure locales
 
 ----
 1/10/2013 - Wikipedia mirror (redux)
 
-(Mostly) following instructions from:
+Following some instructions from:
 http://www.extremetech.com/computing/114387-how-to-set-up-your-own-copy-of-wikipedia/2
 
 
-Set root mysql password:
+apt-get install wikimedia mysql-server phpmyadmin bzip2
+
+
+Set root mysql password (if you didn't during install):
 mysqladmin -u root password whatever
 
-apt-get install wikimedia phpmyadmin bzip2
+Create database:
+mysql -u root -p
+CREATE DATABASE enwiki;
+
 
 echo "Include /etc/phpmyadmin/apache.conf" >>/etc/apache2/apache2.conf
 
 http://localhost/phpmyadmin
 
-Create database named 'wikien'
 Priviledges -> Create New User
 Username: wikimirror
 Grant full access to wikien database
+(or:
+CREATE USER 'wikimirror'@'%' IDENTIFIED BY '***';
+GRANT USAGE ON * . * TO 'wikimirror'@'%' IDENTIFIED BY '***' WITH MAX_QUERIES_PER_HOUR 0 MAX_CONNECTIONS_PER_HOUR 0 MAX_UPDATES_PER_HOUR 0 MAX_USER_CONNECTIONS 0 ;
+GRANT ALL PRIVILEGES ON `enwiki` . * TO 'wikimirror'@'%' WITH GRANT OPTION ;
+)
 
 Although we installed wikimedia via apt-get, we only did that to get all
 dependencies.
@@ -309,12 +309,12 @@ dependencies.
 wget http://download.wikimedia.org/mediawiki/1.20/mediawiki-1.20.2.tar.gz
 cd /var/www
 tar xvzf mediawiki-1.20.2.tar.gz 
-mv mediawiki-1.20.2/ wikien
+mv mediawiki-1.20.2/ enwiki
 
-http://localhost/wikien
+http://localhost/enwiki
 
 Set up the wiki -> Continue
-Database name: wikien
+Database name: enwiki
 Database username: wikimirror
 Database password: whatever
 Storage Engine: InnoDB (?)
@@ -327,9 +327,24 @@ Administrator Account:
 "I'm bored already, just install the Wiki"
 ...
 Download LocalSettings.php
-Copy to /var/www/wikien/
+Copy to /var/www/enwiki/
 
-    
+
+Use mwdumper to import data
+
+echo "deb http://ftp.us.debian.org/debian stable non-free" >>/etc/apt/sources.lib
+apt-get install sun-java6-jre libcommons-compress-java
+
+NOTE: there is an issue with the BZip2 Compressor class not found unless you
+      invoke mwdumper as follows:
+java -classpath /usr/share/java/commons-compress-1.0.jar:/knowledge/packages/mwdumper-1.16.jar org.mediawiki.dumper.Dumper
+
+(NOTE: change eswiki to enwiki etc)
+time (java -cp /usr/share/java/commons-compress-1.0.jar:/knowledge/packages/mwdumper-1.16.jar org.mediawiki.dumper.Dumper /knowledge/data/wikipedia/eswiki-20121227-pages-articles.xml.bz2 --format=sql:1.5 | mysql -u wikimirror -p eswiki)
+
+
+BEGIN FAILURE
+(Note: mwimport attempt failed.  Use mwdumper which is supported)
 (From september: should probably use updated mwimport and updated wikipedia dump)
 
 Downloaded (cut and paste of code) mwimport script from:
@@ -339,7 +354,7 @@ Had to modify mwimport script to support schema 0.7 (only supported 0.6)
 (see mwimport.diff)
 
 bzcat enwiki-20120802-pages-articles-multistream.xml.bz2 | ./mwimport | mysql -f -u wikimirror -p wikien
-
+END FAILURE
 
 ----
 1/10/2013 - OpenStreetMap mod_tile (without Mapnik) in chroot debian
@@ -387,5 +402,11 @@ Copy slippymap.html /var/www/osm/
 
 /etc/init.d/apache restart
 
+----
+1/15/13 - SSD Errors:
+
+[74138.505236] end_request: I/O error, dev sde, sector 310616
+[74475.461906] sd 4:0:1:0: [sde] Unhandled error code
+[74475.461911] sd 4:0:1:0: [sde]  Result: hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK
 
 ----
