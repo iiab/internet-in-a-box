@@ -1,0 +1,36 @@
+343a344
+>     int reverse=0;
+360a362
+>             {"reverse", 0, 0, 'r'},
+366c368
+<         c = getopt_long(argc, argv, "hvaz:Z:x:X:y:Y:s:m:t:n:l:f", long_options, &option_index);
+---
+>         c = getopt_long(argc, argv, "hvaz:Z:x:X:y:Y:s:m:t:n:l:fr", long_options, &option_index);
+421a424,426
+>             case 'r':   /* -r, --reverse */
+>                 reverse=1;
+>                 break;
+428a434
+>                 fprintf(stderr, "  -r, --reverse        render tiles in reverse order\n");
+501a508
+> 
+505,507c512,524
+<                     xyz_to_meta(name, sizeof(name), tile_dir, mapname, x, y, z);
+<                     enqueue(name);
+<                     //process_loop(fd, mapname, x, y, z);
+---
+>                     struct stat s;
+>                     int realX;
+>                     if (reverse) {
+>                         realX = current_maxX - x;
+>                     } else {
+>                         realX = x;
+>                     }
+>                     xyz_to_meta(name, sizeof(name), tile_dir, mapname, realX, y, z);
+>                     if (force || (stat(name, &s) < 0) || (planetTime > s.st_mtime)) {
+>                         enqueue(name);
+>                         //process_loop(fd, mapname, x, y, z);
+>                         num_render++;
+>                     }
+509d525
+<                     num_render++;
