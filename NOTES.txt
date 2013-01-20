@@ -186,6 +186,8 @@ sys     52m56.523s
 -----
 time render_list -a -z 0 -Z 6 -n 8 -s /var/run/renderd/renderd.sock
 
+./render_list -z 0 -Z 13 -a -n 4 -s /var/run/renderd/renderd.sock
+
 Total for all tiles rendered
 Meta tiles rendered: Rendered 88 tiles in 10608.57 seconds (0.01 tiles/s)
 Total tiles rendered: Rendered 5632 tiles in 10608.57 seconds (0.53 tiles/s)
@@ -408,5 +410,40 @@ Copy slippymap.html /var/www/osm/
 [74138.505236] end_request: I/O error, dev sde, sector 310616
 [74475.461906] sd 4:0:1:0: [sde] Unhandled error code
 [74475.461911] sd 4:0:1:0: [sde]  Result: hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK
+
+----
+1/19/13 - NFS Setup
+
+Setup a second computer to render tiles.
+
+On orlop server:
+apt-get install rpcbind nfs-kernel-server
+echo 'NEED_IDMAPD=yes' >>/etc/default/nfs-common
+mkdir -p /export/mod_tile
+cat >>/etc/exports <<EOF
+/export		192.168.1.0/24(rw,fsid=0,insecure,no_subtree_check,async)
+/export/mod_tile       192.168.1.0/24(rw,fsid=0,insecure,no_subtree_check,async)
+EOF
+/etc/init.d/nfs-kernel-server restart
+# mount -o bind /mnt/data2/tmp/mod_tile /export/mod_tile
+echo "/mnt/data2/tmp/mod_tile	/export/mod_tile	none	bind	0	0" >>/etc/fstab
+mount -a
+
+
+On zhen client:
+
+sudo apt-get install rpcbind nfs-common
+echo 'NEED_IDMAPD=yes' >>/etc/default/nfs-common
+mkdir /mnt/mod_tile
+# mount -t nfs4 -o proto=tcp,port=2049 orlop:/mod_tile /mnt/mod_tile/
+echo "orlop:/ /mnt/mod_tile   nfs4    _netdev,auto    0       0" >>/etc/fstab
+cd /usr/share
+rsync -avrP orlop:/usr/share/mapnik-osm-data .
+ln -s /mnt/data/postgresql/ postgresql
+ln -s /mnt/mod_tile/ /var/lib/mod_tile
+/etc/init.d/
+
+./render_list -r -z 14 -Z 14 -a -n 4 -s /var/run/renderd/renderd.sock
+
 
 ----
