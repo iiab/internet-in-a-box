@@ -1,36 +1,103 @@
-343a344
->     int reverse=0;
-360a362
->             {"reverse", 0, 0, 'r'},
-366c368
-<         c = getopt_long(argc, argv, "hvaz:Z:x:X:y:Y:s:m:t:n:l:f", long_options, &option_index);
----
->         c = getopt_long(argc, argv, "hvaz:Z:x:X:y:Y:s:m:t:n:l:fr", long_options, &option_index);
-421a424,426
->             case 'r':   /* -r, --reverse */
->                 reverse=1;
->                 break;
-428a434
->                 fprintf(stderr, "  -r, --reverse        render tiles in reverse order\n");
-501a508
-> 
-505,507c512,524
-<                     xyz_to_meta(name, sizeof(name), tile_dir, mapname, x, y, z);
-<                     enqueue(name);
-<                     //process_loop(fd, mapname, x, y, z);
----
->                     struct stat s;
->                     int realX;
->                     if (reverse) {
->                         realX = current_maxX - x;
->                     } else {
->                         realX = x;
->                     }
->                     xyz_to_meta(name, sizeof(name), tile_dir, mapname, realX, y, z);
->                     if (force || (stat(name, &s) < 0) || (planetTime > s.st_mtime)) {
->                         enqueue(name);
->                         //process_loop(fd, mapname, x, y, z);
->                         num_render++;
->                     }
-509d525
-<                     num_render++;
+*** libapache2-mod-tile-0.4/render_list.c	2012-08-26 12:52:27.000000000 -0700
+--- ../libapache2-mod-tile-0.4/render_list.c	2013-01-19 21:12:41.000000000 -0800
+***************
+*** 341,346 ****
+--- 341,347 ----
+      int all=0;
+      int numThreads = 1;
+      int force=0;
++     int reverse=0;
+  
+      while (1) {
+          int option_index = 0;
+***************
+*** 358,369 ****
+              {"map", 1, 0, 'm'},
+              {"verbose", 0, 0, 'v'},
+              {"force", 0, 0, 'f'},
+              {"all", 0, 0, 'a'},
+              {"help", 0, 0, 'h'},
+              {0, 0, 0, 0}
+          };
+  
+!         c = getopt_long(argc, argv, "hvaz:Z:x:X:y:Y:s:m:t:n:l:f", long_options, &option_index);
+          if (c == -1)
+              break;
+  
+--- 359,371 ----
+              {"map", 1, 0, 'm'},
+              {"verbose", 0, 0, 'v'},
+              {"force", 0, 0, 'f'},
++             {"reverse", 0, 0, 'r'},
+              {"all", 0, 0, 'a'},
+              {"help", 0, 0, 'h'},
+              {0, 0, 0, 0}
+          };
+  
+!         c = getopt_long(argc, argv, "hvaz:Z:x:X:y:Y:s:m:t:n:l:fr", long_options, &option_index);
+          if (c == -1)
+              break;
+  
+***************
+*** 419,424 ****
+--- 421,429 ----
+              case 'f':   /* -f, --force */
+                  force=1;
+                  break;
++             case 'r':   /* -r, --reverse */
++                 reverse=1;
++                 break;
+              case 'v':   /* -v, --verbose */
+                  verbose=1;
+                  break;
+***************
+*** 426,431 ****
+--- 431,437 ----
+                  fprintf(stderr, "Usage: render_list [OPTION] ...\n");
+                  fprintf(stderr, "  -a, --all            render all tiles in given zoom level range instead of reading from STDIN\n");
+                  fprintf(stderr, "  -f, --force          render tiles even if they seem current\n");
++                 fprintf(stderr, "  -r, --reverse        render tiles in reverse order\n");
+                  fprintf(stderr, "  -m, --map=MAP        render tiles in this map (defaults to '" XMLCONFIG_DEFAULT "')\n");
+                  fprintf(stderr, "  -l, --max-load=LOAD  sleep if load is this high (defaults to %d)\n", MAX_LOAD_OLD);
+                  fprintf(stderr, "  -s, --socket=SOCKET  unix domain socket name for contacting renderd\n");
+***************
+*** 499,512 ****
+          for (z=minZoom; z <= maxZoom; z++) {
+              int current_maxX = (maxX == -1) ? (1 << z)-1 : maxX;
+              int current_maxY = (maxY == -1) ? (1 << z)-1 : maxY;
+              printf("Rendering all tiles for zoom %d from (%d, %d) to (%d, %d)\n", z, minX, minY, current_maxX, current_maxY);
+              for (x=minX; x <= current_maxX; x+=METATILE) {
+                  for (y=minY; y <= current_maxY; y+=METATILE) {
+!                     xyz_to_meta(name, sizeof(name), tile_dir, mapname, x, y, z);
+!                     enqueue(name);
+!                     //process_loop(fd, mapname, x, y, z);
+                      num_all++;
+-                     num_render++;
+                  }
+              }
+          }
+--- 505,528 ----
+          for (z=minZoom; z <= maxZoom; z++) {
+              int current_maxX = (maxX == -1) ? (1 << z)-1 : maxX;
+              int current_maxY = (maxY == -1) ? (1 << z)-1 : maxY;
++ 
+              printf("Rendering all tiles for zoom %d from (%d, %d) to (%d, %d)\n", z, minX, minY, current_maxX, current_maxY);
+              for (x=minX; x <= current_maxX; x+=METATILE) {
+                  for (y=minY; y <= current_maxY; y+=METATILE) {
+!                     struct stat s;
+!                     int realX;
+!                     if (reverse) {
+!                         realX = current_maxX - x;
+!                     } else {
+!                         realX = x;
+!                     }
+!                     xyz_to_meta(name, sizeof(name), tile_dir, mapname, realX, y, z);
+!                     if (force || (stat(name, &s) < 0) || (planetTime > s.st_mtime)) {
+!                         enqueue(name);
+!                         //process_loop(fd, mapname, x, y, z);
+!                         num_render++;
+!                     }
+                      num_all++;
+                  }
+              }
+          }
