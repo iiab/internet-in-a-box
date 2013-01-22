@@ -447,3 +447,25 @@ ln -s /mnt/mod_tile/ /var/lib/mod_tile
 
 
 ----
+1/21/13 - OpenStreetMap Tile Disk Usage:
+
+Disk usage roughly triples for each level
+
+SIZE   LEVEL
+ 32K    0
+ 56K    1
+124K    2
+272K    3
+1000K   4
+  2.9M  5
+  9.4M  6
+ 28M    7
+ 94M    8
+280M    9
+964M    10
+ 2.7G   11
+ 7.7G   12
+25G     13
+76G     14
+
+----
