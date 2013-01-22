@@ -277,7 +277,11 @@ dpkg-reconfigure locales
 ----
 1/10/2013 - Wikipedia mirror (redux)
 
-Following some instructions from:
+Wikipedia Dump Downloader:
+https://github.com/babilen/wp-download/
+pip install wp-download
+
+Reference (not exactly what I'm doing):
 http://www.extremetech.com/computing/114387-how-to-set-up-your-own-copy-of-wikipedia/2
 
 
@@ -300,14 +304,15 @@ Priviledges -> Create New User
 Username: wikimirror
 Grant full access to wikien database
 (or:
-CREATE USER 'wikimirror'@'%' IDENTIFIED BY '***';
-GRANT USAGE ON * . * TO 'wikimirror'@'%' IDENTIFIED BY '***' WITH MAX_QUERIES_PER_HOUR 0 MAX_CONNECTIONS_PER_HOUR 0 MAX_UPDATES_PER_HOUR 0 MAX_USER_CONNECTIONS 0 ;
-GRANT ALL PRIVILEGES ON `enwiki` . * TO 'wikimirror'@'%' WITH GRANT OPTION ;
+CREATE USER 'wikimirror'@'localhost IDENTIFIED BY 'whatever
+GRANT USAGE ON * . * TO 'wikimirror'@'localhost IDENTIFIED BY 'whatever' WITH MAX_QUERIES_PER_HOUR 0 MAX_CONNECTIONS_PER_HOUR 0 MAX_UPDATES_PER_HOUR 0 MAX_USER_CONNECTIONS 0 ;
+GRANT ALL PRIVILEGES ON `enwiki` . * TO 'wikimirror'@'localhost' WITH GRANT OPTION ;
 )
 
 Although we installed wikimedia via apt-get, we only did that to get all
 dependencies.
 
+(NOTE: I had issues with version 1.20.2, fall back to 1.19 instead)
 wget http://download.wikimedia.org/mediawiki/1.20/mediawiki-1.20.2.tar.gz
 cd /var/www
 tar xvzf mediawiki-1.20.2.tar.gz 
@@ -331,14 +336,22 @@ Administrator Account:
 Download LocalSettings.php
 Copy to /var/www/enwiki/
 
+OR:
+cd /var/www/enwiki
+php maintenance/install.php --wiki swwiki --dbuser wikimirror --dbpass whatever --dbname swwiki --lang sw --pass whatever --scriptpath /swwiki swwiki wikimirror 
 
 Use mwdumper to import data
+
+For swwiki, I had to solve a duplicate name_title error with:
+mysql -u wikimirror -p swwiki;
+delete from page;
+delete from text;
 
 echo "deb http://ftp.us.debian.org/debian stable non-free" >>/etc/apt/sources.lib
 apt-get install sun-java6-jre libcommons-compress-java
 
 NOTE: there is an issue with the BZip2 Compressor class not found unless you
-      invoke mwdumper as follows:
+      invoke mwdumper as follows (note: commons-compress-1.2.jar on Ubuntu 12.04):
 java -classpath /usr/share/java/commons-compress-1.0.jar:/knowledge/packages/mwdumper-1.16.jar org.mediawiki.dumper.Dumper
 
 (NOTE: change eswiki to enwiki etc)
