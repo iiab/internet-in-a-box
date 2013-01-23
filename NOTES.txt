@@ -312,7 +312,6 @@ GRANT ALL PRIVILEGES ON `enwiki` . * TO 'wikimirror'@'localhost' WITH GRANT OPTI
 Although we installed wikimedia via apt-get, we only did that to get all
 dependencies.
 
-(NOTE: I had issues with version 1.20.2, fall back to 1.19 instead)
 wget http://download.wikimedia.org/mediawiki/1.20/mediawiki-1.20.2.tar.gz
 cd /var/www
 tar xvzf mediawiki-1.20.2.tar.gz 
