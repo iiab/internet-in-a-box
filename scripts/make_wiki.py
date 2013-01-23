@@ -70,12 +70,12 @@ wikidir = os.path.join(options.destination, dbname)
 p = Popen(['mysql', '-u', 'root',
            '--password=' + options.rootpassword],
           stdin=PIPE)
+#       "GRANT USAGE ON *.* TO '" + options.user + "'@'localhost';",
+#       "DROP USER '" + options.user + "'@'localhost';",
+#       "CREATE USER '" + options.user + "'@'localhost' IDENTIFIED BY '"
+#       + options.password + "';",
 sql = ["DROP DATABASE IF EXISTS " + dbname + ";",
-       "GRANT USAGE ON *.* TO '" + options.user + "'@'localhost';",
-       "DROP USER '" + options.user + "'@'localhost';",
        "CREATE DATABASE " + dbname + ";",
-       "CREATE USER '" + options.user + "'@'localhost' IDENTIFIED BY '"
-       + options.password + "';",
        "GRANT USAGE ON * . * TO '" + options.user + "'@'localhost' IDENTIFIED BY '"
        + options.password + "' WITH MAX_QUERIES_PER_HOUR 0 MAX_CONNECTIONS_PER_HOUR 0 MAX_UPDATES_PER_HOUR 0 MAX_USER_CONNECTIONS 0;",
        "GRANT ALL PRIVILEGES ON " + dbname + ".* TO '" + options.user + "'@'localhost' WITH GRANT OPTION;"
@@ -97,7 +97,7 @@ if os.path.exists(wikidir):
 call2(['tar', '-C', options.destination, '-xzf', options.mediawiki])
 os.rename(os.path.join(options.destination, 'mediawiki-1.20.2'), wikidir)
 
-# Configure wikimedia
+# Configure mediawiki
 os.chdir(wikidir)
 call2(['php', 'maintenance/install.php', '--wiki', dbname,
        '--dbuser', options.user, '--dbpass', options.password,
@@ -106,6 +106,17 @@ call2(['php', 'maintenance/install.php', '--wiki', dbname,
        '--scriptpath', '/' + dbname,
        dbname, options.user])
 call2(['chown', '-R', 'www-data.www-data', wikidir])
+
+# Clean up tables created by MediaWiki install
+# This solves duplicate key errors
+p = Popen(['mysql', '-u', options.user,
+           '--password=' + options.password, dbname],
+           stdin=PIPE)
+sql = ['DELETE FROM page;',
+       'DELETE FROM text;']
+sql = string.join(sql, "\n")
+p.communicate(sql)
+p.wait()
 
 # Import XML Dump file
 cmd = ["java -cp /usr/share/java/commons-compress-1.2.jar:/knowledge/packages/mwdumper-1.16.jar",
