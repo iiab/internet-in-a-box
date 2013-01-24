@@ -48,6 +48,9 @@ rsync -avrP knowledge/ knowledge:/mnt/data/knowledge
 ----
 OpenStreetMap - 8/23/12
 
+# Download planet data file (20GB as of Jan 2013)
+wget http://ftp.osuosl.org/pub/openstreetmap/pbf/planet-latest.osm.pbf
+
 apt-get install python-software-properties
 apt-get autoremove
 add-apt-repository ppa:kakrueger/openstreetmap
@@ -194,6 +197,11 @@ Total tiles rendered: Rendered 5632 tiles in 10608.57 seconds (0.53 tiles/s)
 Total tiles handled: Rendered 88 tiles in 10608.57 seconds (0.01 tiles/s)
 
 real    176m48.617s
+
+
+To render more detail around cities:
+time scripts/render_cities.py 15 8 >../processed/cities_tiles.txt
+./render_list -n 4 -l 15 -s /var/run/renderd/renderd.sock </knowledge/processed/cities_tiles.txt
 
 ----
 python lxml
