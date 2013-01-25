@@ -99,7 +99,7 @@ os.rename(os.path.join(options.destination, 'mediawiki-1.20.2'), wikidir)
 
 # Configure mediawiki
 os.chdir(wikidir)
-call2(['php', 'maintenance/install.php', '--wiki', dbname,
+call2(['php', 'maintenance/install.php', '--wiki', 'Wikipedia',
        '--dbuser', options.user, '--dbpass', options.password,
        '--pass', options.password,
        '--dbname', dbname, '--lang', 'en',
