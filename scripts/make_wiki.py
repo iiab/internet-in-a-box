@@ -65,6 +65,10 @@ if not os.path.exists(options.xml):
 
 dbname = options.language + 'wiki'
 wikidir = os.path.join(options.destination, dbname)
+local_settings = os.path.join(wikidir, 'LocalSettings.php')
+
+# We use mediawiki-extensions package, even though we don't use mediawiki
+call2(['apt-get', 'install', 'mediawiki-extensions'])
 
 # Drop and create new user and database
 p = Popen(['mysql', '-u', 'root',
@@ -84,6 +88,7 @@ sql = string.join(sql, "\n")
 p.communicate(sql)
 p.wait()
 
+
 # Install wikimedia
 untardir = os.path.join(options.destination, 'mediawiki-1.20.2')
 if os.path.exists(untardir):
@@ -97,21 +102,44 @@ if os.path.exists(wikidir):
 call2(['tar', '-C', options.destination, '-xzf', options.mediawiki])
 os.rename(os.path.join(options.destination, 'mediawiki-1.20.2'), wikidir)
 
+
 # Configure mediawiki
 os.chdir(wikidir)
 call2(['php', 'maintenance/install.php', '--wiki', 'Wikipedia',
        '--dbuser', options.user, '--dbpass', options.password,
        '--pass', options.password,
-       '--dbname', dbname, '--lang', 'en',
+       '--dbname', dbname,
+       #'--lang', options.language,
+       '--lang', 'en',
        '--scriptpath', '/' + dbname,
-       dbname, options.user])
+       'Wikipedia', options.user])
+
+
+# We must remove the $wgServer setting which defaults to localhost
+os.rename(local_settings, local_settings + ".bak")
+fin = open(local_settings + ".bak", "r")
+fout = open(local_settings, "w")
+for line in fin:
+    if string.find(line, '$wgServer ') == 0:
+        line = '# ' + line
+    fout.write(line)
+# We must include ParserFunctions
+fout.write('\nrequire_once( "$IP/extensions/ParserFunctions/ParserFunctions.php" );\n')
+# Cite processes <ref> tags. We assume apt-get install mediawiki-extensions
+fout.write('require_once( "/etc/mediawiki-extensions/extensions-available/Cite.php" );\n')
+# We must set the meta name
+#fout.write('$wgMetaNamespace = "Wikipedia";\n')
+fin.close()
+fout.close()
+
+
 call2(['chown', '-R', 'www-data.www-data', wikidir])
 
 # Clean up tables created by MediaWiki install
 # This solves duplicate key errors
 p = Popen(['mysql', '-u', options.user,
-           '--password=' + options.password, dbname],
-           stdin=PIPE)
+          '--password=' + options.password, dbname],
+          stdin=PIPE)
 sql = ['DELETE FROM page;',
        'DELETE FROM text;']
 sql = string.join(sql, "\n")
@@ -119,9 +147,15 @@ p.communicate(sql)
 p.wait()
 
 # Import XML Dump file
-cmd = ["java -cp /usr/share/java/commons-compress-1.2.jar:/knowledge/packages/mwdumper-1.16.jar",
-       "org.mediawiki.dumper.Dumper '" + options.xml + "' --format=sql:1.5",
-       "| mysql -u " + options.user + " --password=" + options.password + " eswiki"]
+sqlonly = False
+if sqlonly:
+    cmd = ["java -cp /usr/share/java/commons-compress-1.2.jar:/knowledge/packages/mwdumper-1.16.jar",
+           "org.mediawiki.dumper.Dumper '" + options.xml + "' --format=sql:1.5",
+           ">/tmp/sql"]
+else:
+    cmd = ["java -cp /usr/share/java/commons-compress-1.2.jar:/knowledge/packages/mwdumper-1.16.jar",
+           "org.mediawiki.dumper.Dumper '" + options.xml + "' --format=sql:1.5",
+           "| mysql -u " + options.user + " --password=" + options.password + " " + dbname]
 cmd = string.join(cmd, ' ')
 print cmd
 t0 = time()
