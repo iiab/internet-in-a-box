@@ -1,0 +1,413 @@
+# wpdownloadrc.sample
+#
+# This file specifies which files should be downloaded from wikimedia
+#
+# Copy it to ~/.wpdownloadrc and adjust it to fit your needs.
+
+[Configuration]
+
+# base_url (string)
+# -----------------
+#   Base URL where wikipedia xml/sql dumps can be downloaded
+
+base_url = http://download.wikimedia.org
+
+[Templates]
+
+# file_format (string)
+# --------------------
+#   File format string.
+#
+#   You can use the following placeholders, which will be expanded later on:
+#
+#   - ${langcode}   The language code, like de, en, ...
+#   - ${date}       The dump creation date, like 20090710, ...
+#   - $filename}   The actual filename, like pages_articles, pagelinks, ...
+#   - ${filetype}   The filetype, like sql.gz, xml.bz2, ...
+#
+#   The given format string would for example expand to:
+#
+#       dewiki-20090710-redirect.sql.gz
+#
+file_format = ${langcode}wiki-${date}-${filename}.${filetype}
+
+# language_dir_format
+# -------------------
+#   The format of the directories for each language within base_url.
+#
+#   You can use the following placeholders:
+#
+#   - ${langcode}   The language code, like de, en, ...
+#
+#   The given format string would for example expand to:
+#
+#       dewiki
+language_dir_format = ${langcode}wiki
+
+[Files]
+# Specify which files to download
+
+# pages_articles (boolean)
+# ------------------------
+#   pages_articles contains current versions of article content, and is the
+#   archive most mirror sites will probably want.
+
+pages-articles = True
+
+# redirect (boolean)
+# ------------------
+#   Redirect list
+
+redirect = False
+
+# page (boolean)
+# --------------
+#   Base per-page data (id, title, old restrictions, etc).
+
+page = False
+
+# category (boolean)
+# ------------------
+#   Category information
+
+category = False
+
+# interwiki (boolean)
+# -------------------
+#   Set of defined interwiki prefixes and links for this wiki.
+
+interwiki = False
+
+# langlinks (boolean)
+# -------------------
+#   Wiki interlanguage link records.
+
+langlinks = False
+
+# externallinks (boolean)
+# -----------------------
+#   Wiki external URL link records.
+
+externallinks = False
+
+# templatelinks (boolean)
+# -----------------------
+#   Wiki template inclusion link records.
+
+templatelinks = False
+
+# imagelinks (boolean)
+# --------------------
+#   Wiki image usage records.
+
+imagelinks = False
+
+# categorylinks (boolean)
+# -----------------------
+#   Wiki category membership link records.
+
+categorylinks = False
+
+# pagelinks (boolean)
+# -------------------
+#   Wiki page-to-page link records.
+
+pagelinks = False
+
+# site_stats (boolean)
+# --------------------
+#   A few statistics such as the page count.
+
+site_stats = False
+
+[Filetypes]
+
+pages-articles  = xml.bz2
+redirect        = sql.gz
+page            = sql.gz
+category        = sql.gz
+interwiki       = sql.gz
+langlinks       = sql.gz
+externallinks   = sql.gz
+templatelinks   = sql.gz
+imagelinks      = sql.gz
+categorylinks   = sql.gz
+pagelinks       = sql.gz
+site_stats      = sql.gz
+
+[Languages]
+#aa = True
+#ab = True
+#af = True
+#ak = True
+#als = True
+#am = True
+#ang = True
+#an = True
+#arc = True
+ar = True
+#arz = True
+#ast = True
+#as = True
+#av = True
+#ay = True
+#az = True
+#bar = True
+#bat_smg = True
+#ba = True
+#bcl = True
+#be = True
+#be_x_old = True
+#bg = True
+#bh = True
+#bi = True
+#bm = True
+# Bengali - 200 million
+bn = True
+#bo = True
+#bpy = True
+#br = True
+#bs = True
+#bug = True
+#bxr = True
+#ca = True
+#cbk_zam = True
+#cdo = True
+#ceb = True
+#ce = True
+#cho = True
+#chr = True
+#ch = True
+#chy = True
+#co = True
+#crh = True
+#cr = True
+#csb = True
+#cs = True
+#cu = True
+#cv = True
+#cy = True
+#da = True
+#de = True
+#diq = True
+#dsb = True
+#dv = True
+#dz = True
+#ee = True
+#el = True
+#eml = True
+# English - 365 million
+en = True
+#eo = True
+es = True
+#et = True
+#eu = True
+#ext = True
+#fa = True
+#ff = True
+#fiu_vro = True
+#fi = True
+#fj = True
+#fo = True
+#frp = True
+fr = True
+#fur = True
+#fy = True
+#gan = True
+#ga = True
+#gd = True
+#glk = True
+#gl = True
+#gn = True
+#got = True
+#gu = True
+#gv = True
+#hak = True
+#ha = True
+#haw = True
+#he = True
+#hif = True
+# Hindi - 258 million
+hi = True
+#ho = True
+#hr = True
+#hsb = True
+#ht = True
+#hu = True
+#hy = True
+#hz = True
+#ia = True
+#id = True
+#ie = True
+#ig = True
+#ii = True
+#ik = True
+#ilo = True
+#io = True
+#is = True
+#it = True
+#iu = True
+#ja = True
+#jbo = True
+#jv = True
+#kaa = True
+#kab = True
+#ka = True
+#kg = True
+#ki = True
+#kj = True
+#kk = True
+#kl = True
+#km = True
+#kn = True
+#ko = True
+#kr = True
+#ksh = True
+#ks = True
+#ku = True
+#kv = True
+#kw = True
+#ky = True
+#lad = True
+#la = True
+#lbe = True
+#lb = True
+#lg = True
+#lij = True
+#li = True
+#lmo = True
+#ln = True
+#lo = True
+#lt = True
+#lv = True
+#map_bms = True
+#mdf = True
+#mg = True
+#mhr = True
+#mh = True
+#mi = True
+#mk = True
+#ml = True
+#mn = True
+#mo = True
+#mr = True
+#ms = True
+#mt = True
+#mus = True
+#myv = True
+#my = True
+#mzn = True
+#nah = True
+#nap = True
+#na = True
+#nds_nl = True
+#nds = True
+#ne = True
+#new = True
+#ng = True
+#nl = True
+#nn = True
+#nov = True
+#no = True
+#nrm = True
+#nv = True
+#ny = True
+#oc = True
+#om = True
+#or = True
+#os = True
+#pag = True
+#pam = True
+#pap = True
+# Punjabi - 100 million
+pa = True
+#pdc = True
+#pih = True
+#pi = True
+#pl = True
+#pms = True
+#pnt = True
+#ps = True
+# Portuguese - 216 million
+pt = True
+#qu = True
+#rm = True
+#rmy = True
+#rn = True
+#roa_rup = True
+#roa_tara = True
+#ro = True
+# Russian - 160 million
+ru = True
+#rw = True
+#sah = True
+#sa = True
+#scn = True
+#sco = True
+#sc = True
+#sd = True
+#se = True
+#sg = True
+#sh = True
+#simple = True
+#si = True
+#sk = True
+#sl = True
+#sm = True
+#sn = True
+#so = True
+#sq = True
+#srn = True
+#sr = True
+#ss = True
+#stq = True
+#st = True
+#su = True
+#sv = True
+sw = True
+#szl = True
+#ta = True
+#tet = True
+#te = True
+#tg = True
+#th = True
+#ti = True
+#tk = True
+#tl = True
+#tn = True
+#tokipona = True
+#to = True
+#tpi = True
+#tr = True
+#ts = True
+#tt = True
+#tum = True
+#tw = True
+#ty = True
+#udm = True
+#ug = True
+#uk = True
+#ur = True
+#uz = True
+#vec = True
+#ve = True
+# Vietnamese - 70 million
+vi = True
+#vls = True
+#vo = True
+#war = True
+#wa = True
+#wo = True
+#wuu = True
+#xal = True
+#xh = True
+#yi = True
+#yo = True
+#za = True
+#zea = True
+#zh_classical = True
+#zh_min_nan = True
+# Chinese
+zh = True
+#zh_yue = True
+#zu = True
