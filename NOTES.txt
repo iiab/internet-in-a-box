@@ -489,3 +489,43 @@ SIZE   LEVEL
 76G     14
 
 ----
+2/6/2013 - ARM Debian chroot
+
+GoFlex Satellite /proc/cpuinfo
+Processor       : ARMv7 Processor rev 2 (v7l)
+BogoMIPS        : 298.32
+Features        : swp half thumb fastmult vfp edsp neon vfpv3 
+CPU implementer : 0x41
+CPU architecture: 7
+CPU variant     : 0x3
+CPU part        : 0xc08
+CPU revision    : 2
+Hardware        : OMAP3 EVM
+Revision        : 0020
+
+
+On another machine:
+sudo debootstrap --foreign --verbose --arch armel stable ./chroot
+
+tar cvzf chroot.tgz chroot/
+Copy to Satellite
+NOTE: the Satellite does not have a filesystem capable of handling symbolic
+links so we cannot directly untar our chroot environment.  Must make a loopback
+device instead.
+
+cd /media/sda1/tmp
+dd if=/dev/zero of=filesystem bs=1M count=2000
+mke2fs filesystem
+mkdir /mnt/chroot
+mount -o loop filesystem /mnt/chroot
+cd /mnt/chroot
+tar xvzf chroot.tgz
+. ./deb-chroot.sh
+/debootstrap/debootstrap --second-stage
+
+echo 'deb http://ftp.de.debian.org/debian stable main' >/etc/apt/sources.list
+apt-get update
+apt-get install vim python git rsync sudo screen links \
+    nano mtr python-pip ipython telnet locales mediawiki mysql-server openssh-server
+
+----
