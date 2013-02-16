@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <title>Heritage 1</title>
+  <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/jquery.mobile/1.2.0/jquery.mobile-1.2.0.min.css" />
+  <link rel="stylesheet" href="my.css" />
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+  <script src="https://ajax.aspnetcdn.com/ajax/jquery.mobile/1.2.0/jquery.mobile-1.2.0.min.js"></script>
+  <script src="my.js"></script>
+
+  <!-- User-generated css -->
+  <style>
+    
+  </style>
+
+  <!-- User-generated js -->
+  <script>
+
+    $(function() {
+        
+    });
+
+  </script>
+</head>
+<body>
+  <!-- Home -->
+  <div data-role="page" data-theme="b" id="page1">
+      <div data-role="content">
+          <div data-role="fieldcontain">
+              <fieldset data-role="controlgroup">
+                  <label for="searchinput1">
+                  </label>
+                  <input name="" id="searchinput1" placeholder="" value="kansas" type="search">
+              </fieldset>
+          </div>
+          <ul data-role="listview" data-divider-theme="b" data-inset="true">
+              <li data-theme="c">
+                  <a href="#page2" data-transition="slide">
+                      Wikipedia
+                      <span class="ui-li-count">
+                          123
+                      </span>
+                  </a>
+              </li>
+              <li data-theme="c">
+                  <a href="#page4" data-transition="slide">
+                      Books
+                      <span class="ui-li-count">
+                          13
+                      </span>
+                  </a>
+              </li>
+              <li data-theme="c">
+                  <a href="#page3" data-transition="slide">
+                      Maps
+                      <span class="ui-li-count">
+                          3
+                      </span>
+                  </a>
+              </li>
+              <li data-theme="c">
+                  <a href="#page5" data-transition="slide">
+                      Video
+                  </a>
+              </li>
+              <li data-theme="c">
+                  <a href="#page7" data-transition="slide">
+                      Software
+                  </a>
+              </li>
+              <li data-theme="d">
+                  <a href="#page11" data-transition="slide">
+                      Settings
+                  </a>
+              </li>
+          </ul>
+      </div>
+      <div data-theme="c" data-role="footer" data-position="fixed">
+          <div>
+              <p>
+                  <b>
+                      Hello world how are you today?&nbsp; This is a chat message.
+                      <span data-mce-bogus="1" id="_mce_caret">
+                          <span data-mce-bogus="1" style="color: rgb(0, 0, 255);">
+                              ​ -Braddock
+                          </span>
+                      </span>
+                      <br>
+                  </b>
+              </p>
+          </div>
+      </div>
+  </div>
+  <!-- Wikipedia -->
+  <div data-role="page" id="page2">
+      <div data-theme="a" data-role="header">
+          <a data-role="button" data-direction="reverse" data-rel="back" data-transition="slide"
+          href="#page1" class="ui-btn-left">
+              Back
+          </a>
+          <h3>
+              Wikipedia
+          </h3>
+      </div>
+      <div data-role="content">
+          <div data-role="fieldcontain">
+              <fieldset data-role="controlgroup">
+                  <label for="searchinput3">
+                  </label>
+                  <input name="" id="searchinput3" placeholder="" value="kansas" type="search">
+              </fieldset>
+          </div>
+          <ul data-role="listview" data-divider-theme="b" data-inset="true">
+              <li data-theme="c">
+                  <a href="#page1" data-transition="slide">
+                      Kansas
+                  </a>
+              </li>
+              <li data-theme="c">
+                  <a href="#page1" data-transition="slide">
+                      Kansas (band)
+                  </a>
+              </li>
+              <li data-theme="c">
+                  <a href="#page1" data-transition="slide">
+                      Kansas City, Kansas
+                  </a>
+              </li>
+              <li data-theme="c">
+                  <a href="#page1" data-transition="slide">
+                      History of Kansas
+                  </a>
+              </li>
+          </ul>
+      </div>
+  </div>
+  <!-- Maps -->
+  <div data-role="page" id="page3">
+      <div data-theme="a" data-role="header">
+          <a data-role="button" data-direction="reverse" data-rel="back" data-transition="slide"
+          href="#page1" class="ui-btn-left">
+              Back
+          </a>
+          <h3>
+              Maps
+          </h3>
+      </div>
+      <div data-role="content">
+          <div data-role="fieldcontain">
+              <fieldset data-role="controlgroup">
+                  <label for="searchinput4">
+                  </label>
+                  <input name="" id="searchinput4" placeholder="" value="" type="search">
+              </fieldset>
+          </div>
+          <img src="https://maps.googleapis.com/maps/api/staticmap?center=Madison, WI&amp;zoom=14&amp;size=288x400&amp;markers=Madison, WI&amp;sensor=false"
+          height="400" width="288">
+      </div>
+  </div>
+  <!-- Books -->
+  <div data-role="page" id="page4">
+      <div data-theme="a" data-role="header">
+          <h3>
+              Books
+          </h3>
+          <a data-role="button" data-direction="reverse" data-rel="back" data-transition="slide"
+          href="#page1" class="ui-btn-left">
+              Back
+          </a>
+      </div>
+      <div data-role="content">
+          <div data-role="fieldcontain">
+              <fieldset data-role="controlgroup">
+                  <label for="searchinput2">
+                  </label>
+                  <input name="" id="searchinput2" placeholder="" value="kansas" type="search">
+              </fieldset>
+          </div>
+          <ul data-role="listview" data-divider-theme="b" data-inset="true">
+              <li data-theme="c">
+                  <a href="#page1" data-transition="slide">
+                      The Captain of the Kansas by Louis Tracy
+                  </a>
+              </li>
+              <li data-theme="c">
+                  <a href="#page1" data-transition="slide">
+                      Fishes of the Wakarusa River in Kansas
+                  </a>
+              </li>
+              <li data-theme="c">
+                  <a href="#page1" data-transition="slide">
+                      Pocket Gophers of Kansas
+                  </a>
+              </li>
+          </ul>
+      </div>
+  </div>
+  <!-- Video -->
+  <div data-role="page" id="page5">
+      <div data-theme="a" data-role="header">
+          <h3>
+              Video
+          </h3>
+          <a data-role="button" data-direction="reverse" data-rel="back" data-transition="slide"
+          href="#page1" class="ui-btn-left">
+              Back
+          </a>
+      </div>
+      <div data-role="content">
+          <div data-role="fieldcontain">
+              <fieldset data-role="controlgroup">
+                  <label for="searchinput5">
+                  </label>
+                  <input name="" id="searchinput5" placeholder="" value="" type="search">
+              </fieldset>
+          </div>
+      </div>
+  </div>
+  <!-- Software -->
+  <div data-role="page" id="page7">
+      <div data-theme="a" data-role="header">
+          <a data-role="button" data-direction="reverse" data-rel="back" data-transition="slide"
+          href="#page1" class="ui-btn-left">
+              Back
+          </a>
+          <h3>
+              Software
+          </h3>
+      </div>
+      <div data-role="content">
+          <div data-role="fieldcontain">
+              <fieldset data-role="controlgroup">
+                  <label for="searchinput7">
+                  </label>
+                  <input name="" id="searchinput7" placeholder="" value="" type="search">
+              </fieldset>
+          </div>
+          <a data-role="button" data-theme="b" href="#page7">
+              Download Linux
+          </a>
+      </div>
+  </div>
+  <!-- Settings -->
+  <div data-role="page" id="page11">
+      <div data-theme="a" data-role="header">
+          <a data-role="button" data-direction="reverse" data-rel="back" data-transition="slide"
+          href="#page1" class="ui-btn-left">
+              Back
+          </a>
+          <h3>
+              Settings
+          </h3>
+      </div>
+      <div data-role="content">
+          <div data-role="fieldcontain">
+              <label for="selectmenu3">
+                  Language
+              </label>
+              <select name="">
+                  <option value="option1">
+                      English
+                  </option>
+                  <option value="value">
+                      French
+                  </option>
+                  <option value="value">
+                      Arabic
+                  </option>
+                  <option value="value">
+                      Swahili
+                  </option>
+                  <option value="value">
+                      Hindu
+                  </option>
+              </select>
+          </div>
+          <div data-role="fieldcontain">
+              <fieldset data-role="controlgroup">
+                  <label for="toggleswitch1">
+                      Chat
+                  </label>
+                  <select name="toggleswitch1" id="toggleswitch1" data-theme="" data-role="slider">
+                      <option value="off">
+                          Off
+                      </option>
+                      <option value="on">
+                          On
+                      </option>
+                  </select>
+              </fieldset>
+          </div>
+          <h2>
+              About
+          </h2>
+          <h4>
+              Software Version 1.2
+          </h4>
+          <h4>
+              Data Version 20130214
+          </h4>
+          <h2>
+              Licenses
+          </h2>
+          <div>
+              <p>
+                  <b>
+                      Maps copyright OpenStreetMap (C) 2013 Create Commons Licnese
+                  </b>
+                  <br>
+              </p>
+          </div>
+          <div>
+              <p>
+                  <b>
+                      Internet-in-a-Box Software Copyright (C) Humane Informatics LLC BSD License
+                      <br>
+                  </b>
+              </p>
+          </div>
+      </div>
+  </div>
+  <!-- Chat -->
+  <div data-role="page" id="page8">
+      <div data-role="content">
+      </div>
+  </div>
+  <!-- Search-based Home -->
+  <div data-role="page" id="page9">
+      <div data-theme="a" data-role="header">
+          <h3>
+              Heritage
+          </h3>
+      </div>
+      <div data-role="content">
+          <div data-role="fieldcontain">
+              <fieldset data-role="controlgroup" data-type="horizontal">
+                  <legend>
+                  </legend>
+                  <input id="radio12" name="" value="radio1" type="radio">
+                  <label for="radio12">
+                      Wikipedia
+                  </label>
+                  <input id="radio13" name="" value="radio14" type="radio">
+                  <label for="radio13">
+                      Maps
+                  </label>
+                  <input id="radio14" name="" value="radio15" type="radio">
+                  <label for="radio14">
+                      Books
+                  </label>
+                  <input id="radio18" name="" value="radio18" type="radio">
+                  <label for="radio18">
+                      Video
+                  </label>
+                  <input id="radio19" name="" value="radio19" type="radio">
+                  <label for="radio19">
+                      Software
+                  </label>
+                  <input id="radio20" name="" value="radio20" type="radio">
+                  <label for="radio20">
+                      Chat
+                  </label>
+              </fieldset>
+          </div>
+          <div data-role="fieldcontain">
+              <fieldset data-role="controlgroup">
+                  <label for="searchinput8">
+                  </label>
+                  <input name="" id="searchinput8" placeholder="kansas" value="" type="search">
+              </fieldset>
+          </div>
+          <div data-role="collapsible-set">
+              <div data-role="collapsible">
+                  <h3>
+                      Wizard of Oz
+                  </h3>
+              </div>
+              <div data-role="collapsible">
+                  <h3>
+                      Kansas City, KA
+                  </h3>
+              </div>
+              <div data-role="collapsible">
+                  <h3>
+                      Tornado
+                  </h3>
+              </div>
+          </div>
+      </div>
+  </div>
+
+  
+</body>
+</html>
