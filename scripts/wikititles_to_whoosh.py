@@ -13,6 +13,17 @@ sys.path.append('.')
 
 
 def query(ix, searcher, terms):
+    """EXAMPLE QUERY USAGE:
+        import wikititles_to_whoosh
+        from whoosh.index import open_dir
+        ix = open_dir("../wikititles_index/")
+        searcher = ix.searcher()
+        r = wikititles_to_whoosh.query(ix, searcher, u"washington")
+        hit=r[0]
+        hit.items()
+        hit.get('score')
+        hit.get('title')
+    """
     #ix = open_dir(indexdir)
     #with ix.searcher() as searcher:
     query = QueryParser("title", ix.schema).parse(terms)
