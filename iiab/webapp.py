@@ -2,6 +2,7 @@ from flask import Flask, Blueprint
 from flask.ext.mako import MakoTemplates
 
 import top_views
+import search_views
 
 
 class IiabWebApp(object):
@@ -19,4 +20,5 @@ class IiabWebApp(object):
         static_blueprint = Blueprint('static_blueprint', __name__, static_folder='static')
         self.app.register_blueprint(static_blueprint, url_prefix='/iiab')
         self.app.register_blueprint(top_views.blueprint, url_prefix='/iiab/')
+        self.app.register_blueprint(search_views.blueprint, url_prefix='/iiab/')
         self.mako = MakoTemplates(self.app)

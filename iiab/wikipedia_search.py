@@ -3,6 +3,8 @@
 from whoosh.index import open_dir
 from whoosh.qparser import QueryParser
 
+from utils import whoosh2dict
+
 
 class WikipediaSearch(object):
     def __init__(self, index_dir):
@@ -14,19 +16,23 @@ class WikipediaSearch(object):
         """Return a sorted list of results.
         pagelen specifies the number of hits per page.
         page specifies the page of results to return (first page is 1)
-        Set pagelen = None to retrieve all results.
+        Set pagelen = None or 0 to retrieve all results.
         """
         query = unicode(query)  # Must be unicode
         ix = open_dir(self.index_dir)
         with ix.searcher() as searcher:
             query = QueryParser("title", ix.schema).parse(query)
-            if pagelen is not None:
-                results = searcher.search_page(query, page, pagelen=pagelen,
-                                               sortedby="score", reverse=True)
+            if pagelen is not None and pagelen != 0:
+                try:
+                    results = searcher.search_page(query, page, pagelen=pagelen,
+                                                sortedby="score", reverse=True)
+                except ValueError, e:  # Invalid page number
+                    results = []
             else:
                 results = searcher.search(query, limit=None,
                                           sortedby="score", reverse=True)
-            r = [x.items() for x in results]
+            #r = [x.items() for x in results]
+            r = whoosh2dict(results)
         ix.close()
         return r
 
