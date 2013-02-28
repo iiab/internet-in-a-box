@@ -46,3 +46,17 @@ installation under /knowledge/processed/wiki/, which should be linked from
 After this is complete your new wikis should be accessible at http://localhost/wiki/arwiki (for example)
 
 
+Kiwix ZIM File Download
+-----------------------
+
+1. Install Firefox plugin "Download Them All"
+2. http://www.kiwix.org/index.php/Template:ZIMdumps
+3. Tools->Download Them All->DownloadThemAll
+4. In DTA dialog, open "Fast Filtering"
+5. Enter Fast Filter "*.zim.torrent"
+6. Start!
+7. mv ~/Downloads/*.zim.torrent /knowledge/data/zim/torrents/
+8. Open Transmission Bitorrent client
+9. Open -> select all *.zim.torrent in file dialog
+10. Select download destination /knowledge/data/zim/downloads/
+
