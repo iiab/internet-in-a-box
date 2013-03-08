@@ -523,10 +523,16 @@ tar xvzf chroot.tgz
 . ./deb-chroot.sh
 /debootstrap/debootstrap --second-stage
 
+vi /etc/resolv.conf
+Add 'nameserver 8.8.8.8'
+
 echo 'deb http://ftp.de.debian.org/debian stable main' >/etc/apt/sources.list
 apt-get update
+apt-get upgrade
 apt-get install vim python git rsync sudo screen links \
-    nano mtr python-pip ipython telnet locales mediawiki mysql-server openssh-server
+    nano mtr python-pip ipython telnet locales openssh-server \
+    bzip2
 dpkg-reconfigure locales
+# apt-get install mediawiki mysql-server
 
 ----
