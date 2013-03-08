@@ -127,7 +127,7 @@ def by_author():
     per_page = int(request.args.get('per_page', 10))
     pagination = GutenbergCreator.query.order_by(GutenbergCreator.creator).paginate(page, per_page)
 
-    return render_template('gutenberg/author-index.html', pagination=pagination)
+    return render_template('gutenberg/author-index.html', pagination=pagination, endpoint_desc=EndPointDescription('.by_author', dict(per_page=per_page)))
 
 @gutenberg.route('/text/<textId>')
 def text(textId):
