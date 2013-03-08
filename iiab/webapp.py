@@ -27,7 +27,7 @@ class IiabWebApp(object):
         static_blueprint = Blueprint('static_blueprint', __name__, static_folder='static') # purpose?
         blueprints = [
                 #(static_blueprint, base_prefix),
-                #(top_views.blueprint, base_prefix),
+                (top_views.blueprint, base_prefix),
                 #(search_views.blueprint, base_prefix),
                 (gutenberg.gutenberg, base_prefix + "books")
                 ]

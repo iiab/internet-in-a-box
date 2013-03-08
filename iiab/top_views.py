@@ -6,4 +6,4 @@ blueprint = Blueprint('top_views', __name__,
 
 @blueprint.route('/')
 def index():
-    render_template("index.html")
+    return render_template("index.html")

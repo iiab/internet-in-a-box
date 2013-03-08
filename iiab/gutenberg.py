@@ -38,7 +38,7 @@ def search():
     else:
         flash(_('Please input keyword(s)'), 'error')
     print pagination.items
-    return render_template('gutenberg/search.html', pagination=pagination, keywords=query, suggestion=suggestion, zipfp=zip)
+    return render_template('gutenberg/search.html', pagination=pagination, keywords=query, suggestion=suggestion, zipfp=zip, endpoint_desc=EndPointDescription('gutenberg.search', None))
 
 def paginated_search(query_text, page=1, pagelen=20):
     """
@@ -144,51 +144,9 @@ def author(authorId):
     return render_template('gutenberg/title-index.html', pagination=pagination, endpoint_desc=EndPointDescription('.author', dict(authorId=authorId, per_page=per_page)))
 
 def choose_file(textId):
-    #files = GutenbergBookFile.query([GutenbergBookFile.file, GutenbergBookFile.format]).where("textId=:textId", textId)
-    #files = GutenbergBookFile.query([GutenbergBookFile.file, GutenbergBookFile.format]).filter_by(textId=textId)
     files = GutenbergBookFile.query.filter_by(textId=textId)
-    for f in files:
-        print f
+    #for f in files:
+    #    print f
     return files[0].file
 
-def textId_to_path(textId):
-    match = etext_regex.match(textId)
-    if match is None:
-        raise "invalid text id"
-    code = match.groups()[0]  # type unicode
-    # gutenberg files are in etext#### directories for codes through 10000
-    if int(code) <= 10000:
-        return textId
-    else:
-        # for codes > 10000, the files are found in directory that relates to
-        # the etext name such as etext12345 => 1/2/3/4/12345/
-        digits = [x for x in code]  # list of unicode characters
-        digits.pop()                # last digit is not a separate directory
-        path = '/'.join(digits + [code])
-        return path
-
-
-@gutenberg.route('/about')
-def about():
-    return render_template('gutenberg/footers/about.html', active="about")
-
-
-@gutenberg.route('/blog')
-def blog():
-    return render_template('gutenberg/footers/blog.html', active="blog")
-
-
-@gutenberg.route('/help')
-def help():
-    return render_template('gutenberg/footers/help.html', active="help")
-
-
-@gutenberg.route('/privacy')
-def privacy():
-    return render_template('gutenberg/footers/privacy.html', active="privacy")
-
-
-@gutenberg.route('/terms')
-def terms():
-    return render_template('gutenberg/footers/terms.html', active="terms")
 
