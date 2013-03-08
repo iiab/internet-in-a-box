@@ -8,6 +8,10 @@ January 2013
 Wikipedia
 ---------
 
+This section describes how to make a complete Mediawiki-based Wikipedia mirror
+for many languages.  This is not necessary if you are using kiwix - see the
+section on Kiwiz ZIM File Download instead.
+
 Install:
     apt-get install mysql-server php5 apache2 php5-mysql
 
@@ -46,3 +50,34 @@ installation under /knowledge/processed/wiki/, which should be linked from
 After this is complete your new wikis should be accessible at http://localhost/wiki/arwiki (for example)
 
 
+Kiwix ZIM File Download
+-----------------------
+
+1. Install Firefox plugin "Download Them All"
+2. http://www.kiwix.org/index.php/Template:ZIMdumps
+3. Tools->Download Them All->DownloadThemAll
+4. In DTA dialog, open "Fast Filtering"
+5. Enter Fast Filter "*.zim.torrent"
+6. Start!
+7. mv ~/Downloads/*.zim.torrent /knowledge/data/zim/torrents/
+8. Open Transmission Bitorrent client
+9. Open -> select all *.zim.torrent in file dialog
+10. Select download destination /knowledge/data/zim/downloads/
+
+
+Ubuntu Software Repository
+--------------------------
+
+    apt-get install apt-mirror
+    apt-mirror scripts/mirror.list
+(will mirror into /knowledge/data/ubuntu/12.04)
+
+
+Project Gutenberg Mirror
+------------------------
+
+    cd /knowledge/data/gutenberg  (?)
+    while (true); do (date; . ../../Heritage/rsync_gutenberg; sleep 3600) | tee -a 20120823.log; done
+
+
+----

@@ -456,7 +456,7 @@ sudo apt-get install rpcbind nfs-common
 echo 'NEED_IDMAPD=yes' >>/etc/default/nfs-common
 mkdir /mnt/mod_tile
 # mount -t nfs4 -o proto=tcp,port=2049 orlop:/mod_tile /mnt/mod_tile/
-echo "orlop:/export/mod_tile /mnt/mod_tile   nfs4    _netdev,auto    0       0" >>/etc/fstab
+echo "orlop:/export/mod_tile /mnt/mod_tile   nfs4    proto=tcp,port=2049,_netdev,auto    0       0" >>/etc/fstab
 cd /usr/share
 rsync -avrP orlop:/usr/share/mapnik-osm-data .
 ln -s /mnt/data/postgresql/ postgresql
