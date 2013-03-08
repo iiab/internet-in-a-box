@@ -1,0 +1,156 @@
+{% macro list_to_html_multiline(possible_list) %}
+  {%- if possible_list is string -%}
+    {{ possible_list }}
+  {%- else -%}
+    {%- for el in possible_list -%}
+    {{el}}<br/>
+    {%- endfor -%}
+  {%- endif -%}
+{% endmacro %}
+
+{% macro render_book_search_table(results, offset, zipfp, class='') %}
+<table class='{{ class }}'>
+    <thead>
+        <tr>
+            <td>#</td>
+            <td>Title</td>
+            <td>Author</td>
+            <td>Category</td>
+        </tr>
+    </thead>
+    <tbody>
+        {% for result in results %}
+        <tr>
+            <td>{{ loop.index + offset }}</td>
+            <td><a href="{{ url_for('.text', textId=result['textId']) }}">{{ list_to_html_multiline(result['title']) }}</a></td>
+            <td>
+                {%- if result['creator'] is string -%}
+                  <a href="{{ url_for('.author', authorId=result['creator_id']) }}">{{ result['creator'] }}</a>
+                {%- else -%}
+                  {%- for el, ln in zipfp(result['creator'], result['creator_id']) -%}
+                  <a href="{{ url_for('.author', authorId=ln) }}">{{ el }}</a>
+                  {%- endfor -%}
+                {%- endif -%}
+            </td>
+            <td>{{ list_to_html_multiline(result['category']) }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endmacro %}
+
+{% macro render_book_table(books, offset, class='') %}
+<table class='{{ class }}'>
+    <thead>
+        <tr>
+            <td>#</td>
+            <td>Title</td>
+            <td>Author</td>
+            <td>Subject</td>
+            <td>Language</td>
+        </tr>
+    </thead>
+    <tbody>
+        {% for book in books %}
+        <tr>
+            <td>{{ loop.index + offset }}</td>
+            <td><a href="{{ url_for('.text', textId=book.textId) }}">{{ book.title }}</a></td>
+            <td>
+                {% for c in book.gutenberg_creators -%}
+                <a href="{{ url_for('.author', authorId=c.id) }}">{{ c.creator }}</a><br/>
+                {%- endfor %}
+                {%- for c in book.gutenberg_contributors -%}
+                {{ c.contributor }}<br/>
+                {%- endfor %}
+            </td>
+            <td>
+                {% for s in book.gutenberg_subjects -%}
+                {{ s.subject }}
+                {%- endfor %}
+            </td>
+            <td>
+                {% for c in book.gutenberg_languages -%}
+                {{ c.language }}
+                {%- endfor %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endmacro %}
+
+{% macro render_author_table(authors, offset, class='') %}
+<table class='{{ class }}'>
+    <thead>
+        <tr>
+            <td>#</td>
+            <td>Author</td>
+        </tr>
+    </thead>
+    <tbody>
+        {% for author in authors -%}
+        <tr>
+            <td>{{ loop.index + offset }}</td>
+            <td><a href="{{ url_for('.author', authorId=author.id) }}">{{ author.creator }}</a></td>
+        </tr>
+        {%- endfor %}
+    </tbody>
+</table>
+{% endmacro %}
+
+{% macro render_pagination(pagination, endpoint_desc, query='') %}
+    {% if pagination.pages > 1 %}
+        <div class='pagination'>
+            <ul>
+                <li class="prev {% if not pagination.has_prev %}disabled{% endif %}">
+                {%- if query -%}
+                <a href="{{ url_for(endpoint_desc.endpoint, page=pagination.page-1, q=query, **endpoint_desc.values) }}">&larr; Previous</a>
+                {%- else -%}
+                <a href="{{ url_for(endpoint_desc.endpoint, page=pagination.page-1, **endpoint_desc.values) }}">&larr; Previous</a>
+                {%- endif -%}
+                </li>
+                {% for page in pagination.iter_pages() %}
+                    {% if page %}
+                        <li class='{% if page == pagination.page %}active{% endif %}'>
+                            {%- if query -%}
+                            <a href='{{ url_for(endpoint_desc.endpoint, page=page, q=query, **endpoint_desc.values) }}'>{{ page }}</a>
+                            {%- else -%}
+                            <a href='{{ url_for(endpoint_desc.endpoint, page=page, **endpoint_desc.values) }}'>{{ page }}</a>
+                            {%- endif -%}
+                        </li>
+                    {% else %}
+                        <li>
+                            <a href='#'>...</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                <li class="next {% if not pagination.has_next %}disabled{% endif %}">
+                {%- if query -%}
+                <a href="{{ url_for(endpoint_desc.endpoint, page=pagination.page+1,q=query, **endpoint_desc.values) }}">Next &rarr;</a>
+                {%- else -%}
+                <a href="{{ url_for(endpoint_desc.endpoint, page=pagination.page+1, **endpoint_desc.values) }}">Next &rarr;</a>
+                {%- endif -%}
+                </li>
+            </ul>
+        </div>
+    {% endif %}
+{% endmacro %}
+
+{% macro render_flash_message() %}
+    {% block flash_message %}
+        {% with messages = get_flashed_messages(with_categories=True) %}
+            {% if messages %}
+            <div class="container">
+                <div id='flash_message_container'>
+                    {% for category, msg in messages %}
+                        <div class="alert alert-{{ category }}">
+                            <button type="button" class="close" data-dismiss="alert">×</button>
+                            {{ msg }}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        {% endwith %}
+    {% endblock %}
+{% endmacro %}

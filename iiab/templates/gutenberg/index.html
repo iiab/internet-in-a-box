@@ -1,0 +1,27 @@
+{% extends 'layouts/base.html' %}
+
+{% set page_title = _('Project Gutenberg') %}
+
+{% block container %}
+<div class="container">
+    <div class="hero-unit">
+        <div class="media">
+            <img src="{{ url_for('static', filename='img/book.svg') }}" width="25%" class="pull-left"/>
+            <div class="media-body">
+                <h1>{% trans %}Project Gutenberg{% endtrans %}</h1>
+                <p>{% trans %}Project Gutenberg Free Books Browser{% endtrans %}</p>
+                <p class="span6 offset3">
+                <form class="form-search" action="{{ url_for('gutenberg.search') }}" method="get">
+                    <input type="text" class="input-xlarge search-query" placeholder="Search" name="q" />
+                    <button type="submit" class="btn">Search</button>
+                </form>
+                </p>
+                <p>
+                    <a href="{{ url_for('gutenberg.by_title') }}" class="btn btn-large">{% trans %}List by Title{% endtrans %}</a>
+                    <a href="{{ url_for('gutenberg.by_author') }}" class="btn btn-large">{% trans %}List by Author{% endtrans %}</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

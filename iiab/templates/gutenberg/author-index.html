@@ -1,0 +1,15 @@
+{% from 'macros/_misc.html' import render_pagination, render_author_table %}
+
+{% extends 'layouts/base.html' %}
+
+{% set page_title = _('Project Gutenberg Index by Book Title') %}
+
+{% block body %}
+    {% if pagination and pagination.pages > 0 %}
+        <p>{% trans total=pagination.total %}<strong>{{ total }}</strong> pages of books by title.{% endtrans %}</p>
+        {{ render_author_table(pagination.items, pagination.per_page * (pagination.page - 1), 'zebra-striped') }}
+        {{ render_pagination(pagination, 'gutenberg.by_author') }}
+    {% else %}
+        <p>{% trans %}No books found. Perhaps the data needs to be updated.{% endtrans %}</p>
+    {% endif %}
+{% endblock %}
