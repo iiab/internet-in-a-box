@@ -1,0 +1,51 @@
+{#
+    :param keywords: string search terms
+    :param pagination: pagincation object with page info and items
+    :param zipfp: python collections zip function
+    :param suggestions: string or list of alterate spelling suggestions
+    :param endpoint_desc: EndPointDescription for use by pagination
+#}
+{% from 'macros/_misc.html' import render_pagination, render_book_search_table %}
+
+{% extends 'layouts/base.html' %}
+
+{% if keywords %}
+    {% set page_title = _('Search results for "%(keywords)s"', keywords=keywords) %}
+{% else %}
+    {% set page_title = _('Keywords needed!') %}
+{% endif %}
+
+{% block body %}
+    {% if pagination and pagination.pages > 0 %}
+        <p>{% trans total=pagination.total, keywords=keywords %}<strong>{{ total }}</strong> found for your search "<strong>{{ keywords }}</strong>".{% endtrans %}</p>
+        {{ render_book_search_table(pagination.items, pagination.per_page * (pagination.page - 1), zipfp, 'zebra-striped') }}
+        {{ render_pagination(pagination, endpoint_desc, query=keywords) }}
+    {% else %}
+        <p>{% trans keywords=keywords %}Sorry, Nothing found for your search "<strong>{{ keywords }}</strong>".{% endtrans %}</p>
+        {% if suggestion %}
+            <p>{% trans %}Did you mean?{% endtrans %}</p>
+            {#
+            {% for term in suggestion %}
+            <p><a href="{{ url_for('gutenberg.search', q=term) }}">{{ term }}</a></p>
+            {% endfor %}
+            <p><a href="{{ url_for('gutenberg.search', q=suggestion.string) }}">{{ suggestion.string }}</a></p>
+            #}
+            {% if suggestion is string %}
+                <p><a href="{{ url_for('gutenberg.search', q=suggestion) }}">{{ suggestion}}</a></p>
+            {% else %}
+                {% for sug in suggestion %}
+                <p><a href="{{ url_for('gutenberg.search', q=sug) }}">{{ sug }}</a></p>
+                {% endfor %}
+            {% endif %}
+        {% endif %}
+
+    {% trans %}
+    <p>Suggestions:</p>
+    <ul>
+       <li>Make sure all words are spelled correctly.</li>
+       <li>Try different keywords.</li>
+       <li>Try more general keywords.</li>
+    </ul>
+    {% endtrans %}
+    {% endif %}
+{% endblock %}
