@@ -536,3 +536,8 @@ dpkg-reconfigure locales
 # apt-get install mediawiki mysql-server
 
 ----
+
+Setting up virtualenv
+sudo apt-get install virtualenvwrapper
+mkvirtualenv heritage
+pip install flask flask-mako flask-babel whoosh flask-sqlalchemy

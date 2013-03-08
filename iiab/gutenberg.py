@@ -5,7 +5,6 @@ import re
 from flask import (Blueprint, render_template, current_app, request,
                    flash, url_for, redirect, session, abort, safe_join,
                    send_file)
-from flask.ext.mail import Message
 from flaskext.babel import gettext as _
 
 import whoosh
