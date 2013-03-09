@@ -29,15 +29,12 @@ def get_schema():
     return wf.Schema(textId=ID(unique=True, stored=True),
         title=TEXT(stored=True, spelling=True), 
         creator=TEXT(stored=True, spelling=True), 
-        creator_id=STORED,
         contributor=TEXT(spelling=True), 
-        contributor_id=STORED,
         subject=KEYWORD, 
         language=KEYWORD,
         friendlytitle=TEXT,
         category=STORED
         )
-
 
 def create_gutenberg_index_rdf(bz2_rdf_filename, indexdir):
     """Build whoosh index from parsed RDF.
@@ -62,6 +59,25 @@ def create_gutenberg_index_rdf(bz2_rdf_filename, indexdir):
     print "DONE"
 
 def create_gutenberg_index_db(dbname, indexdir):
+    def book_row_to_rec(row):
+        """Convert row from sql select response to dictionary"""
+        keys = ['textId', 'title', 'friendlytitle', 'creator', 'contributor', 'category', 'subject', 'language']
+        return dict(zip(keys, row))
+
+    def sel_aux(aux_table, aux_col):
+        """Build select table for aux table"""
+        return 'SELECT AUX.id, AUX.%s from %s as AUX, gutenberg_books_%s_map AS MAP where MAP.book_id=:textId and AUX.id=MAP.%s_id' % (aux_col, aux_table, aux_col, aux_col)
+    def add_aux_fields(cursor, record, table, col):
+        filt = { 'textId' : record['textId'] }
+        # Even single column results come in a tuple [(..,),(..,),..] where each tuple is one row.
+        # get diction of id->value mappings
+        resultset = dict(aux_cursor.execute(sel_aux(table, col), filt).fetchall())
+        # index a flattened record because whoosh does not allow named column indexing of lists unless indexed as keywords
+        record[col] = u'; '.join(resultset.values())
+        # store records for later reference
+        store_key = '_stored_' + col
+        record[store_key] = resultset.items()
+        
     sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)   # don't buffer stdout
     schema = get_schema()
     whoosh_index = create_in(indexdir, schema)
@@ -71,37 +87,21 @@ def create_gutenberg_index_db(dbname, indexdir):
     book_cursor = db.cursor()
     aux_cursor = db.cursor()
 
-    def sel_aux(aux_table, aux_col):
-        """Build select table for aux table"""
-        return 'SELECT AUX.id, AUX.%s from %s as AUX, gutenberg_books_%s_map AS MAP where MAP.book_id=:textId and AUX.id=MAP.%s_id' % (aux_col, aux_table, aux_col, aux_col)
-    def row_to_rec(row):
-        """Convert row from sql select response to dictionary"""
-        keys = ['textId', 'title', 'friendlytitle', 'creator', 'contributor', 'category', 'subject', 'language']
-        return dict(zip(keys, row))
-    def resultset_to_keyval(sqlset):
-        """
-        :param sqlset: list of tuples (id, value)
-        :returns: tuple of two lists (list of ids, list of values)
-        """
-        d = dict(sqlset)
-        return (d.keys(), d.values())
-        
+    SCHEMA_NAMES = schema.names()
     for count, row in enumerate(book_cursor.execute('SELECT * from gutenberg_books;')):
-        record = row_to_rec(row)
+        record = book_row_to_rec(row)
         textId_dict = { 'textId' : record['textId'] } # separate dict because extra, unused keys causes error during binding
-        # Even single column results come in a tuple [(..,),(..,),..].
         # Multiple select statements instead of one because want a single record per book.
-        (record['creator_id'], record['creator']) = resultset_to_keyval(aux_cursor.execute(sel_aux('gutenberg_creators', 'creator'), textId_dict).fetchall())
-        (record['contributor_id'], record['contributor']) = resultset_to_keyval(aux_cursor.execute(sel_aux('gutenberg_contributors', 'contributor'), textId_dict).fetchall())
-        # don't store id's for these fields so just extract list of values
-        record['category'] = [e[1] for e in aux_cursor.execute(sel_aux('gutenberg_categories', 'category'), textId_dict).fetchall()]
-        record['subject'] = [e[1] for e in aux_cursor.execute(sel_aux('gutenberg_subjects', 'subject'), textId_dict).fetchall()]
-        record['language'] = [e[1] for e in aux_cursor.execute(sel_aux('gutenberg_languages', 'language'), textId_dict).fetchall()]
+        add_aux_fields(aux_cursor, record, 'gutenberg_creators', 'creator')
+        add_aux_fields(aux_cursor, record, 'gutenberg_contributors', 'contributor')
+        add_aux_fields(aux_cursor, record, 'gutenberg_categories', 'category')
+        add_aux_fields(aux_cursor, record, 'gutenberg_subjects', 'subject')
+        add_aux_fields(aux_cursor, record, 'gutenberg_languages', 'language')
 
         # Only index fields from description records. File records can be ignored.
         if count % 10000 == 0:
             print count,
-        subset = {k : record[k] for k in schema.names() if k in record}
+        subset = {k : record[k] for k in record if k in SCHEMA_NAMES or k.startswith('_stored_')}
         writer.add_document(**subset)
 
     print "committing...",

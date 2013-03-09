@@ -3,12 +3,21 @@
     {{ possible_list }}
   {%- else -%}
     {%- for el in possible_list -%}
+    {%- if el is string -%}
     {{el}}<br/>
+    {% else %}
+    {{el[1]}}<br/>
+    {%- endif -%}
     {%- endfor -%}
   {%- endif -%}
 {% endmacro %}
 
 {% macro render_book_search_table(results, offset, zipfp, class='') %}
+{#
+results - whoosh search results (format differ from typical sqlite results)
+offset - the index into the total result sets of the first result on this page.
+class - css class for the table
+#}
 <table class='{{ class }}'>
     <thead>
         <tr>
@@ -24,13 +33,9 @@
             <td>{{ loop.index + offset }}</td>
             <td><a href="{{ url_for('.text', textId=result['textId']) }}">{{ list_to_html_multiline(result['title']) }}</a></td>
             <td>
-                {%- if result['creator'] is string -%}
-                  <a href="{{ url_for('.author', authorId=result['creator_id']) }}">{{ result['creator'] }}</a>
-                {%- else -%}
-                  {%- for el, ln in zipfp(result['creator'], result['creator_id']) -%}
-                  <a href="{{ url_for('.author', authorId=ln) }}">{{ el }}</a>
-                  {%- endfor -%}
-                {%- endif -%}
+              {%- for k,v in result['creator'] -%}
+              <a href="{{ url_for('.author', authorId=k) }}">{{ v }}</a>
+              {%- endfor -%}
             </td>
             <td>{{ list_to_html_multiline(result['category']) }}</td>
         </tr>
