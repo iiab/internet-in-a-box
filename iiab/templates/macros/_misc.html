@@ -12,12 +12,13 @@
   {%- endif -%}
 {% endmacro %}
 
-{% macro render_book_search_table(results, offset, zipfp, class='') %}
 {#
-results - whoosh search results (format differ from typical sqlite results)
-offset - the index into the total result sets of the first result on this page.
-class - css class for the table
+    render_book_search_table - Format Gutenberg Book Search results into a table for display
+    results - whoosh search results (format differ from typical sqlite results)
+    offset - the index into the total result sets of the first result on this page.
+    class - css class for the table
 #}
+{% macro render_book_search_table(results, offset, class='') %}
 <table class='{{ class }}'>
     <thead>
         <tr>

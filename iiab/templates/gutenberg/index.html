@@ -12,7 +12,7 @@
                 <p>{% trans %}Project Gutenberg Free Books Browser{% endtrans %}</p>
                 <p class="span6 offset3">
                 <form class="form-search" action="{{ url_for('gutenberg.search') }}" method="get">
-                    <input type="text" class="input-xlarge search-query" placeholder="Search" name="q" />
+                    <input type="text" id="book_search" class="input-xlarge search-query" placeholder="Search" name="q" />
                     <button type="submit" class="btn">Search</button>
                 </form>
                 </p>
@@ -20,6 +20,13 @@
                     <a href="{{ url_for('gutenberg.by_title') }}" class="btn btn-large">{% trans %}List by Title{% endtrans %}</a>
                     <a href="{{ url_for('gutenberg.by_author') }}" class="btn btn-large">{% trans %}List by Author{% endtrans %}</a>
                 </p>
+                <div>
+                <hr>
+                <h3>{% trans %}Search Tips{% endtrans %}</h3>
+                <p>{% trans %}Search terms will search for matches in book titles and authors.{% endtrans %}</p>
+                <p>{% trans %}Multiple terms may be combined with AND, ANDMAYBE, ANDNOT, OR{% endtrans %}</p>
+                <p>{% trans %}The search may specify the category to search using the form cat:term where categories include title, creator, contributor, subject, category and language.{% endtrans %}</p>
+                </div>
             </div>
         </div>
     </div>

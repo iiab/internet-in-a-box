@@ -1,7 +1,6 @@
 {#
     :param keywords: string search terms
     :param pagination: pagincation object with page info and items
-    :param zipfp: python collections zip function
     :param suggestions: string or list of alterate spelling suggestions
     :param endpoint_desc: EndPointDescription for use by pagination
 #}
@@ -18,7 +17,7 @@
 {% block body %}
     {% if pagination and pagination.pages > 0 %}
         <p>{% trans total=pagination.total, keywords=keywords %}<strong>{{ total }}</strong> found for your search "<strong>{{ keywords }}</strong>".{% endtrans %}</p>
-        {{ render_book_search_table(pagination.items, pagination.per_page * (pagination.page - 1), zipfp, 'zebra-striped') }}
+        {{ render_book_search_table(pagination.items, pagination.per_page * (pagination.page - 1), 'zebra-striped') }}
         {{ render_pagination(pagination, endpoint_desc, query=keywords) }}
     {% else %}
         <p>{% trans keywords=keywords %}Sorry, Nothing found for your search "<strong>{{ keywords }}</strong>".{% endtrans %}</p>

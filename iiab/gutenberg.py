@@ -2,9 +2,9 @@
 
 import re
 
-from flask import (Blueprint, render_template, current_app, request,
+from flask import (Blueprint, render_template, current_app, request, Response,
                    flash, url_for, redirect, session, abort, safe_join,
-                   send_file)
+                   send_file, jsonify)
 from flask.ext.mail import Message
 from flaskext.babel import gettext as _
 
@@ -38,7 +38,7 @@ def search():
     else:
         flash(_('Please input keyword(s)'), 'error')
     print pagination.items
-    return render_template('gutenberg/search.html', pagination=pagination, keywords=query, suggestion=suggestion, zipfp=zip, endpoint_desc=EndPointDescription('gutenberg.search', None))
+    return render_template('gutenberg/search.html', pagination=pagination, keywords=query, suggestion=suggestion, endpoint_desc=EndPointDescription('gutenberg.search', None))
 
 def paginated_search(query_text, page=1, pagelen=20):
     """
@@ -89,31 +89,6 @@ def get_query_corrections(searcher, query, qstring):
 
     return MultiFieldQueryCorrector(correctors, terms).correct_query(query, qstring)
 
-def get_search_results(query, page=1, pagelen=20):
-    """Return a sorted list of results.
-    pagelen specifies the number of hits per page.
-    page specifies the page of results to return (first page is 1)
-    Set pagelen = None or 0 to retrieve all results.
-    """
-    index_dir = current_app.config['GUTENBERG_INDEX_DIR']
-    query = unicode(query)  # Must be unicode
-    ix = open_dir(index_dir)
-    search_column = 'title'
-    sort_column = 'title'
-    with ix.searcher() as searcher:
-        query = QueryParser(search_column, ix.schema).parse(query)
-        if pagelen is not None and pagelen != 0:
-            try:
-                # search_page returns whoosh.searching.ResultsPage
-                results = searcher.search_page(query, page, pagelen=pagelen, sortedby=sort_column)
-            except ValueError, e:  # Invalid page number
-                results = []
-        else:
-            results = searcher.search(query, limit=None, sortedby=sort_column)
-        r = [dict(x.items()) for x in results]
-    ix.close()
-    return r
-
 @gutenberg.route('/by_title')
 def by_title():
     page = int(request.args.get('page', 1))
@@ -149,4 +124,13 @@ def choose_file(textId):
     #    print f
     return files[0].file
 
+@gutenberg.route('/autocomplete')
+def autocomplete():
+    term = request.args.get('term', '')
+    if term != '':
+        response = ['abc','def']
+        return jsonify(completions=response)
+    else:
+        # why the inefficiency? just change the referencing url
+        return redirect(url_for("static", filename="gutenberg_wordlist.json"))
 
