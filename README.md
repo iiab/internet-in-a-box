@@ -80,4 +80,11 @@ Project Gutenberg Mirror
     while (true); do (date; . ../../Heritage/rsync_gutenberg; sleep 3600) | tee -a 20120823.log; done
 
 
+Web Service
+-----------
+
+    cd Heritage
+    pip install Flask-Babel whoosh Flask-SQLAlchemy
+    ./run.py
+
 ----
