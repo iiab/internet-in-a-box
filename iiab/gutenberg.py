@@ -4,8 +4,9 @@ import re
 
 from flask import (Blueprint, render_template, current_app, request, Response,
                    flash, url_for, redirect, session, abort, safe_join,
-                   send_file, jsonify)
+                   send_file)
 from flaskext.babel import gettext as _
+import json
 
 import whoosh
 from whoosh.index import open_dir
@@ -21,6 +22,7 @@ from .endpoint_description import EndPointDescription
 
 gutenberg = Blueprint('gutenberg', __name__, url_prefix='/books')
 etext_regex = re.compile(r'^etext(\d+)$')
+DEFAULT_SEARCH_COLUMNS = ['title', 'creator', 'contributor'] # names correspond to fields in whoosh schema
 
 @gutenberg.route('/')
 def index():
@@ -48,10 +50,9 @@ def paginated_search(query_text, page=1, pagelen=20):
     index_dir = current_app.config['GUTENBERG_INDEX_DIR']
     query_text = unicode(query_text)  # Must be unicode
     ix = open_dir(index_dir)
-    search_column = ['title', 'creator']  # names correspond to fields in whoosh schema
     sort_column = 'creator'
     with ix.searcher() as searcher:
-        query = MultifieldParser(search_column, ix.schema).parse(query_text)
+        query = MultifieldParser(DEFAULT_SEARCH_COLUMNS, ix.schema).parse(query_text)
         try:
             # search_page returns whoosh.searching.ResultsPage
             results = searcher.search_page(query, page, pagelen=pagelen, sortedby=sort_column)
@@ -73,6 +74,7 @@ def deduplicate_corrections(corrections):
     :param corrections: list of Corrector objects
     :returns: list of Corrector objects
     """
+    # Using values from a dictionary comprehension rather than a list comprehension in order to deduplicate
     return {c.string : c for c in corrections if c.original_query != c.query}.values()
 
 def get_query_corrections(searcher, query, qstring):
@@ -127,9 +129,25 @@ def choose_file(textId):
 def autocomplete():
     term = request.args.get('term', '')
     if term != '':
-        response = ['abc','def']
-        return jsonify(completions=response)
+        index_dir = current_app.config['GUTENBERG_INDEX_DIR']
+        ix = open_dir(index_dir)
+        with ix.searcher() as searcher:
+            # might use whoosh.analysis.*Analyzer to break query up
+            # for matching. However it isn't clear how to combine completion
+            # of partial matches across several different columns without
+            # lots of effort
+
+            # Need to reimplement this...
+            # corrector only matches with hamming distance of 2 by default. 
+            # Besides, autocomplete should not be a spelling correction but
+            # rather partial matches.
+            corrections = []
+            for col in DEFAULT_SEARCH_COLUMNS:
+                corrections += searcher.corrector(col).suggest(term)
+            return Response(response=json.dumps(corrections), mimetype="application/json")
     else:
-        # why the inefficiency? just change the referencing url
+        # Choosing an inefficient redirect because still testing different
+        # approaches and its easier to centralize the handling.  If we keep
+        # this approach we can just change the referencing url
         return redirect(url_for("static", filename="gutenberg_wordlist.json"))
 

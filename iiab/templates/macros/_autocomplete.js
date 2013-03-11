@@ -6,9 +6,13 @@
 <script type="text/javascript">
 <!--
     $(function(){
+        {% if False %}
+        $("{{anchor}}").autocomplete({ source: "{{url_for('gutenberg.autocomplete')}}" });
+        {% else %}
         $.getJSON("{{completion_url}}", function(data) {
             $("{{anchor}}").autocomplete({ source: data.completions });
         });
+        {% endif %}
     });
 -->
 </script>
