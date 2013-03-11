@@ -144,7 +144,8 @@ def parse_rdf(src, filter=None):
 
             # &f; in the about attrib is an entity expansion
             # http://www.gutenberg.org/dir seems to equate to /knowledge/data/gutenberg/gutenberg
-            # http://www.gutenberg.org/cache seems to equate to generated content not currently downloaded
+            # http://www.gutenberg.org/cache seems to equate to generated content not available via mirror 
+            # but separately rsync'd from the web and stored at /knowledge/data/gutenberg/cache.
             record = { REC_TYPE_KEY : FILE_TYPE_VALUE, REC_FILE_PATH : unicode(element.attrib[ABOUT_ATTRIB]) }
             for xmltag, rectag in FILE_MAPPINGS.items():
                 if xmltag == FORMATOF_TAG:

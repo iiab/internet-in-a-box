@@ -26,6 +26,11 @@ def test_query(indexdir, terms):
 def get_schema():
     # Whoosh schema - for ease of use match names with record keys used in gutenberg_rdf_parser
     # Spelling attribute will cause columns to be used as source of query correction suggestions
+
+    # Analyzers can be used to provide fuzzy matches to searches.  However,
+    # the side effect seems to be that it polutes the match streams so that
+    # spelling suggestions are meaningless.
+
     return wf.Schema(textId=ID(unique=True, stored=True),
         title=TEXT(stored=True, spelling=True), 
         creator=TEXT(stored=True, spelling=True), 

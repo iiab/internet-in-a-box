@@ -23,8 +23,7 @@ class BaseConfig(object):
     SQLALCHEMY_DATABASE_URI = 'sqlite:///../gutenberg.db'
 
     GUTENBERG_INDEX_DIR = 'whoosh/gutenberg_index'
-    #GUTENBERG_ROOT_DIR = '/knowledge/data/gutenberg/gutenberg/'
-    GUTENBERG_ROOT_DIR = '/knowledge/data/gutenberg/gutenberg/'
+    GUTENBERG_ROOT_DIR = '/knowledge/data/gutenberg/'
     
     def __init__(self):
         # Seems like a very non-standard way to handle this...

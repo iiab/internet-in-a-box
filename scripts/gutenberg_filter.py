@@ -21,17 +21,18 @@ class GutenbergIndexFilter(object):
             
             # adjust the file path (should add warning if path does not match pattern)
             FILE_PREFIX = '^http://www.gutenberg.org/dirs/'
-            record['file'] = re.sub(FILE_PREFIX, '', record['file'])
+            record['file'] = re.sub(FILE_PREFIX, 'gutenberg/', record['file'])
+            CACHE_FILE_PREFIX = '^http://www.gutenberg.org/cache/'
+            record['file'] = re.sub(CACHE_FILE_PREFIX, 'cache/', record['file'])
 
             # seems ugly - would multiple filters be better?  or maybe a filter stage followed by a transform stage?
-            if record['file'].startswith('http') and u'/cache/' not in record['file']:
+            if record['file'].startswith('http'):
                 print "[file prefix unexpected %s]" % record['file']
 
             # omit files based on two criteria:
             # (a) book description was omitted due to filter criteria above
-            # (b) rsync script excluded the content (extensions, 'cache' and 'pgdvd')
+            # (b) rsync script excluded the content (extensions and 'pgdvd')
             return (record['textId'] not in self.removed_texts and 
-                u'/cache/' not in record['file'] and
                 u'pgdvd' not in record['file'] and
                 self.get_extension(record['file']) not in self.EXCLUDED_EXT)
                 
