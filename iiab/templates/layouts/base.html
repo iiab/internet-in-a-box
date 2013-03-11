@@ -74,17 +74,23 @@
     {% endblock %}
 
     {% block js_btm %}
+    {#
     <!--
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
     -->
+    #}
     {% set jquery_path = url_for('static', filename='js/vendor/jquery-1.8.3.min.js') %}
-    <script>window.jQuery || document.write('<script src="{{ jquery_path }}"><\/script>')</script>
+    {#<script>window.jQuery || document.write('<script src="{{ jquery_path }}"><\/script>')</script>#}
+    <script src="{{ jquery_path }}"></script>
     <script src="{{ url_for('static', filename='js/plugins.js') }}"></script>
     <script src="{{ url_for('static', filename='js/vendor/bootstrap.js') }}"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script src="{{ url_for('static', filename='js/vendor/jquery-ui-1.10.1.custom.min.js') }}"></script>
+
+    {#
+    <script src="{{ url_for('static', filename='js/autocomplete.js') }}"></script>
+    #}
     {% from 'macros/_autocomplete.js' import attach_autocomplete %}
-    {#{{ attach_autocomplete('#book_search', '#suggestions', 'suggestions', url_for('gutenberg.autocomplete')) | safe }}#}
     {{ attach_autocomplete('#book_search', url_for('gutenberg.autocomplete')) | safe }}
     {% endblock %}
 
