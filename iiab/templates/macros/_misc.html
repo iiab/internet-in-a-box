@@ -25,7 +25,7 @@
             <td>#</td>
             <td>Title</td>
             <td>Author</td>
-            <td>Category</td>
+            <td>Language</td>
         </tr>
     </thead>
     <tbody>
@@ -34,11 +34,14 @@
             <td>{{ loop.index + offset }}</td>
             <td><a href="{{ url_for('.text', textId=result['textId']) }}">{{ list_to_html_multiline(result['title']) }}</a></td>
             <td>
-              {%- for k,v in result['creator'] -%}
-              <a href="{{ url_for('.author', authorId=k) }}">{{ v }}</a>
-              {%- endfor -%}
+                {%- for k,v in result['creator'] -%}
+                <a href="{{ url_for('.author', authorId=k) }}">{{ v }}</a><br/>
+                {%- endfor -%}
+                {{ list_to_html_multiline(result['contributor']) }}
             </td>
-            <td>{{ list_to_html_multiline(result['category']) }}</td>
+            <td>
+                {{ list_to_html_multiline(result['language']) }}
+            </td>
         </tr>
         {% endfor %}
     </tbody>
@@ -52,7 +55,6 @@
             <td>#</td>
             <td>Title</td>
             <td>Author</td>
-            <td>Subject</td>
             <td>Language</td>
         </tr>
     </thead>
@@ -67,11 +69,6 @@
                 {%- endfor %}
                 {%- for c in book.gutenberg_contributors -%}
                 {{ c.contributor }}<br/>
-                {%- endfor %}
-            </td>
-            <td>
-                {% for s in book.gutenberg_subjects -%}
-                {{ s.subject }}
                 {%- endfor %}
             </td>
             <td>
@@ -100,6 +97,41 @@
             <td><a href="{{ url_for('.author', authorId=author.id) }}">{{ author.creator }}</a></td>
         </tr>
         {%- endfor %}
+    </tbody>
+</table>
+{% endmacro %}
+
+{#
+    record - record for book
+    field - list of tuples of (Table Header, record_key, aux_key)
+    class - css class name
+#}
+{% macro render_book_details(record, fields, files, class='') %}
+<table class='{{ class }}'>
+    {% for label, key, aux_key in fields -%}
+        {% if record[key] is string -%}
+            <tr><th>{{ label }}</th><td>{{ record[key] }}</td></tr>
+        {% else -%}
+            {% for val in record[key] -%}
+            <tr><th>{{ label }}</th> <td>{{ val[aux_key] }}</td></tr>
+            {%- endfor -%}
+        {%- endif -%}
+    {%- endfor %}
+</table>
+<table class='{{ class }}'>
+    <thead>
+        <th>Name</th>
+        <th>Format</th>
+    </thead>
+    <tbody>
+    {% set index = 0 %}
+    {% for f in record['gutenberg_files'] %}
+    <tr>
+        <td><a href="{{ url_for('.read', textId=f['textId'], textIndex=index) }}">{{ f['file'] }}</a></td>
+        <td>{{ f['format'] }}</td>
+    </tr>
+    {% set index = index + 1 %}
+    {%- endfor %}
     </tbody>
 </table>
 {% endmacro %}
