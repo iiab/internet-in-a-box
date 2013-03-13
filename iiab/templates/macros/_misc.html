@@ -16,9 +16,10 @@
     render_book_search_table - Format Gutenberg Book Search results into a table for display
     results - whoosh search results (format differ from typical sqlite results)
     offset - the index into the total result sets of the first result on this page.
+    fn_author_to_query - function that accepts an author string an returns a query value that searches for the author
     class - css class for the table
 #}
-{% macro render_book_search_table(results, offset, class='') %}
+{% macro render_book_search_table(results, offset, fn_author_to_query, class='') %}
 <table class='{{ class }}'>
     <thead>
         <tr>
@@ -35,9 +36,11 @@
             <td><a href="{{ url_for('.text', textId=result['textId']) }}">{{ list_to_html_multiline(result['title']) }}</a></td>
             <td>
                 {%- for k,v in result['creator'] -%}
-                <a href="{{ url_for('.author', authorId=k) }}">{{ v }}</a><br/>
+                <a href="{{ url_for('.search', q=fn_author_to_query(v)) }}">{{ v }}</a><br/>
                 {%- endfor -%}
-                {{ list_to_html_multiline(result['contributor']) }}
+                {%- for k,v in result['contributor'] -%}
+                <a href="{{ url_for('.search', q=fn_author_to_query(v)) }}">{{ v }}</a><br/>
+                {%- endfor -%}
             </td>
             <td>
                 {{ list_to_html_multiline(result['language']) }}
@@ -48,7 +51,7 @@
 </table>
 {% endmacro %}
 
-{% macro render_book_table(books, offset, class='') %}
+{% macro render_book_table(books, offset, fn_author_to_query, class='') %}
 <table class='{{ class }}'>
     <thead>
         <tr>
@@ -65,10 +68,10 @@
             <td><a href="{{ url_for('.text', textId=book.textId) }}">{{ book.title }}</a></td>
             <td>
                 {% for c in book.gutenberg_creators -%}
-                <a href="{{ url_for('.author', authorId=c.id) }}">{{ c.creator }}</a><br/>
+                <a href="{{ url_for('.search', q=fn_author_to_query(c.creator)) }}">{{ c.creator }}</a><br/>
                 {%- endfor %}
-                {%- for c in book.gutenberg_contributors -%}
-                {{ c.contributor }}<br/>
+                {% for c in book.gutenberg_contributors -%}
+                <a href="{{ url_for('.search', q=fn_author_to_query(c.contributor)) }}">{{ c.contributor }}</a><br/>
                 {%- endfor %}
             </td>
             <td>

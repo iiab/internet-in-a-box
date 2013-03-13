@@ -40,7 +40,18 @@ def search():
     else:
         flash(_('Please input keyword(s)'), 'error')
     print pagination.items
-    return render_template('gutenberg/search.html', pagination=pagination, keywords=query, suggestion=suggestion, endpoint_desc=EndPointDescription('gutenberg.search', None))
+    return render_template('gutenberg/search.html', pagination=pagination, keywords=query, suggestion=suggestion, fn_author_to_query=author_to_query, endpoint_desc=EndPointDescription('gutenberg.search', None))
+
+def author_to_query(author):
+    """Helper function for template macro to convert an author string into a
+    search query.
+
+    :param author: unicode string from creator or contributor field of gutenberg index
+    :returns: whoosh query string to search creator/contributor fields for given author.
+    """
+    # contributor field provides extra details about contirbutor's role in brackets -- strip that off so we can search for author in any role.
+    author = re.sub(r'\[[^\]]+\]', '', author).strip()
+    return u'creator:"{0}" OR contributor:"{0}"'.format(author)
 
 def paginated_search(query_text, page=1, pagelen=DEFAULT_RESULTS_PER_PAGE):
     """
@@ -105,7 +116,7 @@ def by_title():
     page = int(request.args.get('page', 1))
     per_page = int(request.args.get('per_page', DEFAULT_RESULTS_PER_PAGE))
     pagination = GutenbergBook.query.order_by(GutenbergBook.title).paginate(page, per_page)
-    return render_template('gutenberg/title-index.html', pagination=pagination, endpoint_desc=EndPointDescription('.by_title', dict(per_page=per_page)))
+    return render_template('gutenberg/title-index.html', pagination=pagination, fn_author_to_query=author_to_query, endpoint_desc=EndPointDescription('.by_title', dict(per_page=per_page)))
 
 @gutenberg.route('/authors')
 def by_author():
