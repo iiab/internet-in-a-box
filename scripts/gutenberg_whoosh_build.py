@@ -36,7 +36,7 @@ def get_schema():
         creator=TEXT(stored=True, spelling=True), 
         contributor=TEXT(spelling=True), 
         subject=KEYWORD, 
-        language=KEYWORD,
+        language=KEYWORD(stored=True),
         friendlytitle=TEXT,
         category=STORED
         )
@@ -64,11 +64,6 @@ def create_gutenberg_index_rdf(bz2_rdf_filename, indexdir):
     print "DONE"
 
 def create_gutenberg_index_db(dbname, indexdir):
-    def book_row_to_rec(row):
-        """Convert row from sql select response to dictionary"""
-        keys = ['textId', 'title', 'friendlytitle', 'creator', 'contributor', 'category', 'subject', 'language']
-        return dict(zip(keys, row))
-
     def sel_aux(aux_table, aux_col):
         """Build select table for aux table"""
         return 'SELECT AUX.id, AUX.%s from %s as AUX, gutenberg_books_%s_map AS MAP where MAP.book_id=:textId and AUX.id=MAP.%s_id' % (aux_col, aux_table, aux_col, aux_col)
@@ -93,8 +88,9 @@ def create_gutenberg_index_db(dbname, indexdir):
     aux_cursor = db.cursor()
 
     SCHEMA_NAMES = schema.names()
-    for count, row in enumerate(book_cursor.execute('SELECT * from gutenberg_books;')):
-        record = book_row_to_rec(row)
+    BOOK_FIELD_NAMES = ['textId', 'title', 'friendlytitle']
+    for count, row in enumerate(book_cursor.execute('SELECT {fields} from gutenberg_books;'.format(fields=','.join(BOOK_FIELD_NAMES)))):
+        record = dict(zip(BOOK_FIELD_NAMES, row))
         textId_dict = { 'textId' : record['textId'] } # separate dict because extra, unused keys causes error during binding
         # Multiple select statements instead of one because want a single record per book.
         add_aux_fields(aux_cursor, record, 'gutenberg_creators', 'creator')

@@ -7,7 +7,7 @@
 {% block body %}
     {% if pagination and pagination.pages > 0 %}
         <p>{% trans total=pagination.total %}<strong>{{ total }}</strong> pages of books by title.{% endtrans %}</p>
-        {{ render_author_table(pagination.items, pagination.per_page * (pagination.page - 1), 'zebra-striped') }}
+        {{ render_author_table(pagination.items, pagination.per_page * (pagination.page - 1), 'table table-striped table-hover') }}
         {{ render_pagination(pagination, endpoint_desc) }}
     {% else %}
         <p>{% trans %}No books found. Perhaps the data needs to be updated.{% endtrans %}</p>

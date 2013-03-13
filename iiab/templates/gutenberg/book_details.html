@@ -3,12 +3,13 @@
 :param fields: list of tuples (header_name, record_key)
 :param files: list of tuples (index_num, display_filename, format_info)
 #}
-{% from 'macros/_misc.html' import render_book_details %}
+{% from 'macros/_misc.html' import render_book_details, render_book_files %}
 
 {% extends 'layouts/base.html' %}
 
 {% set page_title = _('Book Details') %}
 
 {% block body %}
-    {{ render_book_details(record, fields, files, 'zebra-striped') }}
+    {{ render_book_details(record, fields, 'table') }}
+    {{ render_book_files(record, fields, 'table') }}
 {% endblock %}

@@ -106,7 +106,7 @@
     field - list of tuples of (Table Header, record_key, aux_key)
     class - css class name
 #}
-{% macro render_book_details(record, fields, files, class='') %}
+{% macro render_book_details(record, fields, class='') %}
 <table class='{{ class }}'>
     {% for label, key, aux_key in fields -%}
         {% if record[key] is string -%}
@@ -118,6 +118,14 @@
         {%- endif -%}
     {%- endfor %}
 </table>
+{% endmacro %}
+
+{#
+    record - record for book
+    field - list of tuples of (Table Header, record_key, aux_key)
+    class - css class name
+#}
+{% macro render_book_files(record, fields, class='') %}
 <table class='{{ class }}'>
     <thead>
         <th>Name</th>
