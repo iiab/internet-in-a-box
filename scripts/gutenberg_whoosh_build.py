@@ -34,7 +34,7 @@ def get_schema():
     return wf.Schema(textId=ID(unique=True, stored=True),
         title=TEXT(stored=True, spelling=True), 
         creator=TEXT(stored=True, spelling=True), 
-        contributor=TEXT(spelling=True), 
+        contributor=TEXT(stored=True, spelling=True), 
         subject=KEYWORD, 
         language=KEYWORD(stored=True),
         friendlytitle=TEXT,
