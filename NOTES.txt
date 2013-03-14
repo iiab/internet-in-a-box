@@ -541,3 +541,4 @@ Setting up virtualenv
 sudo apt-get install virtualenvwrapper sqlite3 libxml2-dev libxslt1-dev
 mkvirtualenv heritage
 pip install flask flask-mako flask-babel whoosh flask-sqlalchemy sqlautocode lxml
+edit sqlautocode/declarative.py if add error handling to _deferred_relationship import to try from sqlalchemy.ext.declarative.clsregistry import _deferred_relationship if second attempt fails.

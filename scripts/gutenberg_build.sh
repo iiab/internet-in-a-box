@@ -3,6 +3,11 @@
 # abort script on error
 set -e
 
+PYTHON_DIR=${PYTHON_DIR:-""} # permit override from environment
+PYTHON_EXE="${PYTHON_DIR}python"
+echo Using python path $PYTHON_DIR
+echo Using python exec $PYTHON_EXE
+
 # BASE_DIR is typically one directory above Heritage project dirctory
 BASE_DIR=/knowledge
 usage() {
@@ -14,6 +19,9 @@ usage: $0 base_directory
 
 This script processes the Project Gutenberg RDF index file
 to produce the database, index files and website support files.
+
+If running with sudo it may be necessary to override the python directory
+with the virtualenv python by setting the PYTHON_DIR env variable.
 
 EOF
 }
@@ -71,18 +79,18 @@ function mk_lnk {
 assert_dir_exists $PROCESSED_DIR
 assert_dir_exists $WHOOSH_DIR
 
-ACTION_LIST="db whoosh model wordlist symlinks"
+ACTION_LIST=${ACTION_LIST:-"db whoosh model wordlist symlinks"}
 for val in $ACTION_LIST
 do
     case $val in
         db)
             echo Building database from gutenberg RDF XML index
-            ./gutenberg_db_build.py --rdfindex $CATALOG --dbname $DBNAME_TARGET
+            $PYTHON_EXE ./gutenberg_db_build.py --rdfindex $CATALOG --dbname $DBNAME_TARGET
             ;;
 
         whoosh)
             echo Building whoosh index
-            ./gutenberg_whoosh_build.py --db $DBNAME_TARGET --indexdir $WHOOSH_DIR
+            $PYTHON_EXE gutenberg_whoosh_build.py --db $DBNAME_TARGET --indexdir $WHOOSH_DIR
             ;;
 
         model)
@@ -90,13 +98,13 @@ do
             # if sqlautocode is not found, you may need to pip install sqlautocode
             # Option -d means use declarative object model format.
             # sed script post processes to produce result for use with flask-sqlalchemy
-            sqlautocode -d sqlite:///${DBNAME_TARGET} | sed -f model_fixup.sed > $MODEL_TARGET
+            ${PYTHON_DIR}sqlautocode -d sqlite:///${DBNAME_TARGET} | sed -f model_fixup.sed > $MODEL_TARGET
 
             ;;
 
         wordlist)
             echo Dumping titles and creators to json wordlist
-            { sqlite3 -csv $DBNAME_TARGET "select book.title from gutenberg_books as book;" ; sqlite3 -csv $DBNAME_TARGET "select c.creator from gutenberg_creators as c;" ; } | ./csv_to_json.py -y --json $WORDLIST_JSON_TARGET
+            { sqlite3 -csv $DBNAME_TARGET "select book.title from gutenberg_books as book;" ; sqlite3 -csv $DBNAME_TARGET "select c.creator from gutenberg_creators as c;" ; } | $PYTHON_EXE csv_to_json.py -y --json $WORDLIST_JSON_TARGET
             ;;
 
         symlinks)
