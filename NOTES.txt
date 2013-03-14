@@ -538,6 +538,6 @@ dpkg-reconfigure locales
 ----
 
 Setting up virtualenv
-sudo apt-get install virtualenvwrapper
+sudo apt-get install virtualenvwrapper sqlite3 libxml2-dev libxslt1-dev
 mkvirtualenv heritage
-pip install flask flask-mako flask-babel whoosh flask-sqlalchemy sqlautocode
+pip install flask flask-mako flask-babel whoosh flask-sqlalchemy sqlautocode lxml
