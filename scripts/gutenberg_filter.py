@@ -5,6 +5,7 @@ class GutenbergIndexFilter(object):
     EXCLUDED_EXT = ['.zip', '.wav', '.mp3', '.ogg', '.iso', '.ISO', '.rar', '.mpeg', '.m4b']
     def __init__(self):
         self.removed_texts = []
+        self.notitle_count = 0
 
     def filter(self, record):
         """Return true if keep record, false if should discard record"""
@@ -13,6 +14,7 @@ class GutenbergIndexFilter(object):
             if not has_title:
                 self.removed_texts.append(record['textId'])
                 print "[omit %s notitle]" % record['textId']
+                self.notitle_count += 1
             return has_title
         else:
             # NOTE: Changes to the record persist and are externally visible!
@@ -22,8 +24,8 @@ class GutenbergIndexFilter(object):
             # adjust the file path (should add warning if path does not match pattern)
             FILE_PREFIX = '^http://www.gutenberg.org/dirs/'
             record['file'] = re.sub(FILE_PREFIX, 'gutenberg/', record['file'])
-            CACHE_FILE_PREFIX = '^http://www.gutenberg.org/cache/'
-            record['file'] = re.sub(CACHE_FILE_PREFIX, 'cache/', record['file'])
+            CACHE_FILE_PREFIX = '^http://www.gutenberg.org/cache/epub/'
+            record['file'] = re.sub(CACHE_FILE_PREFIX, 'cache/generated/', record['file'])
 
             # seems ugly - would multiple filters be better?  or maybe a filter stage followed by a transform stage?
             if record['file'].startswith('http'):

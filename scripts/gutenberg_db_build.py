@@ -251,7 +251,10 @@ def main():
     (options, args) = parser.parse_args()
 
     make_db = GutenbergDbCreator(options.db_filename)
-    make_db.add_many_records(parse_rdf_bz2(options.bz2_rdf_filename, GutenbergIndexFilter().filter))
+    index_filter = GutenbergIndexFilter()
+    make_db.add_many_records(parse_rdf_bz2(options.bz2_rdf_filename, index_filter.filter))
+    if index_filter.notitle_count > 0:
+        print "Omitted %d records without titles" % index_filter.notitle_count
 
 if __name__ == '__main__':
     main()

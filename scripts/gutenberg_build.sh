@@ -3,28 +3,115 @@
 # abort script on error
 set -e
 
-CATALOG=../catalog.rdf.bz2
-DBNAME=../gutenberg.db
-WHOOSH_DIR=../whoosh/gutenberg_index
-MODEL=../iiab/gutenberg_models.py
-WORDLIST_CSV=wordlist.tmp
-WORDLIST_JSON=../iiab/static/gutenberg_wordlist.json
+# BASE_DIR is typically one directory above Heritage project dirctory
+BASE_DIR=/knowledge
+usage() {
+cat << EOF
+usage: $0 base_directory
+  base_directory is the absolute path to the directory containing
+                 the processed, data and Heritage directories.
+                 Default $BASE_DIR
 
-echo Building database from gutenberg RDF XML index
-./gutenberg_db_build.py --rdfindex $CATALOG --dbname $DBNAME
+This script processes the Project Gutenberg RDF index file
+to produce the database, index files and website support files.
 
-echo Building whoosh index
-./gutenberg_whoosh_build.py --db $DBNAME --indexdir $WHOOSH_DIR
+EOF
+}
 
-echo Creating SQL object model
-# if sqlautocode is not found, you may need to pip install sqlautocode
-# Option -d means use declarative object model format.
-# sed script post processes to produce result for use with flask-sqlalchemy
-sqlautocode -d sqlite:///${DBNAME} | sed -f model_fixup.sed > $MODEL
+if [[ $# > 1 || $1 = "-h" || $1 = "--help" ]]; then
+    usage
+    exit 1
+fi
 
-echo Dumping titles and creators to wordlist
-sqlite3 -csv $DBNAME "select book.title from gutenberg_books as book;" > $WORDLIST_CSV
-sqlite3 -csv $DBNAME "select c.creator from gutenberg_creators as c;" >> $WORDLIST_CSV
-echo Convert wordlist to json
-./csv_to_json.py --csv $WORDLIST_CSV --json $WORDLIST_JSON
+if [[ $# = 1 ]]; then
+    BASE_DIR=$1
+fi
+
+HERITAGE_DIR=$BASE_DIR/Heritage
+PROCESSED_DIR=$BASE_DIR/processed
+DBNAME=gutenberg.db
+MODEL=gutenberg_models.py
+WORDLIST_JSON=gutenberg_wordlist.json
+GUTENBERG_DATA=$BASE_DIR/data/gutenberg/gutenberg
+
+CATALOG=$GUTENBERG_DATA/../catalog.rdf.bz2
+DBNAME_TARGET=$PROCESSED_DIR/$DBNAME
+WHOOSH_DIR=$PROCESSED_DIR/whoosh/gutenberg_index
+WHOOSH_DIR_LNK_SRC=$PROCESSED_DIR/whoosh
+WHOOSH_DIR_LNK_DST=$HERITAGE_DIR/whoosh
+MODEL_TARGET=$PROCESSED_DIR/$MODEL
+WORDLIST_JSON_TARGET=$PROCESSED_DIR/$WORDLIST_JSON
+
+function assert_dir_exists {
+    if [[ ! -d "$1" ]]; then
+        echo Cannot find directory: $1
+        exit 1
+    fi
+}
+
+function mk_lnk {
+    # do sanity check making sure linked file is a normal file or directory
+    if [[ ! -f "$1" && ! -d "$1" || -h "$1" ]]; then
+        echo "$1 does not exist or is a symbolic link (which means params may be reversed)"
+        exit 1
+    fi
+    if [[ ! -e "$2" ]]; then
+        echo Creating "$2"
+        # symlinks to non existing file will fail -e but not -h
+        if [[ -h $2 ]]; then
+            ln -s -f "$1" "$2"
+        else
+            ln -s "$1" "$2"
+        fi
+    else
+        echo "$2 exists (no action)"
+    fi
+}
+
+assert_dir_exists $PROCESSED_DIR
+assert_dir_exists $WHOOSH_DIR
+
+ACTION_LIST="db whoosh model wordlist symlinks"
+for val in $ACTION_LIST
+do
+    case $val in
+        db)
+            echo Building database from gutenberg RDF XML index
+            ./gutenberg_db_build.py --rdfindex $CATALOG --dbname $DBNAME_TARGET
+            ;;
+
+        whoosh)
+            echo Building whoosh index
+            ./gutenberg_whoosh_build.py --db $DBNAME_TARGET --indexdir $WHOOSH_DIR
+            ;;
+
+        model)
+            echo Creating SQL object model
+            # if sqlautocode is not found, you may need to pip install sqlautocode
+            # Option -d means use declarative object model format.
+            # sed script post processes to produce result for use with flask-sqlalchemy
+            sqlautocode -d sqlite:///${DBNAME_TARGET} | sed -f model_fixup.sed > $MODEL_TARGET
+
+            ;;
+
+        wordlist)
+            echo Dumping titles and creators to json wordlist
+            { sqlite3 -csv $DBNAME_TARGET "select book.title from gutenberg_books as book;" ; sqlite3 -csv $DBNAME_TARGET "select c.creator from gutenberg_creators as c;" ; } | ./csv_to_json.py -y --json $WORDLIST_JSON_TARGET
+            ;;
+
+        symlinks)
+            echo Creating symlinks
+            mk_lnk $DBNAME_TARGET $HERITAGE_DIR/$DBNAME
+            mk_lnk $WHOOSH_DIR_LNK_SRC $WHOOSH_DIR_LNK_DST
+            mk_lnk $MODEL_TARGET $HERITAGE_DIR/iiab/$MODEL
+            mk_lnk $WORDLIST_JSON_TARGET $HERITAGE_DIR/iiab/static/$WORDLIST_JSON
+            mk_lnk $GUTENBERG_DATA $HERITAGE_DIR/iiab/static/data
+            ;;
+
+        *)
+            usage
+            exit 1
+            ;;
+    esac
+done
 
