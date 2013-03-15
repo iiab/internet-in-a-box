@@ -3,9 +3,11 @@
 # of generated file formats
 # By Braddock Gaskill 2013
 
-DIR=/knowledge/data/gutenberg/gutenberg/cache/generated
+DIR=/knowledge/data/gutenberg/cache/generated
 mkdir -p "${DIR}"
 cd "${DIR}"
+pwd
+sleep 30
 while (true); do
     echo -n 'RSYNC START '
     date
