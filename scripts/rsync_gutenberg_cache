@@ -7,7 +7,6 @@ DIR=/knowledge/data/gutenberg/cache/generated
 mkdir -p "${DIR}"
 cd "${DIR}"
 pwd
-sleep 30
 while (true); do
     echo -n 'RSYNC START '
     date
