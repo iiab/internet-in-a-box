@@ -14,11 +14,14 @@ usage() {
 cat << EOF
 usage: $0 base_directory
   base_directory is the absolute path to the directory containing
-                 the processed, data and Heritage directories.
+                 the processed and data directories.
                  Default $BASE_DIR
 
 This script processes the Project Gutenberg RDF index file
 to produce the database, index files and website support files.
+
+Links will be created in the project directories to files in the processed
+directory.
 
 If running with sudo it may be necessary to override the python directory
 with the virtualenv python by setting the PYTHON_DIR env variable.
