@@ -35,7 +35,8 @@ if [[ $# = 1 ]]; then
     BASE_DIR=$1
 fi
 
-HERITAGE_DIR=$BASE_DIR/Heritage
+# assumes script run from scripts directory off of heritage root
+HERITAGE_DIR=..
 PROCESSED_DIR=$BASE_DIR/processed
 DBNAME=gutenberg.db
 MODEL=gutenberg_models.py
