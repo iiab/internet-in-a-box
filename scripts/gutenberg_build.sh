@@ -104,7 +104,7 @@ do
 
         wordlist)
             echo Dumping titles and creators to json wordlist
-            { sqlite3 -csv $DBNAME_TARGET "select book.title from gutenberg_books as book;" ; sqlite3 -csv $DBNAME_TARGET "select c.creator from gutenberg_creators as c;" ; } | $PYTHON_EXE csv_to_json.py -y --json $WORDLIST_JSON_TARGET
+            { sqlite3 -csv $DBNAME_TARGET "select book.title from gutenberg_books as book order by downloads desc;" ; sqlite3 -csv $DBNAME_TARGET "select c.creator from gutenberg_creators as c;" ; sqlite3 -csv $DBNAME_TARGET "select c.contributor from gutenberg_contributors as c;" ; } | $PYTHON_EXE csv_to_json.py -y --json $WORDLIST_JSON_TARGET
             ;;
 
         symlinks)

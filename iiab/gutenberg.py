@@ -115,7 +115,7 @@ def get_query_corrections(searcher, query, qstring):
 def by_title():
     page = int(request.args.get('page', 1))
     per_page = int(request.args.get('per_page', DEFAULT_RESULTS_PER_PAGE))
-    pagination = GutenbergBook.query.order_by(GutenbergBook.title).paginate(page, per_page)
+    pagination = GutenbergBook.query.order_by(GutenbergBook.title_order).paginate(page, per_page)
     return render_template('gutenberg/title-index.html', pagination=pagination, fn_author_to_query=author_to_query, endpoint_desc=EndPointDescription('.by_title', dict(per_page=per_page)))
 
 @gutenberg.route('/authors')

@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
+from contextlib import closing
 import os
+import string
 import sys
 import sqlite3
 from gutenberg_rdf_parser import parse_rdf_bz2
@@ -13,7 +15,7 @@ class GutenbergDbCreator:
     #   { TABLE_NAME : [ (COL1, DEF1), (COL2, DEF2), ... ] }
     # column names selected to match record keys from rdf_parser
     # NOT NULL designation on PRIMARY KEY seems to help sqlite generate a key when inserting
-    MAIN_TABLE_SCHEMA = { 'gutenberg_books' : [('textId', 'TEXT PRIMARY KEY NOT NULL'), ('title', 'TEXT'), ('friendlytitle', 'TEXT')] }
+    MAIN_TABLE_SCHEMA = { 'gutenberg_books' : [('textId', 'TEXT PRIMARY KEY NOT NULL'), ('title', 'TEXT'), ('friendlytitle', 'TEXT'), ('downloads', 'INT'), ('title_order', 'INT UNIQUE')] }
     AUX_COLUMN_NAMES = ['contributor', 'creator', 'subject', 'language', 'category']
     # each aux table one column which contains a unique value. The schema can be generated from the aux column list.
     AUX_TABLE_SCHEMA = { "gutenberg_%s" % pluralize(name) : [('id', 'INTEGER PRIMARY KEY NOT NULL'), (name, 'TEXT UNIQUE')] for name in AUX_COLUMN_NAMES}
@@ -105,10 +107,12 @@ class GutenbergDbCreator:
         Create an insert statement for use by main and auxiliary tables
         Omits id so it will be auto generated. (Note that books primary key changed
         so provided explicitly but column name is not 'id'.)
+        Omit title_order because values will be added to it after all data is populated
         """
+        excluded_columns = ['id', 'title_order']
         return "INSERT INTO %s (%s) VALUES (%s)" % (table_name, 
-                ','.join([name for (name,_) in col_schema if name != 'id']), 
-                ','.join([":" + name for (name,_) in col_schema if name != 'id']))
+                ','.join([name for (name,_) in col_schema if name not in excluded_columns]), 
+                ','.join([":" + name for (name,_) in col_schema if name not in excluded_columns]))
 
     def _insert_mapping_from_book_to_aux(self, cursor, aux_table_name, book_id, aux_id):
         """
@@ -240,6 +244,25 @@ class GutenbergDbCreator:
             # always commit rather than rollback if sqlite3.DatabaseError because easier to debug
             self.db.commit()
 
+    def create_custom_title_order_index(self):
+        print "Populating title_order column using lowercase title without punctuation"
+        remove_punctuation_map = dict((ord(char), None) for char in string.punctuation)
+
+        try:
+            cur = self.db.cursor()
+            cur.execute("SELECT textId, title FROM gutenberg_books;");
+            data = cur.fetchall()
+            for (index, row) in enumerate(sorted(data, key=lambda row: row[1].lower().translate(remove_punctuation_map))):
+                (textId, _) = row
+                cur.execute("UPDATE gutenberg_books SET title_order=? WHERE textId=?", [index, textId])
+
+            cur.execute("CREATE INDEX title_index ON gutenberg_books (title_order);")
+            self.db.commit()
+            print "completed"
+        except:
+            self.db.rollback()
+            raise
+
 def main():
     parser = OptionParser()
     parser.add_option("--dbname", dest="db_filename", action="store",
@@ -255,6 +278,8 @@ def main():
     make_db.add_many_records(parse_rdf_bz2(options.bz2_rdf_filename, index_filter.filter))
     if index_filter.notitle_count > 0:
         print "Omitted %d records without titles" % index_filter.notitle_count
+
+    make_db.create_custom_title_order_index()
 
 if __name__ == '__main__':
     main()

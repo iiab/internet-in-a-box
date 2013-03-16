@@ -7,10 +7,10 @@
 <!--
     $(function(){
         {% if False %}
-        $("{{anchor}}").autocomplete({ source: "{{url_for('gutenberg.autocomplete')}}" });
+        $("{{anchor}}").autocomplete({ source: "{{url_for('gutenberg.autocomplete')}}", sortResults: false });
         {% else %}
         $.getJSON("{{completion_url}}", function(data) {
-            $("{{anchor}}").autocomplete({ source: data.completions });
+            $("{{anchor}}").autocomplete({ source: data.completions, sortResults: false });
         });
         {% endif %}
     });
