@@ -1,4 +1,4 @@
-from flask import Flask, request, Blueprint 
+from flask import Flask, request, Blueprint
 from flask.ext.mako import MakoTemplates
 from flaskext.babel import Babel
 
@@ -7,6 +7,7 @@ import re
 from config import DevelopmentConfig, ProductionConfig
 import top_views
 import search_views
+import map_views
 import gutenberg
 from extensions import db
 
@@ -29,7 +30,8 @@ class IiabWebApp(object):
                 #(static_blueprint, base_prefix),
                 (top_views.blueprint, base_prefix),
                 #(search_views.blueprint, base_prefix),
-                (gutenberg.gutenberg, base_prefix + "books")
+                (gutenberg.gutenberg, base_prefix + "books"),
+                (map_views.blueprint, base_prefix + "maps")
                 ]
         for blueprint, prefix in blueprints:
             self.app.register_blueprint(blueprint, url_prefix=prefix)
