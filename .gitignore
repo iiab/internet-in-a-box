@@ -29,7 +29,6 @@ pip-log.txt
 cscope.out
 gutenberg.db
 whoosh
-iiab/gutenberg_models.py
 iiab/static/gutenberg_wordlist.json
 iiab/static/data
 
