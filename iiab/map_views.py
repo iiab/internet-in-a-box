@@ -12,4 +12,4 @@ def tile(z, x, y):
     print "Hello tile"
     tileset = TileSet('/knowledge/processed/mod_tile', 'default', METATILE=8)
     tile = meta_load_one(tileset, x, y, z)
-    return Response(tile, 'image/png')
+    return Response(tile, mimetype='image/png')

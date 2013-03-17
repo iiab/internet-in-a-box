@@ -20,7 +20,7 @@
         <script type="text/javascript">
             $(function () {
                 var map = L.map('map'); /*.setView([51.505, -0.09], 14);*/
-                L.tileLayer('/osm/{z}/{x}/{y}.png', {
+                L.tileLayer('/iiab/maps/tile/{z}/{x}/{y}.png', {
                     attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
                     maxZoom: 15
                 }).addTo(map);
