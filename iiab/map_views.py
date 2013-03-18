@@ -9,7 +9,6 @@ blueprint = Blueprint('map_views', __name__,
 
 @blueprint.route('/tile/<int:z>/<int:x>/<int:y>.png')
 def tile(z, x, y):
-    print "Hello tile"
-    tileset = TileSet('/knowledge/processed/mod_tile', 'default', METATILE=8)
+    tileset = TileSet('/knowledge/processed/mod_tile64', 'default', METATILE=64, flatter=True)
     tile = meta_load_one(tileset, x, y, z)
     return Response(tile, mimetype='image/png')

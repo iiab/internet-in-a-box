@@ -45,7 +45,7 @@ class TileSet(object):
         y >>= 8
 
         for i in [1, 2, 3]:
-            hashes[i] = ((x & 0x0f) << 4) | (y & 0x04)
+            hashes[i] = ((x & 0x0f) << 4) | (y & 0x0f)
             x >>= 4
             y >>= 4
 
@@ -64,6 +64,10 @@ class TileSet(object):
 
 
 class TileNotFoundException(Exception):
+    pass
+
+
+class TileInvalidFormat(Exception):
     pass
 
 
@@ -92,6 +96,11 @@ def meta_write(tileset, x, y, z, indices, blobs):
             # ignore exception if the directory now exists
             if not os.path.exists(d):
                 raise
+
+    # Assert that every blob is referenced by an index
+    blob_indices = set(range(len(blobs)))
+    used_indices = set([x for x in indices if x != -1])
+    assert(len(blob_indices - used_indices) == 0)
 
     # Header size
     offset = len(META_MAGIC) + 4 * 4
@@ -183,12 +192,10 @@ def meta_save(tileset, x, y, z, tiles):
         if unique_hashes[tile_hash] == blob_index:  # First unique tile
             blobs.append(tile)
             blob_index += 1
-        else:
-            pass
-            #print "Skipping duplicate tile with md5 " + str(tile_hash)
 
     assert(blob_index == len(blobs))
 
+    #print "compressed %i to %i for %i indices" % (len(tiles), len(blobs), len([x for x in indices if x != -1]))
     # Save the file
     meta_write(tileset, x, y, z, indices, blobs)
 
@@ -204,8 +211,11 @@ def meta_load_index(tileset, x, y, z):
     f = open(meta_path, 'r')
     offset = len(META_MAGIC) + 4 * 4
     offset += (2 * 4) * (METATILE * METATILE)
-    fmt = "4s4i"
-    (META_MAGIC, n, x, y, z) = struct.unpack(fmt, f.read(struct.calcsize(fmt)))
+    magic = f.read(4)
+    if magic != META_MAGIC:
+        raise TileInvalidFormat("Tile " + meta_path + " is not a valid tile.  Magic " + META_MAGIC + " is not present")
+    fmt = "4i"
+    (n, x, y, z) = struct.unpack(fmt, f.read(struct.calcsize(fmt)))
     offsets = []
     sizes = []
     for mt in range(0, METATILE * METATILE):
@@ -266,6 +276,8 @@ def convert(src, dst, z):
                         tiles.extend(meta_load_all(src, src_x, src_y, z))
                     except TileNotFoundException:
                         pass
+                    except TileInvalidFormat as e:
+                        print "ERROR reading tile: " + e.message
             if len(tiles) > 0:
                 meta_save(dst, x, y, z, tiles)
     progress.update(size)
