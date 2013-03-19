@@ -99,5 +99,15 @@ As of 3/17/2013 the lastest most complete torrent by Zurd is at:
 
     http://www.legittorrents.info/index.php?page=torrent-details&id=f388128c5f528d248235b4c7b67eb81c3804eb43
 
+Install some codec dependencies (Ubuntu 12.04):
+
+    sudo -E wget --output-document=/etc/apt/sources.list.d/medibuntu.list http://www.medibuntu.org/sources.list.d/$(lsb_release -cs).list && sudo apt-get --quiet update && sudo apt-get --yes --quiet --allow-unauthenticated install medibuntu-keyring && sudo apt-get --quiet update
+    apt-get install ffmpeg libfaac0 libavcodec-extra-53
+
+Convert webm to a more mobile friendly format:
+
+    scripts/video_convert.py --extension .webm --threads 4 /knowledge/data/khanacademy.org/Khan\ Academy/ /knowledge/processed/Khan\ Academy
+
+video_convert.py is designed to be run efficiently on multiple NFS-mounted computers simultaneously in parallel.
 
 ----

@@ -7,6 +7,7 @@ from optparse import OptionParser
 import os
 import string
 from time import sleep
+from random import shuffle
 
 
 def call2(cmd):
@@ -128,5 +129,9 @@ if not os.path.exists(src_dir):
     parser.error("Source directory does not exist: " + src_dir)
 
 sources = find(src_dir, options.extension)
+
+# We shuffle the processing order so we can run from multiple nodes
+# without a lot of collisions
+shuffle(sources)
 
 convert(sources, src_dir, dst_dir, options.threads)
