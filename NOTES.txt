@@ -542,3 +542,60 @@ sudo apt-get install virtualenvwrapper sqlite3 libxml2-dev libxslt1-dev
 mkvirtualenv heritage
 pip install flask flask-mako flask-babel whoosh flask-sqlalchemy sqlautocode lxml
 edit sqlautocode/declarative.py if add error handling to _deferred_relationship import to try from sqlalchemy.ext.declarative.clsregistry import _deferred_relationship if second attempt fails.
+
+----
+OSM mod_tile compression - 3/18/13
+
+mod_tile 8x8 meta as rendered by OSM by default:
+32K     0
+56K     1
+124K    2
+272K    3
+1000K   4
+2.9M    5
+9.4M    6
+28M     7
+94M     8
+280M    9
+964M    10
+2.7G    11
+7.7G    12
+25G     13
+76G     14
+35G     15
+
+Total Size: 148 GB
+
+time du -skh mod_tile
+104 minutes!
+
+Total number of files/dirs: 7,295,166
+
+
+mod_tile converted to 64x64 meta with duplicate removal:
+
+60K     0
+84K     1
+152K    2
+300K    3
+1004K   4
+2.8M    5
+8.9M    6
+26M     7
+85M     8
+250M    9
+840M    10
+2.2G    11
+5.7G    12
+17G     13
+42G     14
+34G     15
+
+Total Size: 101 GB
+
+time du -skh mod_tile
+17 seconds!
+
+Total number of files/dirs: 108,000
+
+----

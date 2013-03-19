@@ -88,4 +88,16 @@ Web Service
     ./run.py
 
 
+Khan Academy
+------------
+
+For the latest torrent, see the newest comments on the official Khan Academy issue ticket:
+
+    http://code.google.com/p/khanacademy/issues/detail?id=191
+
+As of 3/17/2013 the lastest most complete torrent by Zurd is at:
+
+    http://www.legittorrents.info/index.php?page=torrent-details&id=f388128c5f528d248235b4c7b67eb81c3804eb43
+
+
 ----
