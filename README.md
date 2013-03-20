@@ -1,9 +1,28 @@
 Internet In A Box
 =================
 
-Humane Informatics LLC Internet In A Box (IIAB)
+2013
 
-January 2013
+*THIS PROJECT IS UNDER HEAVY INITIAL CONSTRUCTION*
+Please come back in a few weeks. :)
+
+
+Abstract
+--------
+
+The Internet-in-a-Box is a small, inexpensive device which provides essential
+Internet resources without any Internet connection.  It provides a local copy
+of half a terabyte of the world's Free information.
+
+An Internet-in-a-Box provides:
+
+- *Wikipedia*: Complete Wikipedia in a dozen different languages
+- *Maps*: Zoomable world-wide maps down to street level
+- *E-books*: Over 35 thousand e-books in a variety of languages
+- *Software*: Huge library of Open Source Software, including installable Ubuntu Linux OS with all software package repositories.  Includes full source code for study or modification.
+- *Video*: Hundreds of hours of instructional videos
+- *Chat*: Simple instant messaging across the community
+
 
 Wikipedia
 ---------
@@ -102,7 +121,7 @@ As of 3/17/2013 the lastest most complete torrent by Zurd is at:
 Install some codec dependencies (Ubuntu 12.04):
 
     sudo -E wget --output-document=/etc/apt/sources.list.d/medibuntu.list http://www.medibuntu.org/sources.list.d/$(lsb_release -cs).list && sudo apt-get --quiet update && sudo apt-get --yes --quiet --allow-unauthenticated install medibuntu-keyring && sudo apt-get --quiet update
-    apt-get install ffmpeg libfaac0 libavcodec-extra-53
+    apt-get install ffmpeg libfaac0 libavcodec-extra-53 libx264-120
 
 Convert webm to a more mobile friendly format:
 
