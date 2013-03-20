@@ -15,10 +15,12 @@ def call2(cmd):
     check_call(cmd)
 
 
-def convert_command(input_filename, output_filename,
-                    async='200', resolution='480x320', vcodec='mpeg4',
-                    acodec='libfaac', bitrate='250k', ar='16000',
-                    ab='32000'):
+def convert_command_old(input_filename, output_filename,
+                        async='200', resolution='480x320', vcodec='mpeg4',
+                        acodec='libfaac', bitrate='250k', ar='16000',
+                        ab='32000'):
+    """REMOVE: This converts to a format I commonly use under Android,
+    but it is not standard for web streaming"""
     cmd = ['ffmpeg',
            '-i', input_filename,
            '-async', async,
@@ -32,6 +34,17 @@ def convert_command(input_filename, output_filename,
            '-r', '12.5',
            '-loglevel', 'error',
            output_filename]
+    return cmd
+
+
+def convert_command(input_filename, output_filename,
+                    vcodec='libx264'):
+    """Convert to H.264 format"""
+    cmd = ['ffmpeg',
+           '-i', input_filename,
+           '-vcodec', vcodec,
+           output_filename,
+           '-loglevel', 'error']
     return cmd
 
 
@@ -78,10 +91,10 @@ def convert(sources, src_dir, dst_dir, nthreads):
             print "Starting %i of %i jobs; %i running jobs" % (count, nsources, len(jobs))
             source = sources.pop()
             full_source = os.path.join(src_dir, source)
-            output = new_filename(source, dst_dir, '.mp4')
+            output = new_filename(source, dst_dir, '.m4v')
             if not os.path.exists(output):
                 mkdirs(os.path.dirname(output))
-                tmp_output = output + '.incomplete.' + str(os.getpid()) + '.mp4'
+                tmp_output = output + '.incomplete.' + str(os.getpid()) + '.m4v'
                 cmd = convert_command(full_source, tmp_output)
                 print "POPEN: ", string.join(cmd, ' ')
                 p = Popen(cmd)

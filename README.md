@@ -110,4 +110,6 @@ Convert webm to a more mobile friendly format:
 
 video_convert.py is designed to be run efficiently on multiple NFS-mounted computers simultaneously in parallel.
 
+(this takes approximately 10 hours on two four-core CPUs)
+
 ----
