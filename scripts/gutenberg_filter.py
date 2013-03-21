@@ -2,7 +2,11 @@ import os
 import re
 
 class GutenbergIndexFilter(object):
+    # Extensions excluded from rsync of both ftp and cached/generated content
     EXCLUDED_EXT = ['.zip', '.wav', '.mp3', '.ogg', '.iso', '.ISO', '.rar', '.mpeg', '.m4b']
+    # Additional extensions excluded from cached/generated files
+    CACHE_EXCLUDED_EXT = ['.log', '.mobi', '.pdb', '.rdf', '.qioo.jar']
+
     def __init__(self):
         self.removed_texts = []
         self.notitle_count = 0
@@ -31,12 +35,15 @@ class GutenbergIndexFilter(object):
             if record['file'].startswith('http'):
                 print "[file prefix unexpected %s]" % record['file']
 
-            # omit files based on two criteria:
+            # omit files based on three criteria:
             # (a) book description was omitted due to filter criteria above
             # (b) rsync script excluded the content (extensions and 'pgdvd')
+            # (c) rsync script excluded the cached content (extensions and 'pgdvd')
+            ext = self.get_extension(record['file'])
             return (record['textId'] not in self.removed_texts and 
                 u'pgdvd' not in record['file'] and
-                self.get_extension(record['file']) not in self.EXCLUDED_EXT)
+                ext not in self.EXCLUDED_EXT and
+                (not record['file'].startswith(u'cache/') or ext not in CACHE_EXCLUDED_EXT))
                 
     def is_description_record(self, record):
         return record['record_type'] == 'DESCRIPTION'
