@@ -40,6 +40,10 @@ class GutenbergDbCreator:
         self._create_table_from_schema(self.FILE_TABLE_SCHEMA)
         self._create_many2many_tables(self.MAIN_TABLE_SCHEMA, self.AUX_TABLE_SCHEMA)
 
+        # add columns for download count associated with books liked to creators and contributors
+        self._add_downloads_column("gutenberg_creators")
+        self._add_downloads_column("gutenberg_contributors")
+
     def _create_table_from_schema(self, schema_map):
         def collect_columns_from_schema(col_schema):
             """ Return comma separated columns and def for SQL create """
@@ -87,6 +91,15 @@ class GutenbergDbCreator:
 
                 # record association between mapping table and auxiliary table
                 self.mapping_table_lookup[aux_table_name] = {table_name : [book_id_name, aux_id_name]}
+
+    def _add_downloads_column(self, table):
+        try:
+            cur = self.db.cursor()
+            cur.execute("ALTER TABLE %s ADD COLUMN downloads INTEGER;" % table)
+            self.db.commit()
+        except:
+            self.db.rollback()
+            raise
 
     def _get_aux_table_unique_column_name(self, aux_cols):
         """
@@ -263,6 +276,43 @@ class GutenbergDbCreator:
             self.db.rollback()
             raise
 
+    def compute_author_downloads(self):
+        def get_temp_insert_sql(aux_table, map_table, aux_colname):
+            return 'INSERT INTO temp_counts (id, downloads) SELECT aux.id, SUM(book.downloads) FROM gutenberg_books as book, {0} as aux, {1} as map WHERE aux.id=map.{2}_id and book.textId=map.book_id GROUP BY aux.{2};'.format(aux_table, map_table, aux_colname)
+
+        def get_update_sql(aux_table):
+            return 'UPDATE {0} SET downloads=(SELECT t.downloads from temp_counts as t where t.id={0}.id);'.format(aux_table)
+
+        def update(cursor, aux_table, map_table, aux_colname):
+            insert_sql = get_temp_insert_sql(aux_table, map_table, aux_colname)
+            update_sql = get_update_sql(aux_table)
+            cursor.execute('delete from temp_counts;')
+            cursor.execute(insert_sql)
+            cursor.execute(update_sql)
+
+        print "stored downloads per creator/contributor for sorting"
+        try: 
+            cur = self.db.cursor()
+            cur.execute('CREATE TEMP TABLE temp_counts (id int primary key, downloads int);')
+            update(cur, 'gutenberg_creators', 'gutenberg_books_creator_map', 'creator')
+            update(cur, 'gutenberg_contributors', 'gutenberg_books_contributor_map', 'contributor')
+            self.db.commit()
+        except:
+            self.db.rollback()
+            raise
+
+    def create_additional_indices(self):
+        print "creating indices for creator and contributors"
+        try:
+            cur = self.db.cursor()
+            sql = "CREATE INDEX {0}_index ON gutenberg_{0}s({0});"
+            cur.execute(sql.format('creator'))
+            cur.execute(sql.format('contributor'))
+            self.db.commit()
+        except:
+            self.db.rollback()
+            raise
+
 def main():
     parser = OptionParser()
     parser.add_option("--dbname", dest="db_filename", action="store",
@@ -280,6 +330,7 @@ def main():
         print "Omitted %d records without titles" % index_filter.notitle_count
 
     make_db.create_custom_title_order_index()
+    make_db.compute_author_downloads()
 
 if __name__ == '__main__':
     main()

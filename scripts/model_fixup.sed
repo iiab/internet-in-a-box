@@ -8,6 +8,7 @@ s/relation(/db.relation(/g
 s/metadata,//g
 s/INTEGER/db.INTEGER/g
 s/TEXT/db.TEXT/g
+s/VARCHAR/db.VARCHAR/g
 s/ForeignKey/db.ForeignKey/g
 /gutenberg_subjects =/a\
     gutenberg_files = db.relation('GutenbergBookFile')
