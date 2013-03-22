@@ -6,7 +6,7 @@
 <script type="text/javascript">
 <!--
     $(function(){
-        {% if False %}
+        {% if True %}
         $("{{anchor}}").autocomplete({ source: "{{url_for('gutenberg.autocomplete')}}", sortResults: false });
         {% else %}
         $.getJSON("{{completion_url}}", function(data) {

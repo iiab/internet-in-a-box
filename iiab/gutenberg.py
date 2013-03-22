@@ -8,6 +8,8 @@ from flask import (Blueprint, render_template, current_app, request, Response,
 from flaskext.babel import gettext as _
 import json
 
+from contextlib import closing
+
 import whoosh
 from whoosh.index import open_dir
 from whoosh.qparser import MultifieldParser
@@ -39,7 +41,7 @@ def search():
         (pagination, suggestion) = paginated_search(query, page)
     else:
         flash(_('Please input keyword(s)'), 'error')
-    print pagination.items
+    #print pagination.items
     return render_template('gutenberg/search.html', pagination=pagination, keywords=query, suggestion=suggestion, fn_author_to_query=author_to_query, endpoint_desc=EndPointDescription('gutenberg.search', None))
 
 def author_to_query(author):
@@ -78,7 +80,6 @@ def paginated_search(query_text, page=1, pagelen=DEFAULT_RESULTS_PER_PAGE):
         #hf = whoosh.highlight.HtmlFormatter(classname="change")
         #html = corrections.format_string(hf)
         return (paginate, [c.string for c in corrections])
-
 
 def deduplicate_corrections(corrections):
     """
@@ -177,17 +178,33 @@ def autocomplete():
             # of partial matches across several different columns without
             # lots of effort
 
-            # Need to reimplement this...
-            # corrector only matches with hamming distance of 2 by default. 
-            # Besides, autocomplete should not be a spelling correction but
-            # rather partial matches.
-            corrections = []
-            for col in DEFAULT_SEARCH_COLUMNS:
-                corrections += searcher.corrector(col).suggest(term)
-            return Response(response=json.dumps(corrections), mimetype="application/json")
+            suggestions = get_autocomplete_matches(term)
+            return Response(response=json.dumps(suggestions), mimetype="application/json")
     else:
         # Choosing an inefficient redirect because still testing different
         # approaches and its easier to centralize the handling.  If we keep
         # this approach we can just change the referencing url
         return redirect(url_for("static", filename="gutenberg_wordlist.json"))
+
+def get_autocomplete_matches(prefix, limit=10):
+    def get_prefix_like(prefix):
+        (result, _) = re.subn(r'\\', u'\\\\', prefix)
+        (result, _) = re.subn(r'_', u'\_', result)
+        (result, _) = re.subn(r'%', u'\%', result)
+        (result, _) = re.subn(r'\s+', u'%', result)
+        return '%' + result + '%'
+    def make_sql(colname, tablename, limit):
+        sql = "SELECT {0}, downloads FROM {1} WHERE {0} LIKE :like_clause ESCAPE '\\' ORDER BY downloads LIMIT {2};".format(colname, tablename, limit)
+        return sql
+
+    like_clause = get_prefix_like(prefix)
+    search_fields = [('title', 'gutenberg_books'), 
+            ('creator', 'gutenberg_creators'), 
+            ('contributor', 'gutenberg_contributors')]
+    results = []
+    with closing(db.engine.connect()) as conn:
+        for colname, tablename in search_fields:
+            results.extend(conn.execute(make_sql(colname, tablename, limit), like_clause=like_clause).fetchall())
+    print results
+    return [row[0] for row in sorted(results, key=lambda r: r[1], reverse=True)]
 
