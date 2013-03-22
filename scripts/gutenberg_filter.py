@@ -43,7 +43,7 @@ class GutenbergIndexFilter(object):
             return (record['textId'] not in self.removed_texts and 
                 u'pgdvd' not in record['file'] and
                 ext not in self.EXCLUDED_EXT and
-                (not record['file'].startswith(u'cache/') or ext not in CACHE_EXCLUDED_EXT))
+                (not record['file'].startswith(u'cache/') or ext not in self.CACHE_EXCLUDED_EXT))
                 
     def is_description_record(self, record):
         return record['record_type'] == 'DESCRIPTION'
