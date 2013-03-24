@@ -599,3 +599,11 @@ time du -skh mod_tile
 Total number of files/dirs: 108,000
 
 ----
+Postgres database reset
+
+rm -rvf /var/lib/postgresql
+mkdir -p /var/lib/postgresql/9.1/main
+apt-get remove --purge postgresql-9.1-postgis postgresql-client-9.1 postgresql-client-common postgresql-common
+apt-get install libapache2-mod-tile osm2pgsql openstreetmap-postgis-db-setup
+
+----

@@ -24,6 +24,99 @@ An Internet-in-a-Box provides:
 - *Chat*: Simple instant messaging across the community
 
 
+OpenStreetMap
+-------------
+
+We are installing on an Ubuntu 12.04 quad-core 3GHz machine with
+16 GB RAM and a 500GB SSD.
+
+You must have a beefy machine.  Note that on an quad-core 8GB RAM
+2.5GHz machine the planet import time was TWO WEEKS!
+
+More detailed instructions are available from the switch2osm.org project.  However they have you build all tools from source:
+http://switch2osm.org/serving-tiles/manually-building-a-tile-server-12-04/
+
+
+1. Download Planet File
+
+Download the latest OSM Planet file.  Use the newer "pbf" format (which is
+binary), and not the "bz2" format (which is XML).
+
+The latest planet.osm.pbf.torrent can be downloaded via bittorrent from:
+http://osm-torrent.torres.voyager.hr/files/planet-latest.osm.pbf.torrent
+
+planet.osm.pbf is about 20 GB in size.
+
+
+
+2. Install OSM Software
+
+    add-apt-repository ppa:kakrueger/openstreetmap
+    apt-get update
+    apt-get remove --purge postgresql-9.1-postgis postgresql-client-9.1 postgresql-client-common postgresql-common
+    apt-get install libapache2-mod-tile osm2pgsql openstreetmap-postgis-db-setup
+    dpkg-reconfigure openstreetmap-postgis-db-setup
+
+
+Not sure how much of the following is actually required:
+
+    sudo apt-get install subversion git-core tar unzip wget bzip2 build-essential autoconf libtool libxml2-dev libgeos-dev libpq-dev libbz2-dev proj munin-node munin libprotobuf-c0-dev protobuf-c-compiler libfreetype6-dev libpng12-dev libtiff4-dev libicu-dev libboost-all-dev libgdal-dev libcairo-dev libcairomm-1.0-dev apache2 apache2-dev libagg-dev
+
+(Make sure to install from ppa:kakrueger and not the outdated
+versions in the main Ubuntu repositories or things will be bad)
+
+    osm2pgsql -v
+    osm2pgsql SVN version 0.81.0
+
+
+3. Prepare a swap file on the SSD
+
+Create a 16 GB swap file on the SSD.
+
+    dd if=/dev/zero of=/mnt/ssd/swapfile bs=1024 count=16000000
+    mkswap -L ssdswap /mnt/ssd/swapfile
+Add line to /etc/fstab, and comment out existing swap
+    /mnt/ssd/swapfile none            swap    sw              0       0
+Activate swap
+    swapoff -a  # Turn off existing swap
+    swapon -a  # Turn on new SSD swap
+
+
+4. Wipe out old Postgres database and move it to SSD
+
+We are going to wipe the old Postgres directory and start from
+scratch with a directory on our SSD.  It is possible to do
+incremental updates to the OSM database, but we haven't tried it.
+
+    /etc/init.d/postgresql stop
+    mv -v /var/lib/postgresql /mnt/ssd/
+    ln -s /mnt/ssd/postgresql /var/lib/postgresql
+    /etc/init.d/postgresql start
+
+
+5. Setup the OSM Postgres/PostGIS database
+
+    sudo -u postgres -i
+    createuser braddock # answer yes for superuser (although this isn't strictly necessary)
+    createdb -E UTF8 -O braddock gis
+    psql -f /usr/share/postgresql/9.1/contrib/postgis-1.5/postgis.sql -d gis
+    psql -d gis -c "ALTER TABLE geometry_columns OWNER TO braddock; ALTER TABLE spatial_ref_sys OWNER TO braddock;"
+    exit
+
+
+6. Tune Postgresql
+
+See section "Tuning your system" in http://switch2osm.org/serving-tiles/manually-building-a-tile-server/ 
+
+
+6. Import planet (will takes days)
+
+    time osm2pgsql --slim -C 14000 planet-130206.osm.pbf
+
+Note you can get statistics on number of nodes, ways, and relations at:
+http://www.openstreetmap.org/stats/data_stats.html
+
+
 Wikipedia
 ---------
 
@@ -99,14 +192,6 @@ Project Gutenberg Mirror
     while (true); do (date; . ../../Heritage/rsync_gutenberg; sleep 3600) | tee -a 20120823.log; done
 
 
-Web Service
------------
-
-    cd Heritage
-    pip install Flask-Babel whoosh Flask-SQLAlchemy
-    ./run.py
-
-
 Khan Academy
 ------------
 
@@ -129,6 +214,14 @@ Convert webm to a more mobile friendly format:
 
 video_convert.py is designed to be run efficiently on multiple NFS-mounted computers simultaneously in parallel.
 
-(this takes approximately 10 hours on two four-core CPUs)
+(this takes approximately 20 hours on two four-core CPUs)
+
+
+Web Service
+-----------
+
+    cd internet-in-a-box
+    pip install Flask-Babel whoosh Flask-SQLAlchemy
+    ./run.py
 
 ----
