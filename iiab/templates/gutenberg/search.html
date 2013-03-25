@@ -7,7 +7,7 @@
 #}
 {% from 'macros/_misc.html' import render_pagination, render_book_search_table %}
 
-{% extends 'layouts/base.html' %}
+{% extends 'layouts/base_navsearch.html' %}
 
 {% if keywords %}
     {% set page_title = _('Search results for "%(keywords)s"', keywords=keywords) %}

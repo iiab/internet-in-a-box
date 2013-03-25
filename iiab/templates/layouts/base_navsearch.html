@@ -1,0 +1,17 @@
+{% extends "layouts/base.html" %}
+
+{% block topbar_content %}
+    {{ super() }}
+    <form class="form-search" action="{{ url_for('gutenberg.search') }}" method="get">
+        <input type="text" id="book_navbar_search" class="input search-query" placeholder="{{ _('Search') }}" name="q" />
+        <button type="submit" class="btn">Search</button>
+    </form>
+
+{% endblock %}
+
+{% block js_btm %}
+    {{ super() }}
+    {% from 'macros/_autocomplete.js' import attach_autocomplete %}
+    {{ attach_autocomplete('#book_navbar_search', url_for('gutenberg.autocomplete')) | safe }}
+{% endblock %}
+

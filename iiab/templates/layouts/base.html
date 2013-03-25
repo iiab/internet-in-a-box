@@ -35,18 +35,15 @@
     <div class="navbar navbar-fixed-top">
         <div class="navbar-inner">
             <div class="container">
+                {% block topbar_content %}
                 <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </a>
 
-                <a class='brand' href='{{ url_for('gutenberg.index') }}'>{{ _("Project") }}</a>
-                <form class="form-search" action="{{ url_for('gutenberg.search') }}" method="get">
-                    <input type="text" id="book_navbar_search" class="input search-query" placeholder="Search" name="q" />
-                    <button type="submit" class="btn">Search</button>
-                </form>
-
+                <a class='brand' href='{{ url_for('gutenberg.index') }}'>{{ _("Books") }}</a>
+                {% endblock %}
             </div>
         </div>
     </div>
@@ -92,12 +89,8 @@
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script src="{{ url_for('static', filename='js/vendor/jquery-ui-1.10.1.custom.min.js') }}"></script>
 
-    {#
-    <script src="{{ url_for('static', filename='js/autocomplete.js') }}"></script>
-    #}
     {% from 'macros/_autocomplete.js' import attach_autocomplete %}
     {{ attach_autocomplete('#book_search', url_for('gutenberg.autocomplete')) | safe }}
-    {{ attach_autocomplete('#book_navbar_search', url_for('gutenberg.autocomplete')) | safe }}
     {% endblock %}
 
     {% block ga %}
