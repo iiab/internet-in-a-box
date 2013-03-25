@@ -137,7 +137,6 @@ def author(authorId):
 
 @gutenberg.route('/text/<textId>/details')
 def text(textId):
-    print textId
     record = GutenbergBook.query.filter_by(textId=textId).first()
     fields = [
         (_('Title'), 'title', ''),
@@ -148,9 +147,6 @@ def text(textId):
         (_('Language'), 'gutenberg_languages', 'language')
         ]
     files = GutenbergBookFile.query.filter_by(textId=textId).all()
-    print record
-    print fields
-    print files
     return render_template('gutenberg/book_details.html', record=record, fields=fields, files=files)
 
 @gutenberg.route('/text/<textId>/<int:textIndex>')
@@ -206,6 +202,5 @@ def get_autocomplete_matches(prefix, limit=10):
     with closing(db.engine.connect()) as conn:
         for colname, tablename in search_fields:
             results.extend(conn.execute(make_sql(colname, tablename, limit), like_clause=like_clause).fetchall())
-    print results
     return [row[0] for row in sorted(results, key=lambda r: r[1], reverse=True)]
 
