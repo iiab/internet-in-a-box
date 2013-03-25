@@ -1,4 +1,5 @@
-#!/usr/bin/env python
+"""Routines for retrieving and converting OpenStreetMap
+mod_tile imagery tiles.  By Braddock Gaskill, March 2013"""
 import struct
 import os
 import thread
