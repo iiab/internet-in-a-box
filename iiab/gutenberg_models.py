@@ -1,1 +1,1 @@
-/home/ubuntu/data/talaria/humaneinformatics/internetbox//processed/gutenberg_models.py
+/knowledge/processed/gutenberg_models.py
