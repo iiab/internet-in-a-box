@@ -27,9 +27,9 @@ class GutenbergIndexFilter(object):
             
             # adjust the file path (should add warning if path does not match pattern)
             FILE_PREFIX = '^http://www.gutenberg.org/dirs/'
-            record['file'] = re.sub(FILE_PREFIX, 'gutenberg/', record['file'])
+            record['file'] = re.sub(FILE_PREFIX, 'data/gutenberg/', record['file'])
             CACHE_FILE_PREFIX = '^http://www.gutenberg.org/cache/epub/'
-            record['file'] = re.sub(CACHE_FILE_PREFIX, 'cache/generated/', record['file'])
+            record['file'] = re.sub(CACHE_FILE_PREFIX, 'data/cache/generated/', record['file'])
 
             # seems ugly - would multiple filters be better?  or maybe a filter stage followed by a transform stage?
             if record['file'].startswith('http'):
@@ -43,7 +43,7 @@ class GutenbergIndexFilter(object):
             return (record['textId'] not in self.removed_texts and 
                 u'pgdvd' not in record['file'] and
                 ext not in self.EXCLUDED_EXT and
-                (not record['file'].startswith(u'cache/') or ext not in self.CACHE_EXCLUDED_EXT))
+                (not record['file'].startswith(u'data/cache/') or ext not in self.CACHE_EXCLUDED_EXT))
                 
     def is_description_record(self, record):
         return record['record_type'] == 'DESCRIPTION'

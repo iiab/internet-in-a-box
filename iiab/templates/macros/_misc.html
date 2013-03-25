@@ -138,7 +138,7 @@
     {% set index = 0 %}
     {% for f in record['gutenberg_files'] %}
     <tr>
-        <td><a href="{{ url_for('.read', textId=f['textId'], textIndex=index) }}">{{ f['file'] }}</a></td>
+        <td><a href="{{ url_for('static', filename=f.file) }}">{{ f['file'] }}</a></td>
         <td>{{ f['format'] }}</td>
     </tr>
     {% set index = index + 1 %}

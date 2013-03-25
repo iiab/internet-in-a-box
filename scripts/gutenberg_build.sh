@@ -45,6 +45,7 @@ DBNAME=gutenberg.db
 MODEL=gutenberg_models.py
 WORDLIST_JSON=gutenberg_wordlist.json
 GUTENBERG_DATA=$BASE_DIR/data/gutenberg/gutenberg
+GUTENBERG_CACHE_DATA=$BASE_DIR/data/gutenberg/cache/generated
 
 CATALOG=$GUTENBERG_DATA/../catalog.rdf.bz2
 DBNAME_TARGET=$PROCESSED_DIR/$DBNAME
@@ -119,6 +120,7 @@ do
             mk_lnk $WHOOSH_DIR_LNK_SRC $WHOOSH_DIR_LNK_DST
             mk_lnk $WORDLIST_JSON_TARGET $HERITAGE_DIR/iiab/static/$WORDLIST_JSON
             mk_lnk $GUTENBERG_DATA $HERITAGE_DIR/iiab/static/data
+            mk_lnk $GUTENBERG_CACHE_DATA $HERITAGE_DIR/iiab/static/data/cache/generated
             ;;
 
         *)
