@@ -52,6 +52,7 @@ WHOOSH_DIR=$PROCESSED_DIR/whoosh/gutenberg_index
 WHOOSH_DIR_LNK_SRC=$PROCESSED_DIR/whoosh
 WHOOSH_DIR_LNK_DST=$HERITAGE_DIR/whoosh
 MODEL_TARGET=$PROCESSED_DIR/$MODEL
+MODEL_LNK_DST=$HERITAGE_DIR/iiab/$MODEL
 WORDLIST_JSON_TARGET=$PROCESSED_DIR/$WORDLIST_JSON
 
 function assert_dir_exists {
@@ -103,6 +104,7 @@ do
             # Option -d means use declarative object model format.
             # sed script post processes to produce result for use with flask-sqlalchemy
             ${PYTHON_DIR}sqlautocode -d sqlite:///${DBNAME_TARGET} | sed -f model_fixup.sed > $MODEL_TARGET
+            cp $MODEL_TARGET $MODEL_LNK_DST
 
             ;;
 
@@ -115,7 +117,6 @@ do
             echo Creating symlinks
             mk_lnk $DBNAME_TARGET $HERITAGE_DIR/$DBNAME
             mk_lnk $WHOOSH_DIR_LNK_SRC $WHOOSH_DIR_LNK_DST
-            mk_lnk $MODEL_TARGET $HERITAGE_DIR/iiab/$MODEL
             mk_lnk $WORDLIST_JSON_TARGET $HERITAGE_DIR/iiab/static/$WORDLIST_JSON
             mk_lnk $GUTENBERG_DATA $HERITAGE_DIR/iiab/static/data
             ;;
