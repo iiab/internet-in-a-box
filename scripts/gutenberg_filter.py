@@ -27,7 +27,7 @@ class GutenbergIndexFilter(object):
             
             # adjust the file path (should add warning if path does not match pattern)
             FILE_PREFIX = '^http://www.gutenberg.org/dirs/'
-            record['file'] = re.sub(FILE_PREFIX, 'data/gutenberg/', record['file'])
+            record['file'] = re.sub(FILE_PREFIX, 'data/', record['file'])
             CACHE_FILE_PREFIX = '^http://www.gutenberg.org/cache/epub/'
             record['file'] = re.sub(CACHE_FILE_PREFIX, 'data/cache/generated/', record['file'])
 
