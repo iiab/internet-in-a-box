@@ -36,7 +36,9 @@ class IiabWebApp(object):
 
         #self.configure_mako_to_replace_jinja2()
 
-        self.load_gutenberg_config()
+        # set global config variables referenced by SQLAlchemy
+        self.app.config['SQLALCHEMY_ECHO'] = config().get('GUTENBERG', 'sqlalchemy_echo')
+        self.app.config['SQLALCHEMY_DATABASE_URI'] = config().get('GUTENBERG', 'sqlalchemy_database_uri')
 
         self.configure_babel()
         db.init_app(self.app)
@@ -54,15 +56,4 @@ class IiabWebApp(object):
         def get_locale():
             accept_languages = config().getjson('GUTENBERG', 'babel_accept_languages')
             return request.accept_languages.best_match(accept_languages)
-
-    def load_gutenberg_config(self):
-        """
-        Apply all gutenberg variables to app.config so application is 
-        properly configured.  Many flask modules, including SQLAlchemy, 
-        use predefined variables in config to set defaults.  Since this 
-        approach is a hackish response to the separation of configuration 
-        options there might be a more elegant approach.  Suggestions welcomed.
-        """
-        gut_config = [(k.upper(), v) for k,v in config().items('GUTENBERG')]
-        self.app.config.update(gut_config)
 
