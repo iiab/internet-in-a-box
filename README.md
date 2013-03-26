@@ -113,9 +113,13 @@ See section "Tuning your system" in http://switch2osm.org/serving-tiles/manually
 
     time osm2pgsql --slim -C 14000 planet-130206.osm.pbf
 
+NOTE: Consider using --number-processes 4 next time!
+
+See the performance (and options) of others at:
+http://wiki.openstreetmap.org/wiki/Osm2pgsql/benchmarks
+
 Note you can get statistics on number of nodes, ways, and relations at:
 http://www.openstreetmap.org/stats/data_stats.html
-
 
 Wikipedia
 ---------

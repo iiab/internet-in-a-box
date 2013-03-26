@@ -6,6 +6,7 @@ from config import config
 import top_views
 import search_views
 import map_views
+import video_views
 import gutenberg
 from extensions import db
 
@@ -29,7 +30,8 @@ class IiabWebApp(object):
             (top_views.blueprint, base_prefix),
             #(search_views.blueprint, base_prefix),
             (gutenberg.gutenberg, base_prefix + "books"),
-            (map_views.blueprint, base_prefix + "maps")
+            (map_views.blueprint, base_prefix + "maps"),
+            (video_views.blueprint, base_prefix + "video")
         ]
         for blueprint, prefix in blueprints:
             self.app.register_blueprint(blueprint, url_prefix=prefix)

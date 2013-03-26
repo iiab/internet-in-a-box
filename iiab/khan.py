@@ -64,11 +64,41 @@ def get(tree, s):
     """Get the tree node or full pathname for a specified
     tuple of indices such as (1, 3, 2).  Returns None if not found."""
     if len(s) == 0:
-        return None
-    e = tree[s[0]]
+        return 'top', tree
+    name, e = tree[s[0]]
     if len(s) == 1:
-        return e[1]
-    return get(e[1], s[1:])
+        return name, e
+    return get(e, s[1:])
+
+
+def getchildren(tree, s):
+    """Returns a dictionary structure containing the parents of a
+    specified node (in 'breadcrumbs'), the direct children of
+    the node (in 'children') if any, and the filename if any
+    (in 'file')."""
+    r = {}
+    name, e = get(tree, s)
+    r['breadcrumbs'] = getpath(tree, s)
+    if type(e) in [str, unicode]:
+        r['file'] = e
+    else:  # dict
+        r['children'] = [(idx, subtree[0]) for (idx, subtree) in e.items()]
+    return r
+
+
+def getpath(tree, s):
+    """Get the tree node or full pathname for a specified
+    tuple of indices such as (1, 3, 2).  Returns None if not found."""
+    items = []
+    for i in range(1, len(s) + 1):
+        name, e = get(tree, s[:i])
+        items.append((s[i - 1], name))
+    return items
+
+
+def getfile(tree, s):
+    e = getchildren(tree, s)
+    return e['file']
 
 
 def find(root, extension=".webm"):
@@ -83,3 +113,11 @@ def find(root, extension=".webm"):
                 found.append(os.path.join(path, f))
     os.chdir(cwd)
     return found
+
+
+def find_khan(root, extension=".webm"):
+    paths = find(root, extension)
+    cats = [split_path(x) for x in paths]
+    cats = assign_number_to_top_categories(cats)
+    tree = categories_to_tree(cats, paths)
+    return tree

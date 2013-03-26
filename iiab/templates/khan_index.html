@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    </head>
+    <body>
+        <h1>Videos from Khan Academy</h1>
+        <ul>
+            {% for child in children %}
+            <li><a href="{{ child['url'] }}">{{ child['index'] }} - {{ child['name'] }}</a></li>
+            {% endfor %}
+        </ul>
+    </body>
+</html>
