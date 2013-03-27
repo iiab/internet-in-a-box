@@ -21,6 +21,8 @@ def main(argv):
                       help="Optional additional config file to read instead of local_config.ini")
     parser.add_option("--knowledge", dest="knowledge", default=None,
                       help="Path to knowledge directory")
+    parser.add_option("--tornado", action="store_true", default=False,
+                      help="Use the Tornado web server")
     (options, args) = parser.parse_args()
 
     load_config('config.ini', [options.config])
@@ -38,8 +40,18 @@ def main(argv):
     print config().all_items_to_str()
 
     webapp = IiabWebApp(options.debug)
-    webapp.app.run(debug=config().getboolean('DEFAULT', 'debug'),
-                   port=config().getint('WEBAPP', 'port'), host='0.0.0.0')
+
+    if options.tornado:
+        from tornado.wsgi import WSGIContainer
+        from tornado.httpserver import HTTPServer
+        from tornado.ioloop import IOLoop
+
+        http_server = HTTPServer(WSGIContainer(webapp.app))
+        http_server.listen(config().getint('WEBAPP', 'port'))
+        IOLoop.instance().start()
+    else:
+        webapp.app.run(debug=config().getboolean('DEFAULT', 'debug'),
+                       port=config().getint('WEBAPP', 'port'), host='0.0.0.0')
 
 
 if __name__ == "__main__":

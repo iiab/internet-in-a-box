@@ -221,6 +221,16 @@ video_convert.py is designed to be run efficiently on multiple NFS-mounted compu
 (this takes approximately 20 hours on two four-core CPUs)
 
 
+We must create a tree of symlinks to our video.
+The purpose of building a tree of symlinks is to that the front end
+web server can serve the video files directly, allowing Accept-Ranges
+and other features to work with the finicky video browser clients
+
+    ipython
+    import iiab.khan
+    iab.khan.make_symlinks('/knowledge/data/khanacademy.org/Khan Academy/', '/knowledge/processed/Khan Academy/', '/knowledge/processed/khanlinks')
+
+
 Web Service
 -----------
 

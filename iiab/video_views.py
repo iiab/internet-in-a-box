@@ -2,12 +2,13 @@
 from flask import Blueprint, Response, request, redirect, make_response, render_template, send_file
 import json
 import os
+import string
 
 from config import config
 import khan
 
 blueprint = Blueprint('video_views', __name__,
-                      template_folder='templates', static_folder='static')
+                      template_folder='templates', static_folder='khanvideo')
 
 
 def get_tree():
@@ -17,6 +18,10 @@ def get_tree():
 
 def split_khanpath(khanpath):
     return [int(x) for x in khanpath.split('/') if x != '']
+
+
+def join_khanpath(khanpath):
+    return string.join([str(x) for x in khanpath], '/')
 
 
 @blueprint.route('/khanjson/')
@@ -41,13 +46,14 @@ def khan_view(khanpath=''):
             return {
                 'index': child[0],
                 'name': child[1],
-                'url': str(child[0])
+                'url': "/iiab/video/khan/" + join_khanpath(path + [child[0]])
             }
         children = map(childmap, r['children'])
         return render_template('khan_index.html', breadcrumbs=r['breadcrumbs'], children=children)
     elif 'file' in r:
-        webm = '/iiab/video/khanvideo/' + khanpath + ".webm"
-        h264 = '/iiab/video/khanvideo/' + khanpath + ".m4v"
+        base_url = config().get('VIDEO', 'video_url')
+        webm = base_url + '/' + khanpath + ".webm"
+        h264 = base_url + '/' + khanpath + ".m4v"
         title = r['breadcrumbs'][-1][1]
         return render_template('khan_video.html', breadcrumbs=r['breadcrumbs'],
                 webm=webm, h264=h264, title=title)
@@ -55,7 +61,8 @@ def khan_view(khanpath=''):
         raise Exception("Unknown return type in Khan Academy tree")
 
 
-@blueprint.route('/khanvideo/<path:khanpath>.webm')
+# REMOVE - no longer used
+#@blueprint.route('/khanvideo/<path:khanpath>.webm')
 def khan_webm_view(khanpath=''):
     path = split_khanpath(khanpath)
     tree = get_tree()
@@ -64,14 +71,15 @@ def khan_webm_view(khanpath=''):
     return send_file(os.path.join(khan_webm_dir, filename))
 
 
-@blueprint.route('/khanvideo/<path:khanpath>.m4v')
+# REMOVE - no longer used
+#@blueprint.route('/khanvideo/<path:khanpath>.m4v')
 def khan_h264_view(khanpath=''):
     path = split_khanpath(khanpath)
     tree = get_tree()
     filename = khan.getfile(tree, path)
     filename = os.path.splitext(filename)[0] + '.m4v'
     khan_webm_dir = config().get('VIDEO', 'khan_h264_dir')
-    return send_file(os.path.join(khan_webm_dir, filename))
+    return send_file(os.path.join(khan_webm_dir, filename), mimetype='video/mp4')
 
 
 @blueprint.route('/')

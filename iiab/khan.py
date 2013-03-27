@@ -1,6 +1,7 @@
 """Khan Academy Video Utilities"""
 import re
 import os
+import string
 
 
 def split_path(path):
@@ -110,7 +111,7 @@ def find(root, extension=".webm"):
         path = path[2:]  # Remove './'
         for f in files:
             if extension is None or f[-len(extension):] == extension:
-                found.append(os.path.join(path, f))
+                found.append(os.path.join(unicode(path.decode('utf-8')), unicode(f.decode('utf-8'))))
     os.chdir(cwd)
     return found
 
@@ -121,3 +122,37 @@ def find_khan(root, extension=".webm"):
     cats = assign_number_to_top_categories(cats)
     tree = categories_to_tree(cats, paths)
     return tree
+
+
+def map_symlinks(categories, paths):
+    def map_path_and_cat(path, cat):
+        joined = string.join([str(n) for n, name in cat], '/')
+        return (path, joined)
+    return map(map_path_and_cat, paths, categories)
+
+
+def make_symlinks(webm_root, h264_root, symlink_root, extension=".webm"):
+    """The purpose of building a tree of symlinks is to that the front end
+    web server can serve the video files directly, allowing Accept-Ranges
+    and other features to work with the finicky video browser clients"""
+    paths = find(webm_root, extension)
+    cats = [split_path(x) for x in paths]
+    cats = assign_number_to_top_categories(cats)
+    syms = map_symlinks(cats, paths)
+    for src, dst in syms:
+        webm_src = os.path.join(webm_root, src)
+        webm_dst = os.path.join(symlink_root, dst) + ".webm"
+        directory = os.path.split(webm_dst)[0]
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        if os.path.exists(webm_dst):
+            os.remove(webm_dst)
+        print webm_src, " -> ", webm_dst
+        os.symlink(webm_src, webm_dst)
+        h264_src = os.path.join(h264_root, os.path.splitext(src)[0] + ".m4v")
+        h264_dst = os.path.join(symlink_root, dst + ".m4v")
+        if os.path.exists(h264_dst):
+            os.remove(h264_dst)
+        print h264_src, " -> ", h264_dst
+        assert(os.path.exists(h264_src))
+        os.symlink(h264_src, h264_dst)
