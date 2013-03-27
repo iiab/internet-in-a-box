@@ -234,8 +234,13 @@ and other features to work with the finicky video browser clients
 Web Service
 -----------
 
+Basic Python requirements:
     cd internet-in-a-box
     pip install Flask-Babel whoosh Flask-SQLAlchemy
     ./run.py
+
+We run nginx as our front end web service:
+    apt-get install nginx
+    cp iiab_nginx.conf /etc/nginx/sites-enabled/
 
 ----
