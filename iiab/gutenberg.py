@@ -89,7 +89,9 @@ def deduplicate_corrections(corrections):
     :returns: list of Corrector objects
     """
     # Using values from a dictionary comprehension rather than a list comprehension in order to deduplicate
-    return {c.string : c for c in corrections if c.original_query != c.query}.values()
+    #return {c.string : c for c in corrections if c.original_query != c.query}.values()
+    # We can't use dictionary comprehension because we are stuck on python 2.6 for Debian stable
+    return dict((c.string, c) for c in corrections if c.original_query != c.query).values()
 
 def get_query_corrections(searcher, query, qstring):
     """

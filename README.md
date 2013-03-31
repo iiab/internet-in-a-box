@@ -236,7 +236,7 @@ Web Service
 
 Basic Python requirements:
     cd internet-in-a-box
-    pip install Flask-Babel whoosh Flask-SQLAlchemy
+    pip install Flask-Babel whoosh Flask-SQLAlchemy progressbar
     ./run.py
 
 We run nginx as our front end web service:
