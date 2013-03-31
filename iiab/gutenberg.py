@@ -114,7 +114,7 @@ def get_query_corrections(searcher, query, qstring):
         if token.fieldname in correctors:
             terms.append((token.fieldname, token.text))
 
-    return MultiFieldQueryCorrector(correctors, terms).correct_query(query, qstring)
+    return MultiFieldQueryCorrector(correctors, terms, prefix=2, maxdist=1).correct_query(query, qstring)
 
 @gutenberg.route('/titles')
 def by_title():
@@ -144,9 +144,7 @@ def text(textId):
     # Lags can be minimized by disabling SQLALCHEMY_ECHO and
     # and debug mode.
     # Tested no options, joinedload and subqueryload with no consistent winner.
-    record = GutenbergBook.query.options(
-                 subqueryload('*')
-             ).filter_by(textId=textId).first()
+    record = GutenbergBook.query.filter_by(textId=textId).first()
 
     # fields format is list of tuples:
     # (Table row heading for display, gutenberg_books col name, 
