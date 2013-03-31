@@ -21,6 +21,7 @@ class IiabWebApp(object):
         """
         self.app = Flask('IiabWebApp')
         self.app.root_path += '/iiab'  # something changed so that root_path changed -- work around until identified
+        self.app.url_map.strict_slashes = False
 
         # Configuration items
         if debug:
@@ -30,9 +31,9 @@ class IiabWebApp(object):
 
         base_prefix = '/iiab/'
         # Static blueprint is used during development to serve static files
-        static_blueprint = Blueprint('static_blueprint', __name__, static_folder='static')
+        #static_blueprint = Blueprint('static_blueprint', __name__, static_folder='static')
         blueprints = [
-            (static_blueprint, base_prefix),
+            #(static_blueprint, base_prefix),
             (top_views.blueprint, base_prefix),
             #(search_views.blueprint, base_prefix),
             (gutenberg.gutenberg, base_prefix + "books"),
@@ -59,6 +60,8 @@ class IiabWebApp(object):
             else:
                 stream = MergeStream(sys.stdout, f)
                 self.app = ProfilerMiddleware(self.app, stream)
+        print "URL MAP: ", self.app.url_map
+
 
     # REMOVE
     #def configure_mako_to_replace_jinja2(self):

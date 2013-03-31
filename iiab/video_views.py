@@ -34,6 +34,7 @@ def khan_json_view(khanpath=''):
     return Response(json.dumps(r, indent=4), mimetype="application/json")
 
 
+@blueprint.route('/')
 @blueprint.route('/khan/')
 @blueprint.route('/khan/<path:khanpath>/')
 def khan_view(khanpath=''):
@@ -81,7 +82,3 @@ def khan_h264_view(khanpath=''):
     khan_webm_dir = config().get('VIDEO', 'khan_h264_dir')
     return send_file(os.path.join(khan_webm_dir, filename), mimetype='video/mp4')
 
-
-@blueprint.route('/')
-def video_view():
-    return redirect('/iiab/video/khan')

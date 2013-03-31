@@ -46,11 +46,12 @@
   <!-- Home -->
   <div data-role="page" data-theme="b" id="page1">
       <div data-role="content">
+          <h1>Internet-in-a-Box</h1>
           <div data-role="fieldcontain">
               <fieldset data-role="controlgroup">
                   <label for="searchinput1">
                   </label>
-                  <input name="" id="searchinput1" placeholder="" value="kansas" type="search">
+                  <input name="" id="searchinput1" placeholder="Under Construction" value="" type="search">
               </fieldset>
           </div>
           <ul data-role="listview" data-divider-theme="b" data-inset="true">
@@ -63,7 +64,7 @@
                   </a>
               </li>
               <li data-theme="c">
-                  <a href="books" data-transition="slide" data-ajax="false">
+                  <a href="{{ url_for('gutenberg.index') }}" data-transition="slide" data-ajax="false">
                       Books
                       <span class="ui-li-count">
                           13
@@ -71,7 +72,7 @@
                   </a>
               </li>
               <li data-theme="c">
-                  <a href="../static/map.html" data-transition="slide" data-ajax="false">
+                  <a href="/static/map.html" data-transition="slide" data-ajax="false">
                       Maps
                       <span class="ui-li-count">
                           3
@@ -79,7 +80,7 @@
                   </a>
               </li>
               <li data-theme="c">
-                  <a href="video" data-transition="slide">
+              <a href="{{ url_for('video_views.khan_view') }}" data-transition="slide">
                       Video
                   </a>
               </li>
