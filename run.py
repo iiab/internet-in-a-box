@@ -10,24 +10,6 @@ from iiab.webapp import IiabWebApp
 from iiab.config import load_config, config
 
 
-# borrowed from flask.Flask.run to allow it to work with profiler wrapped app
-def run(app, host=None, port=None, debug=None, **options):
-    from werkzeug.serving import run_simple
-    if host is None:
-        host = '127.0.0.1'
-    if port is None:
-        port = 5000
-    if debug is not None:
-        app.debug = bool(debug)
-    options.setdefault('use_reloader', app.debug)
-    options.setdefault('use_debugger', app.debug)
-    try:
-        run_simple(host, port, app, **options)
-    finally:
-        # reset the first request information if the development server
-        # resetted normally.  This makes it possible to restart the server
-        # without reloader and that stuff from an interactive shell.
-        app._got_first_request = False
 
 
 def main(argv):
@@ -43,6 +25,8 @@ def main(argv):
                       help="Path to knowledge directory")
     parser.add_option("--tornado", action="store_true", default=False,
                       help="Use the Tornado web server")
+    parser.add_option("--profile", action="store_true", default=False,
+                      help="Enable profiler")
     (options, args) = parser.parse_args()
 
     load_config('config.ini', [options.config])
@@ -59,8 +43,8 @@ def main(argv):
     print "CONFIGURATION"
     print config().all_items_to_str()
 
-    enable_profiler = False
-    webapp = IiabWebApp(options.debug, enable_profiler=True)
+    debug = config().getboolean('DEFAULT', 'debug')
+    webapp = IiabWebApp(debug, enable_profiler=options.profile)
 
     if options.tornado:
         from tornado.wsgi import WSGIContainer
@@ -71,12 +55,23 @@ def main(argv):
         http_server.listen(config().getint('WEBAPP', 'port'))
         IOLoop.instance().start()
     else:
-        if not enable_profiler:
-            webapp.app.run(debug=config().getboolean('DEFAULT', 'debug'),
-                           port=config().getint('WEBAPP', 'port'), host='0.0.0.0')
+        host = '0.0.0.0'
+        port = config().getint('WEBAPP', 'port')
+        if not options.profile:
+            webapp.app.run(debug=debug, port=port, host=host)
         else:
-            run(webapp.app, debug=config().getboolean('DEFAULT', 'debug'),
-                port=config().getint('WEBAPP', 'port'), host='0.0.0.0')
+            # adapted from flask.Flask.run for use with middleware
+            from werkzeug.serving import run_simple
+            options = {}
+            options.setdefault('use_reloader', debug)
+            options.setdefault('use_debugger', debug)
+            try:
+                run_simple(host, port, webapp.app, **options)
+            finally:
+                # reset the first request information if the development server
+                # resetted normally.  This makes it possible to restart the server
+                # without reloader and that stuff from an interactive shell.
+                webapp.app._got_first_request = False
 
 
 if __name__ == "__main__":
