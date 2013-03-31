@@ -9,10 +9,11 @@ import map_views
 import video_views
 import gutenberg
 from extensions import db
+import sys
 
 
 class IiabWebApp(object):
-    def __init__(self, debug=True):
+    def __init__(self, debug=True, enable_profiler=False):
         self.app = Flask('IiabWebApp')
         self.app.root_path += '/iiab'  # something changed so that root_path changed -- work around until identified
 
@@ -44,6 +45,12 @@ class IiabWebApp(object):
 
         self.configure_babel()
         db.init_app(self.app)
+
+        if enable_profiler:
+            from werkzeug.contrib.profiler import ProfilerMiddleware, MergeStream
+            f = open('profiler.log', 'w')
+            stream = MergeStream(sys.stdout, f)
+            self.app = ProfilerMiddleware(self.app, stream)
 
     def configure_mako_to_replace_jinja2(self):
         # Ensure all templates are html escaped to guard against xss exploits

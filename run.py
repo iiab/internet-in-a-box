@@ -10,6 +10,26 @@ from iiab.webapp import IiabWebApp
 from iiab.config import load_config, config
 
 
+# borrowed from flask.Flask.run to allow it to work with profiler wrapped app
+def run(app, host=None, port=None, debug=None, **options):
+    from werkzeug.serving import run_simple
+    if host is None:
+        host = '127.0.0.1'
+    if port is None:
+        port = 5000
+    if debug is not None:
+        app.debug = bool(debug)
+    options.setdefault('use_reloader', app.debug)
+    options.setdefault('use_debugger', app.debug)
+    try:
+        run_simple(host, port, app, **options)
+    finally:
+        # reset the first request information if the development server
+        # resetted normally.  This makes it possible to restart the server
+        # without reloader and that stuff from an interactive shell.
+        app._got_first_request = False
+
+
 def main(argv):
     parser = OptionParser()
     parser.add_option("--nodebug", dest="debug",
@@ -37,9 +57,14 @@ def main(argv):
     print "CONFIGURATION"
     print config().all_items_to_str()
 
-    webapp = IiabWebApp(options.debug)
-    webapp.app.run(debug=config().getboolean('DEFAULT', 'debug'),
-                   port=config().getint('WEBAPP', 'port'), host='0.0.0.0')
+    enable_profiler = False
+    webapp = IiabWebApp(options.debug, enable_profiler=True)
+    if not enable_profiler:
+        webapp.app.run(debug=config().getboolean('DEFAULT', 'debug'),
+                       port=config().getint('WEBAPP', 'port'), host='0.0.0.0')
+    else:
+        run(webapp.app, debug=config().getboolean('DEFAULT', 'debug'),
+            port=config().getint('WEBAPP', 'port'), host='0.0.0.0')
 
 
 if __name__ == "__main__":

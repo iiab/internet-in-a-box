@@ -138,6 +138,9 @@ def author(authorId):
 @gutenberg.route('/text/<textId>/details')
 def text(textId):
     record = GutenbergBook.query.filter_by(textId=textId).first()
+    # fields format is list of tuples:
+    # (Table row heading for display, gutenberg_books col name, 
+    #  sub-table col name if applicable)
     fields = [
         (_('Title'), 'title', ''),
         (_('Author'), 'gutenberg_creators', 'creator'),
@@ -146,7 +149,7 @@ def text(textId):
         (_('Category'), 'gutenberg_categories', 'category'),
         (_('Language'), 'gutenberg_languages', 'language')
         ]
-    files = GutenbergBookFile.query.filter_by(textId=textId).all()
+    files = record.gutenberg_files
     return render_template('gutenberg/book_details.html', record=record, fields=fields, files=files)
 
 @gutenberg.route('/text/<textId>/<int:textIndex>')
