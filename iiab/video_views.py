@@ -11,7 +11,19 @@ blueprint = Blueprint('video_views', __name__,
                       template_folder='templates', static_folder='khanvideo')
 
 
+tree_cache = None
+
+
 def get_tree():
+    global tree_cache
+    khan_webm_dir = config().get('VIDEO', 'khan_webm_dir')
+    khan_cache_file = config().get('VIDEO', 'khan_cache_file')
+    if tree_cache is None:
+        tree_cache = get_tree_from_filesystem()
+    return tree_cache
+
+
+def get_tree_from_filesystem():
     khan_webm_dir = config().get('VIDEO', 'khan_webm_dir')
     return khan.find_khan(khan_webm_dir)
 

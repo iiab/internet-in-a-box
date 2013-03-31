@@ -8,7 +8,7 @@ sys.path.append('.')
 
 from iiab.webapp import IiabWebApp
 from iiab.config import load_config, config
-
+import iiab.video_views
 
 
 
@@ -47,6 +47,9 @@ def main(argv):
 
     debug = config().getboolean('DEFAULT', 'debug')
     webapp = IiabWebApp(debug, enable_profiler=options.profile, profiler_quiet=options.profiler_quiet)
+
+    # Warm up the Khan Video cache
+    iiab.video_views.get_tree()
 
     if options.tornado:
         from tornado.wsgi import WSGIContainer
