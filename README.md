@@ -28,14 +28,19 @@ OpenStreetMap
 -------------
 
 We are installing on an Ubuntu 12.04 quad-core 3GHz machine with
-16 GB RAM and a 500GB SSD.
+16 GB RAM and a 500GB SSD.  Planet import took 91 hours.
 
 You must have a beefy machine.  Note that on an quad-core 8GB RAM
 2.5GHz machine the planet import time was TWO WEEKS!
 
-More detailed instructions are available from the switch2osm.org project.  However they have you build all tools from source:
+More detailed instructions are available from the switch2osm.org project.  This is generally what I followed:
+http://switch2osm.org/serving-tiles/building-a-tile-server-from-packages/
+
+They also have instructions to have you build all tools from source:
 http://switch2osm.org/serving-tiles/manually-building-a-tile-server-12-04/
 
+To understand what you are doing, and how to optimize performance, see:
+http://www.geofabrik.de/media/2012-09-08-osm2pgsql-performance.pdf
 
 1. Download Planet File
 
@@ -71,9 +76,9 @@ versions in the main Ubuntu repositories or things will be bad)
 
 3. Prepare a swap file on the SSD
 
-Create a 16 GB swap file on the SSD.
+Create a 20 GB swap file on the SSD.
 
-    dd if=/dev/zero of=/mnt/ssd/swapfile bs=1024 count=16000000
+    dd if=/dev/zero of=/mnt/ssd/swapfile bs=1024 count=20000000
     mkswap -L ssdswap /mnt/ssd/swapfile
 Add line to /etc/fstab, and comment out existing swap
     /mnt/ssd/swapfile none            swap    sw              0       0
@@ -82,11 +87,7 @@ Activate swap
     swapon -a  # Turn on new SSD swap
 
 
-4. Wipe out old Postgres database and move it to SSD
-
-We are going to wipe the old Postgres directory and start from
-scratch with a directory on our SSD.  It is possible to do
-incremental updates to the OSM database, but we haven't tried it.
+4. Move Postgres database to SSD
 
     /etc/init.d/postgresql stop
     mv -v /var/lib/postgresql /mnt/ssd/
@@ -94,26 +95,18 @@ incremental updates to the OSM database, but we haven't tried it.
     /etc/init.d/postgresql start
 
 
-5. Setup the OSM Postgres/PostGIS database
-
-    sudo -u postgres -i
-    createuser braddock # answer yes for superuser (although this isn't strictly necessary)
-    createdb -E UTF8 -O braddock gis
-    psql -f /usr/share/postgresql/9.1/contrib/postgis-1.5/postgis.sql -d gis
-    psql -d gis -c "ALTER TABLE geometry_columns OWNER TO braddock; ALTER TABLE spatial_ref_sys OWNER TO braddock;"
-    exit
-
-
-6. Tune Postgresql
+5. Tune Postgresql
 
 See section "Tuning your system" in http://switch2osm.org/serving-tiles/manually-building-a-tile-server/ 
 
 
 6. Import planet (will takes days)
 
-    time osm2pgsql --slim -C 14000 planet-130206.osm.pbf
+    time osm2pgsql --number-processes 4 --slim -C 12000 planet-130206.osm.pbf
 
-NOTE: Consider using --number-processes 4 next time!
+--slim is only needed if you want to do incremental updates, but has a performance penalty.
+
+osm2pgsql took 91 hours to complete WITHOUT --number-processes and WITH --slim.
 
 See the performance (and options) of others at:
 http://wiki.openstreetmap.org/wiki/Osm2pgsql/benchmarks

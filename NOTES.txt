@@ -613,3 +613,100 @@ sqlite3 /knowedge/processed/gutenberg.db
 select gutenberg_books.textId, format, friendlytitle, file from gutenberg_book_files, gutenberg_books where gutenberg_book_files.textId = gutenberg_books.textId and format = 'application/epub+zip';
 
 ----
+OpenStreetMap Timing output for full planet import 3/27/13
+
+time osm2pgsql --slim -C 14000 planet-130206.osm.pbf
+
+Node stats: total(1762595470), max(2143387743) in 16078s
+Way stats: total(168660905), max(204337337) in 26167s
+Relation stats: total(1792002), max(2742678) in 38344s
+Process 0 finished processing 99899117 ways in 135509 sec
+99899117 Pending ways took 135509s at a rate of 737.21/s
+node cache: stored: 1643060044(93.22%), storage efficiency: 89.54% (dense blocks: 1676577, sparse nodes: 59096577), hit rate: 108.47%
+Stopped table: planet_osm_rels in 4162s
+All indexes on  planet_osm_point created  in 9811s
+All indexes on  planet_osm_roads created  in 10667s
+All indexes on  planet_osm_line created  in 44982s
+All indexes on  planet_osm_polygon created  in 56848s
+Stopped table: planet_osm_ways in 111742s
+
+Osm2pgsql took 327999s overall
+
+real    5466m40.033s
+user    1125m48.314s
+sys     282m26.939s
+
+----
+3/18/13 - Getting fresh OpenStreetMap tile server node up and running
+
+Target machine name is zhen.  8GB RAM, quad core, 1TG HDD.  Bulk data is
+mounted on /mnt/data.  My main server is "orlop".
+
+Ubuntu 12.04.2 installed from CD
+
+    # Nicities
+    apt-get install vim openssh-server git
+
+Trying to strictly follow:
+http://switch2osm.org/serving-tiles/building-a-tile-server-from-packages/
+
+    sudo apt-get install python-software-properties
+    sudo add-apt-repository ppa:kakrueger/openstreetmap
+    sudo apt-get update
+    sudo apt-get install libapache2-mod-tile
+ 
+I already have the postgres database import from the orlop server.  So I rsync
+it over to zhen:/mnt/data/postgresql.
+Be sure the database is stopped before you rsync or you will get errors
+requiring you to manually clean out the xlog files.
+
+sudo -i
+/etc/init.d/renderd stop
+/etc/init.d/apache2 stop
+/etc/init.d/postgresql stop
+mv /var/lib/postgresql /var/lib/postgresql_orig
+ln -s /mnt/data/postgresql/ /var/lib/postgresql
+chown -Rv postgres.postgres /mnt/data/postgresql/
+/etc/init.d/postgresql start
+/etc/init.d/renderd start
+/etc/init.d/apache2 start
+
+vim /var/www/osm/slippymap.html
+Find and replace 'http://localhost/' with '/'
+vim /etc/renderd.conf
+Change num_threads=8
+
+
+----
+3/29/13 - OpenStreetMap purge:
+
+On a RAMPAGE!
+
+Purged OSM PPA (using Ubuntu-Tweak, but you can use ppa-purge)
+
+sudo apt-get remove --purge osm2pgsql
+sudo apt-get remove --purge renderd libapache2-mod-tile
+sudo apt-get remove --auto-remove --purge libapache2-mod-tile renderd
+sudo apt-get remove --auto-remove --purge openstreetmap-mapnik-stylesheet-data openstreetmap-postgis-db-setup osm2pgsql postgis
+sudo apt-get remove --auto-remove --purge osmosis
+sudo apt-get remove --auto-remove --purge postgresql
+sudo apt-get remove --auto-remove --purge postgresql-9.1
+sudo apt-get remove --auto-remove --purge libmapnik-dev libmapnik2-2.0 libmapnik2-dev mapnik-utils
+sudo rm -rvf /usr/share/mapnik-osm-data/
+
+----
+Gutenberg epub conversion
+
+mkdir -p gutenberg/epub
+
+First run find to copy just the .epub files from the mirror directories.
+mkdir epub_images
+
+Separate out the large image files (20GB vs 7GB)
+mv -v gutenberg/epub/*images.epub gutenberg/epub_images/
+
+Convert non-image epubs to zip files with Calibre:
+cd gutenberg/epub/
+time for name in *.epub; do echo $name; ebook-convert $name `basename $name`.zip; done
+
+----
