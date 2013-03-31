@@ -1,5 +1,5 @@
 from flask import Flask, request, Blueprint
-from flask.ext.mako import MakoTemplates
+#from flask.ext.mako import MakoTemplates
 from flaskext.babel import Babel
 
 from config import config
@@ -52,10 +52,11 @@ class IiabWebApp(object):
             stream = MergeStream(sys.stdout, f)
             self.app = ProfilerMiddleware(self.app, stream)
 
-    def configure_mako_to_replace_jinja2(self):
-        # Ensure all templates are html escaped to guard against xss exploits
-        self.app.config['MAKO_DEFAULT_FILTERS'] = ['h', 'unicode']
-        self.mako = MakoTemplates(self.app)
+    # REMOVE
+    #def configure_mako_to_replace_jinja2(self):
+    #    # Ensure all templates are html escaped to guard against xss exploits
+    #    self.app.config['MAKO_DEFAULT_FILTERS'] = ['h', 'unicode']
+    #    self.mako = MakoTemplates(self.app)
 
     def configure_babel(self):
         # flask-babel

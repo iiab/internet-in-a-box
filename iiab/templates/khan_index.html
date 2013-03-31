@@ -1,13 +1,14 @@
-<!DOCTYPE html>
-<html>
-    <head>
-    </head>
-    <body>
+<div data-role="page" data-theme="b" id="khan-index">
+    <div data-role="content">
         <h1>Videos from Khan Academy</h1>
-        <ul>
+        <ul data-role="listview" data-divider-theme="b" data-inset="true">
             {% for child in children %}
-            <li><a href="{{ child['url'] }}">{{ child['index'] }} - {{ child['name'] }}</a></li>
+            <li data-theme="c">
+            <a href="{{ child['url'] }}" data-transition="slide">
+                {{ child['index'] }} - {{ child['name'] }}
+            </a>
+            </li>
             {% endfor %}
         </ul>
-    </body>
-</html>
+    </div>
+</div>

@@ -1,17 +1,12 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>Khan Academy Video - {{ title }}</title>
-    </head>
-    <body>
-
+<div data-role="page" data-theme="b" id="khan-video">
+    <div data-role="content">
         <p>
             {% for level in breadcrumbs %}
             &gt; {{ level[1] }}
             {% endfor %}
         </p>
 
-        <video width="50%" id="video" autobuffer controls>
+        <video width="90%" id="video" autobuffer controls>
         <source src="{{h264}}">
         <source src="{{webm}}" type="video/webm">
         </video>
@@ -22,5 +17,5 @@
         video.play();
         },false);
         </script -->
-    </body>
-</html>
+    </div>
+</div>
