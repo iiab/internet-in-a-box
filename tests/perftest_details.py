@@ -6,7 +6,7 @@ from timeit import timeit, repeat
 # debug is disabled.
 
 def download_details(textId):
-    call(["/usr/bin/wget", "-q", "-O -", "http://127.0.0.1:25000/iiab/books/text/%s/details" % textId])
+    call(["/usr/bin/wget", "-q", "-O", "/dev/null", "http://127.0.0.1:25000/iiab/books/text/%s/details" % textId])
 
 def do_test(textId):
     print("testing " + textId)
