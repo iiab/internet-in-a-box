@@ -22,6 +22,7 @@ from config import config
 
 import pagination_helper
 from .endpoint_description import EndPointDescription
+from sqlalchemy.orm import subqueryload
 
 gutenberg = Blueprint('gutenberg', __name__, url_prefix='/books')
 etext_regex = re.compile(r'^etext(\d+)$')
@@ -139,7 +140,14 @@ def author(authorId):
 
 @gutenberg.route('/text/<textId>/details')
 def text(textId):
-    record = GutenbergBook.query.filter_by(textId=textId).first()
+    # Profiling results showing occasional lags.
+    # Lags can be minimized by disabling SQLALCHEMY_ECHO and
+    # and debug mode.
+    # Tested no options, joinedload and subqueryload with no consistent winner.
+    record = GutenbergBook.query.options(
+                 subqueryload('*')
+             ).filter_by(textId=textId).first()
+
     # fields format is list of tuples:
     # (Table row heading for display, gutenberg_books col name, 
     #  sub-table col name if applicable)

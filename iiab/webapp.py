@@ -13,7 +13,12 @@ import sys
 
 
 class IiabWebApp(object):
-    def __init__(self, debug=True, enable_profiler=False):
+    def __init__(self, debug=True, enable_profiler=False, profiler_quiet=False):
+        """
+        :param debug: whether to configure app for debug
+        :param enable_profiler: enable flask profiler, causes function to return ProfilerMiddleware rather than Flask object which can be started by run_simple
+        :param profiler_quiet: when profiler enabled sets whether profiler output echoed to stdout
+        """
         self.app = Flask('IiabWebApp')
         self.app.root_path += '/iiab'  # something changed so that root_path changed -- work around until identified
 
@@ -40,7 +45,7 @@ class IiabWebApp(object):
         #self.configure_mako_to_replace_jinja2()
 
         # set global config variables referenced by SQLAlchemy
-        self.app.config['SQLALCHEMY_ECHO'] = config().get('GUTENBERG', 'sqlalchemy_echo')
+        self.app.config['SQLALCHEMY_ECHO'] = config().getboolean('GUTENBERG', 'sqlalchemy_echo')
         self.app.config['SQLALCHEMY_DATABASE_URI'] = config().get('GUTENBERG', 'sqlalchemy_database_uri')
 
         self.configure_babel()
@@ -49,8 +54,11 @@ class IiabWebApp(object):
         if enable_profiler:
             from werkzeug.contrib.profiler import ProfilerMiddleware, MergeStream
             f = open('profiler.log', 'w')
-            stream = MergeStream(sys.stdout, f)
-            self.app = ProfilerMiddleware(self.app, stream)
+            if profiler_quiet:
+                self.app = ProfilerMiddleware(self.app, f)
+            else:
+                stream = MergeStream(sys.stdout, f)
+                self.app = ProfilerMiddleware(self.app, stream)
 
     # REMOVE
     #def configure_mako_to_replace_jinja2(self):

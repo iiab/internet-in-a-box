@@ -27,6 +27,8 @@ def main(argv):
                       help="Use the Tornado web server")
     parser.add_option("--profile", action="store_true", default=False,
                       help="Enable profiler")
+    parser.add_option("--profiler_quiet", action="store_true", default=False,
+                      help="Disable profiler echo to stdout")
     (options, args) = parser.parse_args()
 
     load_config('config.ini', [options.config])
@@ -44,7 +46,7 @@ def main(argv):
     print config().all_items_to_str()
 
     debug = config().getboolean('DEFAULT', 'debug')
-    webapp = IiabWebApp(debug, enable_profiler=options.profile)
+    webapp = IiabWebApp(debug, enable_profiler=options.profile, profiler_quiet=options.profiler_quiet)
 
     if options.tornado:
         from tornado.wsgi import WSGIContainer
