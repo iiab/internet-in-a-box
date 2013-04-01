@@ -45,22 +45,7 @@ class GutenbergBook(db.Model):
     gutenberg_creators = db.relation('GutenbergCreator', primaryjoin='GutenbergBook.textId==gutenberg_books_creator_map.c.book_id', secondary=gutenberg_books_creator_map, secondaryjoin='gutenberg_books_creator_map.c.creator_id==GutenbergCreator.id')
     gutenberg_languages = db.relation('GutenbergLanguage', primaryjoin='GutenbergBook.textId==gutenberg_books_language_map.c.book_id', secondary=gutenberg_books_language_map, secondaryjoin='gutenberg_books_language_map.c.language_id==GutenbergLanguage.id')
     gutenberg_subjects = db.relation('GutenbergSubject', primaryjoin='GutenbergBook.textId==gutenberg_books_subject_map.c.book_id', secondary=gutenberg_books_subject_map, secondaryjoin='gutenberg_books_subject_map.c.subject_id==GutenbergSubject.id')
-    gutenberg_files = db.relation('GutenbergBookFile')
-
-
-class GutenbergBookFile(db.Model):
-    __tablename__ = 'gutenberg_book_files'
-
-    __table_args__ = {}
-
-    #column definitions
-    file = db.Column(u'file', db.TEXT())
-    format = db.Column(u'format', db.TEXT())
-    id = db.Column(u'id', db.INTEGER(), primary_key=True, nullable=False)
-    textId = db.Column(u'textId', db.TEXT(), db.ForeignKey('gutenberg_books.textId'))
-
-    #relation definitions
-    gutenberg_books = db.relation('GutenbergBook', primaryjoin='GutenbergBookFile.textId==GutenbergBook.textId')
+    gutenberg_files = db.relation('GutenbergFile')
 
 
 class GutenbergCategory(db.Model):
@@ -102,6 +87,21 @@ class GutenbergCreator(db.Model):
 
     #relation definitions
     gutenberg_books = db.relation('GutenbergBook', primaryjoin='GutenbergCreator.id==gutenberg_books_creator_map.c.creator_id', secondary=gutenberg_books_creator_map, secondaryjoin='gutenberg_books_creator_map.c.book_id==GutenbergBook.textId')
+
+
+class GutenbergFile(db.Model):
+    __tablename__ = 'gutenberg_files'
+
+    __table_args__ = {}
+
+    #column definitions
+    file = db.Column(u'file', db.TEXT())
+    format = db.Column(u'format', db.TEXT())
+    id = db.Column(u'id', db.INTEGER(), primary_key=True, nullable=False)
+    textId = db.Column(u'textId', db.TEXT(), db.ForeignKey('gutenberg_books.textId'))
+
+    #relation definitions
+    gutenberg_books = db.relation('GutenbergBook', primaryjoin='GutenbergFile.textId==GutenbergBook.textId')
 
 
 class GutenbergLanguage(db.Model):

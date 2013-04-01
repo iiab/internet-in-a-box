@@ -16,7 +16,7 @@ from whoosh.qparser import MultifieldParser
 from .whoosh_multi_field_spelling_correction import MultiFieldQueryCorrector
 
 from .extensions import db
-from gutenberg_models import (GutenbergBook, GutenbergBookFile,
+from gutenberg_models import (GutenbergBook, GutenbergFile,
         GutenbergCreator, gutenberg_books_creator_map)
 from config import config
 
@@ -163,13 +163,13 @@ def text(textId):
 @gutenberg.route('/text/<textId>/<int:textIndex>')
 def read(textId, textIndex):
     data_dir = config().get('GUTENBERG', 'root_dir')
-    files = GutenbergBookFile.query.filter_by(textId=textId).all()
+    files = GutenbergFile.query.filter_by(textId=textId).all()
     assert textIndex >= 0 and textIndex < len(files)
     fullpath = safe_join(data_dir, files[textIndex].file)
     return send_file(fullpath)
 
 def choose_file(textId):
-    files = GutenbergBookFile.query.filter_by(textId=textId)
+    files = GutenbergFile.query.filter_by(textId=textId)
     #for f in files:
     #    print f
     return files[0].file

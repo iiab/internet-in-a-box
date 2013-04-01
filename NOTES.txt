@@ -610,7 +610,7 @@ apt-get install libapache2-mod-tile osm2pgsql openstreetmap-postgis-db-setup
 Gutenberg epub extraction
 
 sqlite3 /knowedge/processed/gutenberg.db
-select gutenberg_books.textId, format, friendlytitle, file from gutenberg_book_files, gutenberg_books where gutenberg_book_files.textId = gutenberg_books.textId and format = 'application/epub+zip';
+select gutenberg_books.textId, format, friendlytitle, file from gutenberg_files, gutenberg_books where gutenberg_files.textId = gutenberg_books.textId and format = 'application/epub+zip';
 
 ----
 OpenStreetMap Timing output for full planet import 3/27/13

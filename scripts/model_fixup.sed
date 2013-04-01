@@ -11,5 +11,5 @@ s/TEXT/db.TEXT/g
 s/VARCHAR/db.VARCHAR/g
 s/ForeignKey/db.ForeignKey/g
 /gutenberg_subjects =/a\
-    gutenberg_files = db.relation('GutenbergBookFile')
+    gutenberg_files = db.relation('GutenbergFile')
 

@@ -19,7 +19,7 @@ class GutenbergDbCreator:
     AUX_COLUMN_NAMES = ['contributor', 'creator', 'subject', 'language', 'category']
     # each aux table one column which contains a unique value. The schema can be generated from the aux column list.
     AUX_TABLE_SCHEMA = { "gutenberg_%s" % pluralize(name) : [('id', 'INTEGER PRIMARY KEY NOT NULL'), (name, 'TEXT UNIQUE')] for name in AUX_COLUMN_NAMES}
-    FILE_TABLE_SCHEMA = { "gutenberg_book_files" : [('id', 'INTEGER PRIMARY KEY NOT NULL'), ('file', 'TEXT UNIQUE'), ('format', 'TEXT'), 
+    FILE_TABLE_SCHEMA = { "gutenberg_files" : [('id', 'INTEGER PRIMARY KEY NOT NULL'), ('file', 'TEXT UNIQUE'), ('format', 'TEXT'), 
         ('textId', 'TEXT REFERENCES gutenberg_books(textId) ON DELETE CASCADE')] }
 
     def __init__(self, filename, debug=False):
@@ -246,9 +246,9 @@ class GutenbergDbCreator:
             # file entries is always a result of our filtering.  If we need to discover files through
             # some means other than a file record in the gutenberg index this may need to change.
             # TODO: Remove aux and mapping table entries associated with removed books.
-            (number_of_books_without_files,) = cursor.execute('select count(BOOKS.textId) from gutenberg_books as BOOKS where (select count(*) from gutenberg_book_files as FILES where FILES.textId=BOOKS.textId) == 0;').fetchone()
+            (number_of_books_without_files,) = cursor.execute('select count(BOOKS.textId) from gutenberg_books as BOOKS where (select count(*) from gutenberg_files as FILES where FILES.textId=BOOKS.textId) == 0;').fetchone()
             print "Number of books without files %d." % number_of_books_without_files
-            removed_count = cursor.execute('delete from gutenberg_books where(select count(*) from gutenberg_book_files as FILES where FILES.textId=gutenberg_books.textId)==0').rowcount
+            removed_count = cursor.execute('delete from gutenberg_books where(select count(*) from gutenberg_files as FILES where FILES.textId=gutenberg_books.textId)==0').rowcount
             print "Removed %d records." % removed_count
             if number_of_books_without_files != removed_count:
                 print "WARNING: NUMBER OF RECORDS REMOVED DOES NOT MATCH NUMBER OF BOOKS WITHOUT FILES"
@@ -305,9 +305,10 @@ class GutenbergDbCreator:
         print "creating indices for creator and contributors"
         try:
             cur = self.db.cursor()
-            sql = "CREATE INDEX {0}_index ON gutenberg_{0}s({0});"
-            cur.execute(sql.format('creator'))
-            cur.execute(sql.format('contributor'))
+            sql = "CREATE INDEX {0}_index ON gutenberg_{1}({0});"
+
+            for name in self.AUX_COLUMN_NAMES + ['file']:
+                cur.execute(sql.format(name, pluralize(name)))
             self.db.commit()
         except:
             self.db.rollback()
@@ -331,6 +332,7 @@ def main():
 
     make_db.create_custom_title_order_index()
     make_db.compute_author_downloads()
+    make_db.create_additional_indices()
 
 if __name__ == '__main__':
     main()

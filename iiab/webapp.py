@@ -52,6 +52,8 @@ class IiabWebApp(object):
         self.configure_babel()
         db.init_app(self.app)
 
+        print "URL MAP: ", self.app.url_map
+
         if enable_profiler:
             from werkzeug.contrib.profiler import ProfilerMiddleware, MergeStream
             f = open('profiler.log', 'w')
@@ -60,8 +62,6 @@ class IiabWebApp(object):
             else:
                 stream = MergeStream(sys.stdout, f)
                 self.app = ProfilerMiddleware(self.app, stream)
-        print "URL MAP: ", self.app.url_map
-
 
     # REMOVE
     #def configure_mako_to_replace_jinja2(self):
