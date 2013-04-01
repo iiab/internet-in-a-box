@@ -710,3 +710,12 @@ cd gutenberg/epub/
 time for name in *.epub; do echo $name; ebook-convert $name `basename $name`.zip; done
 
 ----
+Kiwix Conversion 3/31/13
+
+PATH=$PATH:/knowledge/packages/bin-amd64/kiwix/bin
+kiwix-index -v zim/wikipedia_en_simple_all_08_2011.zim index/wikipedia_en_simple_all_08_2011
+# kiwix-index time is about 5 minutes
+kiwix-manage library.xml add zim/wikipedia_en_simple_all_08_2011.zim -i index/wikipedia_en_simple_all_08_2011/
+kiwix-serve --library library.xml --port 8080
+
+----
