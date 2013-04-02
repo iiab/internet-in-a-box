@@ -23,6 +23,15 @@ def index_command(kiwix_bin, input_filename, output_dirname):
     return cmd
 
 
+def manage_command(kiwix_bin, libraryfile, zimfile, indexfile):
+    cmd = [os.path.join(kiwix_bin, 'kiwix-manage'),
+           libraryfile,
+           'add',
+           zimfile,
+           '-i', indexfile]
+    return cmd
+
+
 def find(root, extension=None):
     """File files with specified extension under root"""
     found = []
@@ -70,7 +79,7 @@ def convert(sources, src_dir, dst_dir, nthreads, kiwix_bin_dir):
             if not os.path.exists(output):
                 tmp_output = output + '.incomplete.' + str(os.getpid())
                 cmd = index_command(kiwix_bin_dir, full_source, tmp_output)
-                print "POPEN: ", string.join(cmd, ' ')
+                print "RUN: ", string.join(cmd, ' ')
                 p = Popen(cmd)
                 jobs.append((p, tmp_output, output))
             else:
@@ -80,11 +89,14 @@ def convert(sources, src_dir, dst_dir, nthreads, kiwix_bin_dir):
         newjobs = []
         for j in jobs:
             if j[0].poll() is not None:  # Job complete
-                # Atomically rename file
-                tmp_output = j[1]
-                output = j[2]
-                print "Completed %s" % (output)
-                os.rename(tmp_output, output)
+                if j[0].poll() == 0:
+                    # Atomically rename file
+                    tmp_output = j[1]
+                    output = j[2]
+                    print "Completed %s" % (output)
+                    os.rename(tmp_output, output)
+                else:
+                    print "JOB FAILED WITH RETURN CODE " + str(j[0].poll()) + ": " + output
             else:
                 newjobs.append(j)
         jobs = newjobs
@@ -103,6 +115,12 @@ parser.add_option("--kiwix_bin_dir",
 parser.add_option("--threads",
                   help="Number of processes to run simultaneously",
                   default=1, type='int')
+parser.add_option("--index", default=False, dest='index',
+                  action='store_true', help="Command to build indices for all zim files")
+parser.add_option("--catalog", default=False, dest='catalog',
+                  action='store_true',
+                  help="Command to build a library file for all zim files and their indices")
+parser.add_option("--library", default="library.xml", help="Location of library.xml file")
 (options, args) = parser.parse_args()
 
 if len(args) != 2:
@@ -116,11 +134,29 @@ if not os.path.exists(src_dir):
     parser.error("Source directory does not exist: " + src_dir)
 if not os.path.exists(dst_dir):
     parser.error("Destination index directory does not exist: " + dst_dir)
-
+if not options.index and not options.catalog:
+    parser.error("Must specify at least one of --index or --catalog commands")
 sources = find(src_dir, '.zim')
 
 # We shuffle the processing order so we can run from multiple nodes
 # without a lot of collisions
 shuffle(sources)
 
-convert(sources, src_dir, dst_dir, options.threads, options.kiwix_bin_dir)
+if options.index:
+    convert(sources, src_dir, dst_dir, options.threads, options.kiwix_bin_dir)
+
+if options.catalog:
+    for source in sources:
+        full_source = os.path.join(src_dir, source)
+        index = new_dirname(source, dst_dir)
+        if not os.path.exists(full_source):
+            raise full_source + " does not exist"
+        if not os.path.exists(index):  # More likely
+            print "ERROR: " + index + " does not exist"
+        cmd = manage_command(options.kiwix_bin_dir, options.library, full_source, index)
+        print "RUN: ", string.join(cmd, ' ')
+        p = Popen(cmd)
+        r = p.wait()
+        if r != 0:
+            raise "Error processing command, returned " + str(r) + " : " + string.join(cmd, ' ')
+print "Processing Complete"

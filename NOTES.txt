@@ -718,4 +718,6 @@ kiwix-index -v zim/wikipedia_en_simple_all_08_2011.zim index/wikipedia_en_simple
 kiwix-manage library.xml add zim/wikipedia_en_simple_all_08_2011.zim -i index/wikipedia_en_simple_all_08_2011/
 kiwix-serve --library library.xml --port 8080
 
+cd /knowledge/processed/kiwix/
+time ~/repo/internet-in-a-box/scripts/zim_index.py ../../data/zim/downloads/ index/ --threads 4 --index --catalog
 ----
