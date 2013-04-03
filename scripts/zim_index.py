@@ -18,7 +18,7 @@ def call2(cmd):
 def index_command(kiwix_bin, input_filename, output_dirname):
     """Index zim file"""
     cmd = [os.path.join(kiwix_bin, 'kiwix-index'),
-           #'-v',
+           '-v',
            input_filename,
            output_dirname]
     return cmd
