@@ -721,3 +721,13 @@ kiwix-serve --library library.xml --port 8080
 cd /knowledge/processed/kiwix/
 time ~/repo/internet-in-a-box/scripts/zim_index.py ../../data/zim/downloads/ index/ --threads 4 --index --catalog
 ----
+
+Breathes there the man with soul so dead
+Who never to himself hath said,
+This is my own, my native land!
+    -Sir Walter Scott
+
+So long as men can breathe, or eyes can see,     
+So long lives this, and this gives life to thee.
+    -William Shakespeare
+----

@@ -6,6 +6,7 @@ from optparse import OptionParser
 import os
 import string
 from time import sleep
+from datetime import datetime
 from random import shuffle
 
 
@@ -30,6 +31,10 @@ def manage_command(kiwix_bin, libraryfile, zimfile, indexfile):
            zimfile,
            '-i', indexfile]
     return cmd
+
+
+def timestamp():
+    return datetime.now().strftime("%H:%M")
 
 
 def find(root, extension=None):
@@ -79,7 +84,8 @@ def convert(sources, src_dir, dst_dir, nthreads, kiwix_bin_dir):
             if not os.path.exists(output):
                 tmp_output = output + '.incomplete.' + str(os.getpid())
                 cmd = index_command(kiwix_bin_dir, full_source, tmp_output)
-                print "RUN: ", string.join(cmd, ' ')
+                #print timestamp() + " RUN: ", string.join(cmd, ' ')
+                print timestamp() + " RUN: ", source
                 p = Popen(cmd)
                 jobs.append((p, tmp_output, output))
             else:
@@ -93,7 +99,7 @@ def convert(sources, src_dir, dst_dir, nthreads, kiwix_bin_dir):
                     # Atomically rename file
                     tmp_output = j[1]
                     output = j[2]
-                    print "Completed %s" % (output)
+                    print timestamp() + " Completed %s" % (output)
                     os.rename(tmp_output, output)
                 else:
                     print "JOB FAILED WITH RETURN CODE " + str(j[0].poll()) + ": " + output
