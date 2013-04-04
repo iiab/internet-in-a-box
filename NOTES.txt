@@ -718,8 +718,10 @@ kiwix-index -v zim/wikipedia_en_simple_all_08_2011.zim index/wikipedia_en_simple
 kiwix-manage library.xml add zim/wikipedia_en_simple_all_08_2011.zim -i index/wikipedia_en_simple_all_08_2011/
 kiwix-serve --library library.xml --port 8080
 
+# Takes about a day on two machines in parallel
 cd /knowledge/processed/kiwix/
 time ~/repo/internet-in-a-box/scripts/zim_index.py ../../data/zim/downloads/ index/ --threads 4 --index --catalog
+time ~/repo/internet-in-a-box/scripts/zim_index.py ../../data/zim/downloads/ index/ --catalog
 ----
 
 Breathes there the man with soul so dead
@@ -730,4 +732,10 @@ This is my own, my native land!
 So long as men can breathe, or eyes can see,     
 So long lives this, and this gives life to thee.
     -William Shakespeare
+----
+Knowledge rsync
+
+rsync -avrP 'rsync://orlop/knowledge/data/khanacademy.org/Khan Academy' rsync://orlop/knowledge/data/gutenberg rsync://orlop/knowledge/data/zim/downloads rsync://orlop/knowledge/data/ubuntu knowledge
+rsync -avrP rsync://orlop/knowledge/processed knowledge/
+
 ----

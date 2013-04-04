@@ -227,13 +227,26 @@ and other features to work with the finicky video browser clients
 Web Service
 -----------
 
+We run nginx as our front end web service:
+    apt-get install nginx
+    cp iiab_nginx.conf /etc/nginx/sites-enabled/
+
 Basic Python requirements:
     cd internet-in-a-box
     pip install Flask-Babel whoosh Flask-SQLAlchemy progressbar
     ./run.py
 
-We run nginx as our front end web service:
-    apt-get install nginx
-    cp iiab_nginx.conf /etc/nginx/sites-enabled/
+Launch kiwix
+    cd /knowledge/processed/kiwix
+    ../../packages/bin-arm/kiwix-serve --library library.xml --port 25001
+
+
+Rsync Server
+------------
+
+    apt-get install rsyncd
+    ln -s /knowledge/internet-in-a-box/conf/rsyncd.conf /etc/rsyncd.conf
+    Edit /etc/default/rsync and set RSYNC_ENABLE=true
+    /etc/init.d/rsyncd start
 
 ----

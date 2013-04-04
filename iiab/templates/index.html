@@ -5,11 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
   <title>Internet-in-a-Box</title>
-  <link rel="stylesheet" href="https://ajax.aspnetcdn.com/ajax/jquery.mobile/1.2.0/jquery.mobile-1.2.0.min.css" />
+
+  <link rel="stylesheet" href="/static/lib/jquery.mobile-1.3.0/jquery.mobile-1.3.0.min.css" />
   <link rel="stylesheet" href="iiab.css" />
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-  <script src="https://ajax.aspnetcdn.com/ajax/jquery.mobile/1.2.0/jquery.mobile-1.2.0.min.js"></script>
+  <script src="/static/lib/jquery-1.9.0.min.js"></script>
+  <script src="/static/lib/jquery.mobile-1.3.0/jquery.mobile-1.3.0.min.js"></script>
   <script src="iiab.js"></script>
 
   <!-- User-generated css -->
@@ -56,7 +58,7 @@
           </div>
           <ul data-role="listview" data-divider-theme="b" data-inset="true">
               <li data-theme="c">
-                  <a href="http://home.braddock.com:30113" data-transition="slide" data-ajax="false">
+              <a href="{{ kiwix_url }}" data-transition="slide" data-ajax="false">
                       Wikipedia
                       <span class="ui-li-count">
                           123
@@ -109,133 +111,6 @@
                       <br>
                   </b>
               </p>
-          </div>
-      </div>
-  </div>
-  <!-- Wikipedia -->
-  <div data-role="page" id="page2">
-      <div data-theme="a" data-role="header">
-          <a data-role="button" data-direction="reverse" data-rel="back" data-transition="slide"
-          href="#page1" class="ui-btn-left">
-              Back
-          </a>
-          <h3>
-              Wikipedia
-          </h3>
-      </div>
-      <div data-role="content">
-          <div data-role="fieldcontain">
-              <fieldset data-role="controlgroup">
-                  <label for="searchinput3">
-                  </label>
-                  <input name="" id="searchinput3" placeholder="" value="kansas" type="search">
-              </fieldset>
-          </div>
-          <ul data-role="listview" data-divider-theme="b" data-inset="true">
-              <li data-theme="c">
-                  <a href="#page1" data-transition="slide">
-                      Kansas
-                  </a>
-              </li>
-              <li data-theme="c">
-                  <a href="#page1" data-transition="slide">
-                      Kansas (band)
-                  </a>
-              </li>
-              <li data-theme="c">
-                  <a href="#page1" data-transition="slide">
-                      Kansas City, Kansas
-                  </a>
-              </li>
-              <li data-theme="c">
-                  <a href="#page1" data-transition="slide">
-                      History of Kansas
-                  </a>
-              </li>
-          </ul>
-      </div>
-  </div>
-  <!-- Maps -->
-  <div data-role="page" id="page3">
-      <div data-theme="a" data-role="header">
-          <a data-role="button" data-direction="reverse" data-rel="back" data-transition="slide"
-          href="#page1" class="ui-btn-left">
-              Back
-          </a>
-          <h3>
-              Maps
-          </h3>
-      </div>
-      <div data-role="content">
-          <div data-role="fieldcontain">
-              <fieldset data-role="controlgroup">
-                  <label for="searchinput4">
-                  </label>
-                  <input name="" id="searchinput4" placeholder="" value="" type="search">
-              </fieldset>
-          </div>
-          <img src="https://maps.googleapis.com/maps/api/staticmap?center=Madison, WI&amp;zoom=14&amp;size=288x400&amp;markers=Madison, WI&amp;sensor=false"
-          height="400" width="288">
-      </div>
-  </div>
-  <!-- Books -->
-  <div data-role="page" id="page4">
-      <div data-theme="a" data-role="header">
-          <h3>
-              <a href="{{ url_for('gutenberg.index') }}">Books</a>
-          </h3>
-          <a data-role="button" data-direction="reverse" data-rel="back" data-transition="slide"
-          href="#page1" class="ui-btn-left">
-              Back
-          </a>
-      </div>
-      <div data-role="content">
-          <div data-role="fieldcontain">
-              <form class="form-search" action="{{ url_for('gutenberg.search') }}" method="get">
-                  <fieldset data-role="controlgroup">
-                  <label for="book-search" />
-                  <input type="text" id="book-search" class="input-xlarge search-query" placeholder="Search" name="q" />
-                  </fieldset>
-                  <button type="submit" class="btn">Search</button>
-              </form>
-          </div>
-          <ul data-role="listview" data-divider-theme="b" data-inset="true">
-              <li data-theme="c">
-                  <a href="#page1" data-transition="slide">
-                      The Captain of the Kansas by Louis Tracy
-                  </a>
-              </li>
-              <li data-theme="c">
-                  <a href="#page1" data-transition="slide">
-                      Fishes of the Wakarusa River in Kansas
-                  </a>
-              </li>
-              <li data-theme="c">
-                  <a href="#page1" data-transition="slide">
-                      Pocket Gophers of Kansas
-                  </a>
-              </li>
-          </ul>
-      </div>
-  </div>
-  <!-- Video -->
-  <div data-role="page" id="page5">
-      <div data-theme="a" data-role="header">
-          <h3>
-              Video
-          </h3>
-          <a data-role="button" data-direction="reverse" data-rel="back" data-transition="slide"
-          href="#page1" class="ui-btn-left">
-              Back
-          </a>
-      </div>
-      <div data-role="content">
-          <div data-role="fieldcontain">
-              <fieldset data-role="controlgroup">
-                  <label for="searchinput5">
-                  </label>
-                  <input name="" id="searchinput5" placeholder="" value="" type="search">
-              </fieldset>
           </div>
       </div>
   </div>
