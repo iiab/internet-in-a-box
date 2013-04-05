@@ -136,7 +136,7 @@ def author(authorId):
     page = int(request.args.get('page', 1))
     per_page = int(request.args.get('per_page', DEFAULT_RESULTS_PER_PAGE))
     pagination = GutenbergBook.query.filter(gutenberg_books_creator_map.c.creator_id == authorId).filter(gutenberg_books_creator_map.c.book_id == GutenbergBook.textId).paginate(page, per_page)
-    return render_template('gutenberg/title-index.html', pagination=pagination, endpoint_desc=EndPointDescription('.author', dict(authorId=authorId, per_page=per_page)))
+    return render_template('gutenberg/title-index.html', pagination=pagination, fn_author_to_query=author_to_query, endpoint_desc=EndPointDescription('.author', dict(authorId=authorId, per_page=per_page)))
 
 @gutenberg.route('/text/<textId>/details')
 def text(textId):
