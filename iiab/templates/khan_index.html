@@ -1,6 +1,9 @@
 <div data-role="page" data-theme="b" id="khan-index">
-    <div data-role="content">
+    <div data-role="header">
+        <a href="/iiab/" data-icon="home" data-iconpos="notext" data-direction="reverse">Home</a>
         <h1>Videos from Khan Academy</h1>
+    </div>
+    <div data-role="content">
         <ul data-role="listview" data-divider-theme="b" data-inset="true">
             {% for child in children %}
             <li data-theme="c">

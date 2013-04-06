@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-#from xml.etree import ElementTree as etree
+from xml.etree import ElementTree as etree
 # lxml is 10 times faster than ElementTree
-from lxml import etree
+#from lxml import etree
 from base64 import b64decode
 import iso639
 import os
@@ -18,6 +18,18 @@ def getHumanReadableBookId(path):
     return hid
 
 
+def intWithCommas(x):
+    if type(x) not in [type(0), type(0L)]:
+        raise TypeError("Parameter must be an integer.")
+    if x < 0:
+        return '-' + intWithCommas(-x)
+    result = ''
+    while x >= 1000:
+        x, r = divmod(x, 1000)
+        result = ",%03d%s" % (r, result)
+    return "%d%s" % (x, result)
+
+
 def clean_book(book):
     """Fixes up the book data"""
     book2 = {}
@@ -26,7 +38,8 @@ def clean_book(book):
             v = b64decode(v)
         elif k == "articleCount":
             v = int(v)
-            book2['articleCountString'] = "{:,}".format(v)
+            #book2['articleCountString'] = "{:,}".format(v)  # 2.7
+            book2['articleCountString'] = intWithCommas(v)
         elif k == "mediaCount":
             v = int(v)
         elif k == "size":

@@ -1,6 +1,9 @@
 <div data-role="page" data-theme="b" id="wikipedia-languages">
+    <div data-role="header">
+        <a href="/iiab/" data-icon="home" data-iconpos="notext" data-direction="reverse">Home</a>
+        <h1>Wikipedia</h1>
+    </div>
     <div data-role="content">
-        <h1>Wikipedia Languages</h1>
         <ul data-role="listview" data-divider-theme="b" data-inset="true">
             {% for language in languages %}
             <li data-role="list-divider" data-theme="c">
@@ -8,12 +11,12 @@
             </li>
             {% for book in language['books'] %}
             <li data-theme="c">
-            <a href="{{ kiwix_url + '/' + book.get('humanReadableId') }}" data-transition="slide">
+            <a href="{{ kiwix_url + '/' + book.get('humanReadableId') + '/' }}" data-transition="slide" data-ajax="false">
                 <h3>{{ book.get('title') }}</h3>
                 {% if 'description' in book %}
-                <p style="float: left;">{{ book.get('description') }}</p>
+                <p style="white-space: normal;" class="float-left">{{ book.get('description') }}</p>
                 {% endif %}
-                <p style="float: right;">{{ book['articleCountString'] }} Articles</p>
+                <p class="float-right">{{ book['articleCountString'] }} Articles</p>
             </a>
             </li>
             {% endfor %}
