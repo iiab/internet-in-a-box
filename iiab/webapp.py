@@ -1,13 +1,14 @@
-from flask import Flask, request, Blueprint
+from flask import Flask, request
 #from flask.ext.mako import MakoTemplates
 from flaskext.babel import Babel
 
 from config import config
 import top_views
-import search_views
+#import search_views
 import map_views
 import video_views
 import gutenberg
+import wikipedia_views
 from extensions import db
 import sys
 
@@ -38,7 +39,8 @@ class IiabWebApp(object):
             #(search_views.blueprint, base_prefix),
             (gutenberg.gutenberg, base_prefix + "books"),
             (map_views.blueprint, base_prefix + "maps"),
-            (video_views.blueprint, base_prefix + "video")
+            (video_views.blueprint, base_prefix + "video"),
+            (wikipedia_views.blueprint, base_prefix + "wikipedia")
         ]
         for blueprint, prefix in blueprints:
             self.app.register_blueprint(blueprint, url_prefix=prefix)
@@ -77,4 +79,3 @@ class IiabWebApp(object):
         def get_locale():
             accept_languages = config().getjson('GUTENBERG', 'babel_accept_languages')
             return request.accept_languages.best_match(accept_languages)
-

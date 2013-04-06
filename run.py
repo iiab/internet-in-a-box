@@ -11,7 +11,6 @@ from iiab.config import load_config, config
 import iiab.video_views
 
 
-
 def main(argv):
     parser = OptionParser()
     parser.add_option("--nodebug", dest="debug",
@@ -49,7 +48,10 @@ def main(argv):
     webapp = IiabWebApp(debug, enable_profiler=options.profile, profiler_quiet=options.profiler_quiet)
 
     # Warm up the Khan Video cache
-    iiab.video_views.get_tree()
+    try:
+        iiab.video_views.get_tree()
+    except:
+        print "ERROR loading Khan Videos: " + str(sys.exc_info())
 
     if options.tornado:
         from tornado.wsgi import WSGIContainer
