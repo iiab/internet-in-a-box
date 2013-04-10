@@ -161,8 +161,7 @@ def text(textId):
         (_('Category'), 'gutenberg_categories', 'category'),
         (_('Language'), 'gutenberg_languages', 'language')
         ]
-    files = record.gutenberg_files
-    return render_template('gutenberg/book_details.html', record=record, fields=fields, files=files)
+    return render_template('gutenberg/book_details.html', record=record, fields=fields)
 
 @gutenberg.route('/text/<textId>/<int:textIndex>')
 def read(textId, textIndex):
