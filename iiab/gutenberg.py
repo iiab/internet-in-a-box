@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import os
 import re
 
 from flask import (Blueprint, render_template, current_app, request, Response,
@@ -145,6 +146,9 @@ def text(textId):
     # and debug mode.
     # Tested no options, joinedload and subqueryload with no consistent winner.
     record = GutenbergBook.query.filter_by(textId=textId).first()
+    # if blueprint has a different static_folder specified we might need to use blueprint.static_folder but currently None
+    filter_func = lambda file_rec: os.path.exists(os.path.join(current_app.static_folder, file_rec.file))
+    record.gutenberg_files = filter(filter_func, record.gutenberg_files)
 
     # fields format is list of tuples:
     # (Table row heading for display, gutenberg_books col name, 
