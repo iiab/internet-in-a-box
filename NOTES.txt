@@ -739,3 +739,55 @@ rsync -avrP 'rsync://orlop/knowledge/data/khanacademy.org/Khan Academy' rsync://
 rsync -avrP rsync://orlop/knowledge/processed knowledge/
 
 ----
+Formatting the Seagate Wireless Plus
+
+1) Test - plug in, turn on, connect a laptop to wifi network "Seagate Wireless
+XX" (where XX is M6 in my case), go to any web site and enjoy Seagate's crappy
+web interface.
+
+2) Turn off, connect to USB 3.0 port on computer
+
+3) We create an ext3 partition on the Seagate because NTFS can't support
+a propery chroot.
+    a) Run gparted
+    b) Resize /dev/sda1 to 4GB
+    c) Create and Format /dev/sda2 to ext3 (NOT ext4, which is not supported by the Seagate firmware)
+
+4) Disconnect from USB, reconnect to charger, power on the Seagate and reconnect to it via wifi
+
+5) telnet 172.25.0.1
+    login: root
+    password: goflex
+
+6) Add entry for new ext3 partition to fstab
+    vi /etc/fstab
+    /dev/sda2       /mnt/data       ext3    defaults        0       0
+
+7) create symlink for to new partition
+    mkdir /mnt/data/knowledge
+    ln -s /mnt/data/knowledge /knowledge
+
+8) I copied the chroot-armel/ and deb-chroot.sh from the GoFlex Home to /knowledge/tmp/
+
+9) Had to rm /etc/nginx/sites-enabled/default
+(it was trying to use an IPv6 address which the Wireless did not support, and I didn't want it on port 80 anyway)
+
+10) Had to add a line to /etc/nginx/nginx.conf in "http" section because of the long hostname:
+    server_names_hash_bucket_size 64;
+
+11)
+    cd /root/internet-in-a-box
+    ./run.py
+
+12)
+    cd /knowledge/processed/kiwix
+    /root/repo/kiwix-kiwix/src/server/kiwix-serve -v --library library.xml --port 25001
+
+13)
+    /etc/init.d/nginx start
+
+14) Change wifi name to "internet in a box" using the web interface (Settings->Network)
+
+
+
+----
