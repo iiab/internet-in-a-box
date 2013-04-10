@@ -11,4 +11,4 @@ mount -o bind /dev/pts ${DIR}/dev/pts # important for pacman (for signature chec
 mkdir ${DIR}/knowledge
 mount -o bind /knowledge ${DIR}/knowledge
 #mount -o bind /var/lib/mod_tile ${DIR}/var/lib/mod_tile
-SHELL=/bin/bash HOME=/root chroot ${DIR}
+SHELL=/bin/bash HOME=/root chroot ${DIR} $2
