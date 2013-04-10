@@ -24,6 +24,7 @@
                     attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
                     maxZoom: 15
                 }).addTo(map);
+                map.fitWorld().setZoom(3);  // default world view
                 map.locate({setView: true, maxZoom: 15});
             });
         </script>
