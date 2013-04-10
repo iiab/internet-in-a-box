@@ -39,16 +39,17 @@ class GutenbergIndexFilter(object):
             # (a) book description was omitted due to filter criteria above
             # (b) rsync script excluded the content (extensions and 'pgdvd')
             # (c) rsync script excluded the cached content (extensions and 'pgdvd')
-            ext = self.get_extension(record['file'])
             return (record['textId'] not in self.removed_texts and 
                 u'pgdvd' not in record['file'] and
-                ext not in self.EXCLUDED_EXT and
-                (not record['file'].startswith(u'data/cache/') or ext not in self.CACHE_EXCLUDED_EXT))
+                not self.extension_match(record['file'], self.EXCLUDED_EXT) and
+                (not record['file'].startswith(u'data/cache/') or not self.extension_match(record['file'], self.CACHE_EXCLUDED_EXT)))
                 
     def is_description_record(self, record):
         return record['record_type'] == 'DESCRIPTION'
 
-    def get_extension(self, filename):
-        name, ext = os.path.splitext(filename)
-        return ext
+    def extension_match(self, filename, extension_list):
+        for ext in extension_list:
+            if filename.endswith(ext):
+                return True
+        return False
 
