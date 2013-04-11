@@ -221,7 +221,7 @@ and other features to work with the finicky video browser clients
 
     ipython
     import iiab.khan
-    iab.khan.make_symlinks('/knowledge/data/khanacademy.org/Khan Academy/', '/knowledge/processed/Khan Academy/', '/knowledge/processed/khanlinks')
+    iiab.khan.make_symlinks('/knowledge/data/khanacademy.org/Khan Academy/', '/knowledge/processed/Khan Academy/', '/knowledge/processed/khanlinks')
 
 
 Web Service
