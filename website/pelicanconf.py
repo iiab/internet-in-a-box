@@ -3,23 +3,15 @@
 
 AUTHOR = u'Braddock Gaskill'
 SITENAME = u'Internet-in-a-Box'
+SITESUBTITLE = u"Sharing the world's Free information"
 SITEURL = ''
+GITHUB_URL = 'https://github.com/braddockcg/internet-in-a-box'
 
 TIMEZONE = 'US/Pacific'
 
 DEFAULT_LANG = u'en'
 
-# Blogroll
-LINKS =  (('Pelican', 'http://docs.notmyidea.org/alexis/pelican/'),
-          ('Python.org', 'http://python.org'),
-          ('Jinja2', 'http://jinja.pocoo.org'),
-          ('You can modify those links in your config file', '#'),)
-
-# Social widget
-SOCIAL = (('You can add links in your config file', '#'),
-          ('Another social link', '#'),)
-
-DEFAULT_PAGINATION = 10
+DEFAULT_PAGINATION = 0
 
 # Custom theme based on Github Pages slate theme
 THEME = "theme/slate"
