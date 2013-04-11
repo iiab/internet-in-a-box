@@ -15,3 +15,5 @@ DEFAULT_PAGINATION = 0
 
 # Custom theme based on Github Pages slate theme
 THEME = "theme/slate"
+
+FILES_TO_COPY = (("CNAME","CNAME"), )
