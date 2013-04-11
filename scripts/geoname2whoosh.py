@@ -30,31 +30,34 @@ def get_schema():
 
     return wf.Schema(geonameid=ID(unique=True, stored=True),
         name=TEXT(stored=True, spelling=True), 
-        latitude=NUMERIC(float, stored=True), 
-        longitude=NUMERIC(float, stored=True),
-        population=NUMERIC(int, stored=True) 
+        latitude=STORED, 
+        longitude=STORED,
+        population=NUMERIC(long, stored=True) 
         )
 
-# field structure courtesy of http://blogs.msdn.com/b/edkatibah/archive/2009/01/13/loading-geonames-data-into-sql-server-2008-yet-another-way.aspx
-# geonameid int NOT NULL,
-# name nvarchar(200) NULL,
-# asciiname nvarchar(200) NULL,
-# alternatenames nvarchar(max) NULL,
-# latitude float NULL,
-# longitude float NULL,
-# feature_class char(2) NULL,
-# feature_code nvarchar(10) NULL,
-# country_code char(3) NULL,
-# cc2 char(60) NULL,
-# admin1_code nvarchar(20) NULL,
-# admin2_code nvarchar(80) NULL,
-# admin3_code nvarchar(20) NULL,
-# admin4_code nvarchar(20) NULL,
-# population int NULL,
-# elevation int NULL,
-# gtopo30 int NULL,
-# timezone char(31) NULL,
-# modification_date date NULL 
+# http://download.geonames.org/export/dump/readme.txt
+# The main 'geoname' table has the following fields :
+#    ---------------------------------------------------
+#    geonameid         : integer id of record in geonames database
+#    name              : name of geographical point (utf8) varchar(200)
+#    asciiname         : name of geographical point in plain ascii characters, varchar(200)
+#    alternatenames    : alternatenames, comma separated varchar(5000)
+#    latitude          : latitude in decimal degrees (wgs84)
+#    longitude         : longitude in decimal degrees (wgs84)
+#    feature class     : see http://www.geonames.org/export/codes.html, char(1)
+#    feature code      : see http://www.geonames.org/export/codes.html, varchar(10)
+#    country code      : ISO-3166 2-letter country code, 2 characters
+#    cc2               : alternate country codes, comma separated, ISO-3166 2-letter country code, 60 characters
+#    admin1 code       : fipscode (subject to change to iso code), see exceptions below, see file admin1Codes.txt for display names of this code; varchar(20)
+#    admin2 code       : code for the second administrative division, a county in the US, see file admin2Codes.txt; varchar(80) 
+#    admin3 code       : code for third level administrative division, varchar(20)
+#    admin4 code       : code for fourth level administrative division, varchar(20)
+#    population        : bigint (8 byte int) 
+#    elevation         : in meters, integer
+#    dem               : digital elevation model, srtm3 or gtopo30, average elevation of 3''x3'' (ca 90mx90m) or 30''x30'' (ca 900mx900m) area in meters, integer. srtm processed by cgiar/ciat.
+#    timezone          : the timezone id (see file timeZone.txt) varchar(40)
+#    modification date : date of last modification in yyyy-MM-dd format
+#
 def parse_geo(geo, index_dir):
     sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)   # don't buffer stdout
 
@@ -72,8 +75,11 @@ def parse_geo(geo, index_dir):
             record = dict(zip(field_names, line.split('\t')))
             pruned_record = { k: v for k,v in record.items() if k in schema }
             writer.add_document(**pruned_record)
-            if count % 1000 == 0:
-                print '.',
+            if count & 0x3ff == 0:  # every 1024 records
+                if count & 0x1ffff == 0: # every 131072 records
+                    print count,
+                else:
+                    print '.',
 
         print 'committing...'
         writer.commit()
@@ -84,13 +90,15 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument("--geo", dest="geo", action="store",
                       default="allCountries.txt",
-                      help="The geonames index.")
+                      help="The geonames index. Defaults to allCountries.txt")
     parser.add_argument("--indexdir", dest="indexdir", action="store",
                       default="geonames_index",
-                      help="The output whoosh index directory name")
+                      help="The output whoosh index directory name. Defaults to geonames_index")
+    parser.add_argument("--testonly", action="store_true")
     args = parser.parse_args()
 
-    parse_geo(args.geo, args.indexdir)
+    if not args.testonly:
+        parse_geo(args.geo, args.indexdir)
 
     print "Test search of whoosh index for 'Los Angeles'..."
     test_search_results = test_query(args.indexdir, u"Los Angeles")
