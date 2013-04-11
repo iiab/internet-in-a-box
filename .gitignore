@@ -33,3 +33,7 @@ iiab/static/gutenberg_wordlist.json
 iiab/static/data
 
 local.ini
+
+# Website generated output
+website/output
+website/*.pid
