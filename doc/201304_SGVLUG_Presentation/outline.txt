@@ -1,0 +1,53 @@
+Part 1
+
+So long as men can breathe, or eyes can see,     
+So long lives this, and this gives life to thee.
+    -Shakespeare
+
+
+-Mission
+
+The purpose of the Internet-in-a-Box project is to provide the technical means
+to share the common heritage of humankind with anyone, anywhere.  
+No wires attached.
+
+
+-Opportunity
+
+
+-Realities
+    -The Library of Congress fits on one hard drive
+    -Sharing is not legal (usually)
+    -But a great deal CAN be legally shared
+
+-Need
+    -Expense of internet connection vs per capita income
+    -
+
+-Technical Opportunity
+
+-Humane Reader
+
+-Common Heritage which belongs to all mankind
+
+Breathes there the man with soul so dead
+Who never to himself hath said,
+This is my own, my native land!
+    -Sir Walter Scott
+
+
+Part 2 - Technical Presentation
+
+-Wikipedia
+    -Wikimedia
+    -Kiwix
+
+-Maps
+    -OpenStreetMap Project
+
+-Books
+    -Gutenberg Project
+
+-Software
+    -Ubuntu repository
+
