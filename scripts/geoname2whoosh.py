@@ -32,6 +32,8 @@ def get_schema():
         name=TEXT(stored=True, spelling=True), 
         latitude=STORED, 
         longitude=STORED,
+        country_code=TEXT(stored=True),
+        admin1_code=TEXT(stored=True),
         population=NUMERIC(long, stored=True) 
         )
 
