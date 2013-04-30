@@ -259,7 +259,7 @@ def convert(src, dst, z):
     Example usage:
         import osmtile
         src=osmtile.TileSet('/knowledge/processed/mod_tile', 'default', METATILE=8, flatter=False)
-        dst=osmtile.TileSet('/knowledge/processed/mod_tile64', 'default', METATILE=64, flatter=True)
+        dst=osmtile.TileSet('/knowledge/modules/openstreetmap/mod_tile64', 'default', METATILE=64, flatter=True)
         for z in range(0, 16):
             osmtile.convert(src, dst, z)
     """

@@ -117,7 +117,7 @@ def convert(sources, src_dir, dst_dir, nthreads, kiwix_bin_dir):
 parser = OptionParser()
 parser.add_option("--kiwix_bin_dir",
                   help="Dir of kiwix-index binary",
-                  default="/knowledge/packages/bin-amd64/kiwix/bin")
+                  default="/knowledge/sys/bin-amd64/kiwix/bin")
 parser.add_option("--threads",
                   help="Number of processes to run simultaneously",
                   default=1, type='int')

@@ -1,5 +1,7 @@
 #!/bin/sh
-cd /knowledge/seagate
-sleep 30
-./deb-chroot.sh chroot-armel /knowledge/seagate/startup.sh
+SYS=/knowledge/sys
+SCRIPTS=/knowledge/internet-in-a-box/scripts
+cd $SYS
+sleep 3
+$SCRIPTS/deb-chroot.sh chroot-armel $SCRIPTS/startup.sh
 

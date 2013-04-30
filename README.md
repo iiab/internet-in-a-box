@@ -205,9 +205,14 @@ Install some codec dependencies (Ubuntu 12.04):
     sudo -E wget --output-document=/etc/apt/sources.list.d/medibuntu.list http://www.medibuntu.org/sources.list.d/$(lsb_release -cs).list && sudo apt-get --quiet update && sudo apt-get --yes --quiet --allow-unauthenticated install medibuntu-keyring && sudo apt-get --quiet update
     apt-get install ffmpeg libfaac0 libavcodec-extra-53 libx264-120
 
+Move downloaded webm format videos to the final modules directory:
+
+    mkdir /knowledge/modules/khanacademy
+    mv /knowledge/data/khanacadey.org/Khan\ Academy/ /knowledge/modules/khanacademy/webm 
+
 Convert webm to a more mobile friendly format:
 
-    scripts/video_convert.py --extension .webm --threads 4 /knowledge/data/khanacademy.org/Khan\ Academy/ /knowledge/processed/Khan\ Academy
+    scripts/video_convert.py --extension .webm --threads 4 /knowledge/data/khanacademy.org/Khan\ Academy/ /knowledge/modules/khanacademy/h264
 
 video_convert.py is designed to be run efficiently on multiple NFS-mounted computers simultaneously in parallel.
 
@@ -245,8 +250,8 @@ Basic Python requirements:
     ./run.py
 
 Launch kiwix
-    cd /knowledge/processed/kiwix
-    ../../packages/bin-arm/kiwix-serve --library library.xml --port 25001
+    cd /knowledge/modules/wikipedia-kiwix
+    ../../sys/bin-arm/kiwix-serve --library library.xml --port 25001
 
 
 Rsync Server

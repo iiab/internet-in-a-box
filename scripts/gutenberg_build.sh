@@ -40,7 +40,7 @@ fi
 
 # assumes script run from scripts directory off of heritage root
 HERITAGE_DIR=..
-PROCESSED_DIR=$BASE_DIR/processed
+PROCESSED_DIR=$BASE_DIR/modules/gutenberg
 DBNAME=gutenberg.db
 MODEL=gutenberg_models.py
 WORDLIST_JSON=gutenberg_wordlist.json

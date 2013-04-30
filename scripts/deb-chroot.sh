@@ -1,5 +1,5 @@
 if [ -z $1 ]; then
-    DIR=/knowledge/processed/chroot-armel
+    DIR=/knowledge/sys/chroot-armel
 else
     DIR="$1"
 fi

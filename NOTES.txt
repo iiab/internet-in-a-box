@@ -609,7 +609,7 @@ apt-get install libapache2-mod-tile osm2pgsql openstreetmap-postgis-db-setup
 ----
 Gutenberg epub extraction
 
-sqlite3 /knowedge/processed/gutenberg.db
+sqlite3 /knowedge/modules/gutenberg/gutenberg.db
 select gutenberg_books.textId, format, friendlytitle, file from gutenberg_files, gutenberg_books where gutenberg_files.textId = gutenberg_books.textId and format = 'application/epub+zip';
 
 ----
@@ -712,14 +712,14 @@ time for name in *.epub; do echo $name; ebook-convert $name `basename $name`.zip
 ----
 Kiwix Conversion 3/31/13
 
-PATH=$PATH:/knowledge/packages/bin-amd64/kiwix/bin
+PATH=$PATH:/knowledge/sys/bin-amd64/kiwix/bin
 kiwix-index -v zim/wikipedia_en_simple_all_08_2011.zim index/wikipedia_en_simple_all_08_2011
 # kiwix-index time is about 5 minutes
 kiwix-manage library.xml add zim/wikipedia_en_simple_all_08_2011.zim -i index/wikipedia_en_simple_all_08_2011/
 kiwix-serve --library library.xml --port 8080
 
 # Takes about a day on two machines in parallel
-cd /knowledge/processed/kiwix/
+cd /knowledge/modules/wikipedia-kiwix/
 time ~/repo/internet-in-a-box/scripts/zim_index.py ../../data/zim/downloads/ index/ --threads 4 --index --catalog
 time ~/repo/internet-in-a-box/scripts/zim_index.py ../../data/zim/downloads/ index/ --catalog
 ----
@@ -780,7 +780,7 @@ a propery chroot.
     ./run.py
 
 12)
-    cd /knowledge/processed/kiwix
+    cd /knowledge/modules/wikipedia-kiwix
     /root/repo/kiwix-kiwix/src/server/kiwix-serve -v --library library.xml --port 25001
 
 13)
