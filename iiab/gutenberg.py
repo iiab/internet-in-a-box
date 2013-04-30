@@ -148,10 +148,13 @@ def text(textId):
     record = GutenbergBook.query.filter_by(textId=textId).first()
     # if blueprint has a different static_folder specified we might need to use blueprint.static_folder but currently None
     filter_func = lambda file_rec: os.path.exists(os.path.join(current_app.static_folder, file_rec.file))
+    for x in record.gutenberg_files:
+        if not filter_func(x):
+            print "WARNING: Gutenberg file " + os.path.join(current_app.static_folder, x.file) + " not found"
     record.gutenberg_files = filter(filter_func, record.gutenberg_files)
 
     # fields format is list of tuples:
-    # (Table row heading for display, gutenberg_books col name, 
+    # (Table row heading for display, gutenberg_books col name,
     #  sub-table col name if applicable)
     fields = [
         (_('Title'), 'title', ''),

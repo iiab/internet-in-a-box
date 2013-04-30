@@ -221,7 +221,15 @@ and other features to work with the finicky video browser clients
 
     ipython
     import iiab.khan
-    iiab.khan.make_symlinks('/knowledge/data/khanacademy.org/Khan Academy/', '/knowledge/processed/Khan Academy/', '/knowledge/processed/khanlinks')
+    iiab.khan.make_symlinks('/knowledge/modules/khanacademy/webm/', '/knowledge/modules/khanacademy/h264/', '/knowledge/modules/khanacademy/khanlinks')
+
+
+Rsync to Device
+---------------
+
+mkdir /knowledge
+cd /knowledge
+time rsync --delete -avrP rsync://orlop/knowledge/modules/ modules
 
 
 Web Service

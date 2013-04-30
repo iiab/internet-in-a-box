@@ -1,0 +1,88 @@
+diff --git a/src/common/kiwix/searcher.cpp b/src/common/kiwix/searcher.cpp
+index b480e06..a1098a7 100644
+--- a/src/common/kiwix/searcher.cpp
++++ b/src/common/kiwix/searcher.cpp
+@@ -203,7 +203,7 @@ namespace kiwix {
+     oData["resultLastPageStart"] = this->estimatedResultCount > this->resultRange ? this->estimatedResultCount - this->resultRange : 0;
+     oData["protocolPrefix"] = this->protocolPrefix;
+     oData["searchProtocolPrefix"] = this->searchProtocolPrefix;
+-    oData["contentId"] = this->contentHumanReadableId;
++    oData["contentId"] = string("kiwix/") + this->contentHumanReadableId;
+ 
+     STLW::string sResult;
+     StringOutputCollector oDataCollector(sResult);
+diff --git a/src/server/kiwix-serve.cpp b/src/server/kiwix-serve.cpp
+index 0bae9b6..5c30be0 100644
+--- a/src/server/kiwix-serve.cpp
++++ b/src/server/kiwix-serve.cpp
+@@ -113,7 +113,7 @@ static uLongf comprLen;
+ 
+ static int accessHandlerCallback(void *cls,
+ 				 struct MHD_Connection * connection,
+-				 const char * url,
++				 const char * rawUrl,
+ 				 const char * method,
+ 				 const char * version,
+ 				 const char * upload_data,
+@@ -133,7 +133,7 @@ static int accessHandlerCallback(void *cls,
+ 
+   /* Debug */
+   if (isVerbose()) {
+-    std::cout << "Requesting " << url << std::endl;
++    std::cout << "Requesting " << rawUrl << std::endl;
+   }
+ 
+   /* Check if the response can be compressed */
+@@ -149,7 +149,30 @@ static int accessHandlerCallback(void *cls,
+   unsigned int contentLength = 0;
+   bool found = true;
+   int httpResponseCode = MHD_HTTP_OK;
+-   std::string urlStr = string(url);
++  std::string baseUrl = string("/kiwix");
++  std::string urlPrefix;
++  std::string urlPrefixWithSlash;
++  std::string rawUrlStr = string(rawUrl);
++  std::string urlStr;
++  const char *url;
++
++  if (rawUrlStr == baseUrl) {
++      urlStr = "/";
++      url = urlStr.data();
++      urlPrefix = baseUrl.substr(1); // remove preceeding slash
++      urlPrefixWithSlash = urlPrefix + "/";
++  } else if (rawUrlStr.find(baseUrl) == 0) {  // Starts with /kiwix
++      urlStr = rawUrlStr.substr(baseUrl.length());
++      url = urlStr.data();
++      urlPrefix = baseUrl.substr(1); // remove preceeding slash
++      urlPrefixWithSlash = urlPrefix + "/";
++  } else {
++      urlStr = rawUrlStr;
++      url = rawUrl;
++      urlPrefix = "";
++      urlPrefixWithSlash = "";
++  }
++  
+ 
+   /* Get searcher and reader */
+   std::string humanReadableBookId = "";
+@@ -225,7 +248,7 @@ static int accessHandlerCallback(void *cls,
+       reader->getPageUrlFromTitle(patternString, patternCorrespondingUrl);
+       pthread_mutex_unlock(&readerLock);
+       if (!patternCorrespondingUrl.empty()) {
+-	httpRedirection="/" + humanReadableBookId + "/" + patternCorrespondingUrl;
++	httpRedirection= baseUrl + "/" + humanReadableBookId + "/" + patternCorrespondingUrl;
+       }
+     }
+ 
+@@ -288,9 +311,9 @@ static int accessHandlerCallback(void *cls,
+     if (mimeType.find("text/html") != string::npos) {
+ 
+       /* Special rewrite URL in case of ZIM file use intern *asbolute* url like /A/Kiwix */
+-      content = replaceRegex(content, "$1$2" + humanReadableBookId + "/$3/",
++      content = replaceRegex(content, "$1$2" + urlPrefixWithSlash + humanReadableBookId + "/$3/",
+ 		   "(href|src)(=[\"|\']/)([A-Z|\\-])/");
+-      content = replaceRegex(content, "$1$2" + humanReadableBookId + "/$3/",
++      content = replaceRegex(content, "$1$2" + urlPrefixWithSlash + humanReadableBookId + "/$3/",
+ 		   "(@import[ ]+)([\"|\']/)([A-Z|\\-])/");
+     }
+   }
