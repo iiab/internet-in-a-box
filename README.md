@@ -262,4 +262,40 @@ Rsync Server
     Edit /etc/default/rsync and set RSYNC_ENABLE=true
     /etc/init.d/rsyncd start
 
+
+Installing on the GoFlex Home
+-----------------------------
+
+First we hack the firmware, re-format the drive, and install our Debian image on the device.
+
+In general, follow the Arch Linux Arm instructions at:
+
+http://archlinuxarm.org/platforms/armv5/seagate-goflex-home
+
+*Except* in step 12, instead of installing the Arch Linux
+tarball, install our Debian tarball from /knowledge/sys/ instead.
+
+    cd alarm
+    scp braddock@192.168.1.105:/knowledge/sys/debian-squeeze-20130430.tgz .
+    tar xvzf debian-squeeze-20130430.tgz
+    rm debian-squeeze-20130430.tgz
+    sync
+
+After reboot: 
+
+1. connect drive to SATA on orlop.
+
+2. Format second partition to ext3 fs with label "data"
+
+3. Mount "data"
+    mount /dev/sda2 /mnt/mnt
+
+4. Copy knowledge dataset to "data"
+    sudo -i
+    cd /mnt/mnt
+    mkdir knowledge
+    time rsync --delete -avrP /knowledge/modules /knowledge/internet-in-a-box /knowledge/sys knowledge
+
+
+
 ----

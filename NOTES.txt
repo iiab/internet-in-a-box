@@ -535,6 +535,47 @@ apt-get install vim python git rsync sudo screen links \
 dpkg-reconfigure locales
 # apt-get install mediawiki mysql-server
 
+Adding name services:
+
+Samba:
+apt-get install samba
+
+# REMOVE: Unnecessary to edit smb.conf, just use defaults
+# Edit /etc/samba/smb.conf
+# Add line under [global]:
+# netbios name = know
+# /etc/init.d/samba restart
+
+To test:
+nmblookup know
+
+mDNS:
+apt-get install avahi-daemon
+(no configuration needed)
+Host will be available at know.local or know
+
+dhcp:
+Debian does not send the hostname by default when it registers with DHCP.
+
+Edit /etc/dhcp/dhclient.conf
+Add line:
+send host-name "know";
+
+dhclient -v eth0
+
+
+Create fstab (if not chroot)
+mkdir /mnt/data
+cat /etc/fstab
+/dev/sda2       /mnt/data       ext3    defaults        0       0
+ln -s /mnt/data/knowledge /knowledge
+
+
+Create 1GB swapfile (if not chroot)
+dd if=/dev/zero of=/swapfile bs=1024 count=1048576
+mkswap /swapfile
+echo '/swapfile       none    swap    sw      0       0' >>/etc/fstab
+
 ----
 
 Setting up virtualenv
@@ -789,5 +830,24 @@ a propery chroot.
 14) Change wifi name to "internet in a box" using the web interface (Settings->Network)
 
 
+----
+WRT54G with DD-WRT Setup
+
+Wireless SSID: internet in a box
+Wireless Security: WPA Pre-Shared Key
+Key: inschool
+
+Add static DHCP reservation for Internet-in-a-Box device at 192.168.2.50.
+
+To redirect all nameserver queries to the Internet-in-a-Box device on
+192.168.2.50:
+
+Administration->Management
+
+DNSMasq = Enable
+Local DNS = Disable
+
+Addtional DNS Options:
+address=/#/192.168.2.50
 
 ----
