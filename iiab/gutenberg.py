@@ -192,6 +192,10 @@ def autocomplete():
             # of partial matches across several different columns without
             # lots of effort
 
+            # Be aware that returning a json top-level array leaves us vulnerable to CSRF.
+            # http://flask.pocoo.org/docs/security/ In this case this is not of significant
+            # concern because the information is not sensitive.  We use a top-level array
+            # because this is what jquery autocomplete demands for use without modification.
             suggestions = get_autocomplete_matches(term)
             return Response(response=json.dumps(suggestions), mimetype="application/json")
     else:
