@@ -268,6 +268,11 @@ Installing on the GoFlex Home
 
 First we hack the firmware, re-format the drive, and install our Debian image on the device.
 
+If this is a used device with an unknown username and password, reset the
+device by booting it, and then pressing with a paperclip the reset button in
+the hole on the side for 15 seconds.  Then go to the IP address and you will be
+able to setup from factory defaults.
+
 In general, follow the Arch Linux Arm instructions at:
 
 http://archlinuxarm.org/platforms/armv5/seagate-goflex-home
@@ -276,9 +281,9 @@ http://archlinuxarm.org/platforms/armv5/seagate-goflex-home
 tarball, install our Debian tarball from /knowledge/sys/ instead.
 
     cd alarm
-    scp braddock@192.168.1.105:/knowledge/sys/debian-squeeze-20130430.tgz .
-    tar xvzf debian-squeeze-20130430.tgz
-    rm debian-squeeze-20130430.tgz
+    scp braddock@192.168.1.105:/knowledge/sys/debian-squeeze-20130501a.tgz .
+    tar xvzf debian-squeeze-20130501a.tgz
+    rm debian-squeeze-20130501a.tgz
     sync
 
 After reboot: 
@@ -290,12 +295,17 @@ After reboot:
 3. Mount "data"
     mount /dev/sda2 /mnt/mnt
 
-4. Copy knowledge dataset to "data"
+4. Copy knowledge dataset to "data" (using rsync - which is slow)
     sudo -i
     cd /mnt/mnt
     mkdir knowledge
     time rsync --delete -avrP /knowledge/modules /knowledge/internet-in-a-box /knowledge/sys knowledge
+    (takes about 10 hours)
 
-
+4. Copy knowledge dataset to "data" (using tar)
+    sudo -i
+    mkdir /mnt/mnt/knowledge
+    cd /knowledge
+    time tar cBf - modules internet-in-a-box sys | (cd /mnt/mnt/knowledge; tar xvBf -)
 
 ----
