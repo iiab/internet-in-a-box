@@ -851,3 +851,57 @@ Addtional DNS Options:
 address=/#/192.168.2.50
 
 ----
+Virtualenv
+
+cd /knowledge/sys
+pip install virtualenv
+virtualenv --no-site-packages virtualenv-armv7l
+
+----
+
+Install compilers and build essentials:
+yum groupinstall "Development Tools"
+yum install python-devel
+yum install screen vim
+
+#yum install python-sqlalchemy
+pip install Flask-Babel whoosh
+
+yum install nginx
+
+# for kiwix
+yum install libicu
+
+chmod a+x /run/media/olpc
+
+----
+Kiwix static arm build on GoFlex Home
+
+We ONLY care about building the kiwix-serve binary.
+
+These instructions are from memory, I'm probably missing something.
+
+git clone git://git.code.sf.net/p/kiwix/kiwix kiwix-kiwix
+
+Must install aria2-1.16.5 from repository.
+
+Must build and install liblzma (the liblzma.a installed by the Debian package
+is incomplete).
+tar xvzf xz-utils_5.1.1alpha+20110809.orig.tar.gz
+apt-get install autopoint
+./configure
+make
+make install
+
+
+Try to install as many dependencies as possible from the COMPILE document.
+
+./configure
+cd src/server
+make
+
+This will build the dynamically linked binary kiwix-serve
+
+cat <<EOF >
+g++ -static -I/root/repo/kiwix-kiwix/src/ctpp2/include -I/usr/lib -I/usr/lib64 -g -Wall -O0 -W -Wall -ansi -pedantic -Wpointer-arith -Wwrite-strings -Wno-long-long -I../common/ -g -O2 -std=gnu++0x -fexceptions -DMOZ_CPP_EXCEPTIONS -DMOZ_NO_MOZALLOC -I/root/repo/kiwix-kiwix/src/dependencies/xulrunner-sdk/include/nspr -Wl,-z -Wl,defs -pthread -llzma -o kiwix-serve kiwix_serve-kiwix-serve.o kiwix_serve-reader.o kiwix_serve-searcher.o kiwix_serve-manager.o kiwix_serve-library.o kiwix_serve-xapianSearcher.o kiwix_serve-cluceneSearcher.o kiwix_serve-base64.o kiwix_serve-pathTools.o kiwix_serve-regexTools.o kiwix_serve-resourceTools.o kiwix_serve-stringTools.o  /usr/lib/libxapian.a -L/usr/local/lib -L/usr/lib -licui18n -licuuc -licudata -lm ../zimlib/src/.libs/libzim.a ../ctpp2/src/.libs/libctpp2.a ../pugixml/.libs/libpugixml.a -lclucene -ldl -lpthread -llzma -lmicrohttpd -lz -luuid
+EOF
