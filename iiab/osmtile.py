@@ -4,7 +4,10 @@ import struct
 import os
 import thread
 from md5 import md5
-import progressbar
+try:
+    import progressbar
+except ImportError:
+    pass
 
 
 META_MAGIC = "META"
