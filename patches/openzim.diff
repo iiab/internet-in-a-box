@@ -1,0 +1,20 @@
+diff --git a/zimlib/src/tools/zimDump.cpp b/zimlib/src/tools/zimDump.cpp
+index 37ad42e..3fd898a 100644
+--- a/zimlib/src/tools/zimDump.cpp
++++ b/zimlib/src/tools/zimDump.cpp
+@@ -471,8 +471,12 @@ int main(int argc, char* argv[])
+       app.locateArticle(indexOffset);
+     else if (find.isSet())
+       app.findArticle(ns, find, titleSort);
+-    else if (url.isSet())
+-      app.findArticleByUrl(std::string(url));
++    else if (url.isSet()) {
++      std::string s = std::string(url);
++      s = s.substr(1);
++      //std::cout << "URL :" << s << std::endl;
++      app.findArticleByUrl(s);
++    }
+ 
+     // dump files
+     if (dumpAll.isSet())
+
