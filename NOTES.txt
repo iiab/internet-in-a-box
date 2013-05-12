@@ -551,7 +551,18 @@ nmblookup know
 
 mDNS:
 apt-get install avahi-daemon
-(no configuration needed)
+
+Note in order for avahi to work with the XS-CE School Server, which
+(incorrectly) uses the .local domain.  avahi on Debian stable will refuse to
+run if it finds a unicast DNS that responds to the .local domain.  To fix this,
+you must edit /etc/default/avahi-daemon
+
+cat /etc/default/avahi-daemon 
+# 1 = Try to detect unicast dns servers that serve .local and disable avahi in
+# that case, 0 = Don't try to detect .local unicast dns servers, can cause
+# troubles on misconfigured networks
+AVAHI_DAEMON_DETECT_LOCAL=0
+
 Host will be available at know.local or know
 
 dhcp:

@@ -9,6 +9,7 @@ import map_views
 import video_views
 import gutenberg
 import wikipedia_views
+import zim_views
 from extensions import db
 import sys
 
@@ -40,7 +41,8 @@ class IiabWebApp(object):
             (gutenberg.gutenberg, base_prefix + "books"),
             (map_views.blueprint, base_prefix + "maps"),
             (video_views.blueprint, base_prefix + "video"),
-            (wikipedia_views.blueprint, base_prefix + "wikipedia")
+            (wikipedia_views.blueprint, base_prefix + "wikipedia"),
+            (zim_views.blueprint, base_prefix + "zim")
         ]
         for blueprint, prefix in blueprints:
             self.app.register_blueprint(blueprint, url_prefix=prefix)

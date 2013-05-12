@@ -19,6 +19,7 @@ def getHumanReadableBookId(path):
 
 
 def intWithCommas(x):
+    """Pretty print an integer with commas"""
     if type(x) not in [type(0), type(0L)]:
         raise TypeError("Parameter must be an integer.")
     if x < 0:
