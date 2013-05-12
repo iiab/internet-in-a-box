@@ -1,5 +1,5 @@
 # ZIM file URL views (for Wikipedia)
-from flask import Blueprint, Response
+from flask import Blueprint, Response, render_template
 
 from zim import Library, replace_paths
 from config import config
@@ -41,3 +41,8 @@ def zim_view(humanReadableId, namespace, url):
     article = lib.get_article_by_url(humanReadableId, namespace, url)
     html = mangle_article(article, humanReadableId)
     return Response(html, mimetype=article.mime_type)
+
+
+@blueprint.route('/iframe/<humanReadableId>')
+def iframe_view(humanReadableId):
+    return render_template('zim_iframe.html', humanReadableId=humanReadableId)

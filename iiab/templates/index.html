@@ -35,6 +35,26 @@
               border-left: 5px #666 outset !important;
           }
       }
+
+      /* CSS for Wikipedia iframe in zim_iframe.html */
+      .iframe-wrap {
+          position: fixed;
+          top: 40px;
+          left: 0;
+          width: 100%;
+          height: 100%;
+      }
+      .wiki-iframe {
+          height: 90%;
+          width: 100%;
+      }
+      @media only screen and (min-width: 900px) {
+          .iframe-wrap {
+              width: 900px !important;
+              left: 50%;
+              margin-left: -450px;
+          }
+      }
       -->
   </style>
 

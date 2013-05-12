@@ -14,4 +14,8 @@ def wikipedia_view():
     kiwix_url = config().get('KIWIX', 'url')
     library = parse_library(library_xml)
     langs = get_languages(library)
-    return render_template('wikipedia_index.html', languages=langs, kiwix_url=kiwix_url)
+    ajax = False
+    if kiwix_url == "/iiab/zim":
+        kiwix_url = "/iiab/zim/iframe"
+        ajax = True
+    return render_template('wikipedia_index.html', languages=langs, kiwix_url=kiwix_url, ajax=ajax)

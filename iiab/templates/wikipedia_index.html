@@ -11,7 +11,7 @@
             </li>
             {% for book in language['books'] %}
             <li data-theme="c">
-            <a href="{{ kiwix_url + '/' + book.get('humanReadableId') + '/' }}" data-transition="slide" data-ajax="false">
+            <a href="{{ kiwix_url + '/' + book.get('humanReadableId') + '/' }}" data-transition="slide" data-ajax="{{ 'true' if ajax else 'false' }}">
                 <h3>{{ book.get('title') }}</h3>
                 {% if 'description' in book %}
                 <p style="white-space: normal;" class="float-left">{{ book.get('description') }}</p>

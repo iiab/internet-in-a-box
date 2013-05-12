@@ -232,9 +232,9 @@ and other features to work with the finicky video browser clients
 Rsync to Device
 ---------------
 
-mkdir /knowledge
-cd /knowledge
-time rsync --delete -avrP rsync://orlop/knowledge/modules/ modules
+    mkdir /knowledge
+    cd /knowledge
+    time rsync --delete -avrP rsync://orlop/knowledge/modules/ modules
 
 
 Web Service
@@ -335,8 +335,8 @@ Installation of the Internet-in-a-Box server on an XO-4 running OLPC OS 13.1
 5. Install python dependencies
 
     python-pip install Flask-Babel whoosh 
-    # You must clean up the pip-build-root dir before SQLAlchemy
-    # or you will run out of /tmp space
+    (You must clean up the pip-build-root dir before SQLAlchemy
+    or you will run out of /tmp space)
     rm -rvf /tmp/pip-build-root
     python-pip install Flask-SQLAlchemy
 
