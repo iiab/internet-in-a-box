@@ -33,7 +33,8 @@ def parse_zimdump_info(text):
 
 def get_article_info_by_url(zimfile, namespace, url, cwd='.'):
     name = "X" + namespace + "/" + url
-    cmd = ['zimdump',
+    exe = config().get('KIWIX', 'zimdump')
+    cmd = [exe,
            '-i', '-u', name,
            zimfile]
     print string.join(cmd, " ")
@@ -47,7 +48,8 @@ def get_article_info_by_url(zimfile, namespace, url, cwd='.'):
 
 def get_zimfile_info(zimfile, cwd='.'):
     """Return info about the zim file itself"""
-    cmd = ['zimdump',
+    exe = config().get('KIWIX', 'zimdump')
+    cmd = [exe,
            '-F', '-v',
            zimfile]
     print string.join(cmd, " ")
@@ -58,7 +60,8 @@ def get_zimfile_info(zimfile, cwd='.'):
 
 
 def get_article_info_by_index(zimfile, idx, cwd='.'):
-    cmd = ['zimdump',
+    exe = config().get('KIWIX', 'zimdump')
+    cmd = [exe,
            '-i', '-o', str(idx),
            zimfile]
     print string.join(cmd, " ")
@@ -71,7 +74,8 @@ def get_article_info_by_index(zimfile, idx, cwd='.'):
 
 
 def get_article_data_by_index(zimfile, index, cwd='.'):
-    cmd = ['zimdump',
+    exe = config().get('KIWIX', 'zimdump')
+    cmd = [exe,
            '-d', '-o', str(index),
            zimfile]
     print string.join(cmd, " ")
