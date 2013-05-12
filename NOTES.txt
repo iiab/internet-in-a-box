@@ -931,3 +931,13 @@ cd zimlib
 make
 cp src/tools/zimdump /knowledge/sys/bin-arm/zimdump-patched
 
+-----
+Install attempt on XO-1  - 5/12/13
+
+yum install python-devel
+yum install gcc
+FAILED - cannot allocate memory
+
+Jerry suggests adding a swapfile on an SD card
+
+-----
