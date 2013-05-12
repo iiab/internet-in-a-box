@@ -22,13 +22,15 @@ def zim_main_page_view(humanReadableId):
 
 def mangle_article(article, humanReadableId):
     html = article.data
-    if article.mime_type in ['text/html; charset=utf-8', 'stylesheet/css']:
+    if article.mime_type in ['text/html; charset=utf-8', 'stylesheet/css', 'text/html']:
         try:
             html = html.decode('utf-8')
         except UnicodeDecodeError:
             try:
+                print "utf-8 decoding failed, falling back to latin1"
                 html = html.decode('latin1')
             except:
+                print "utf-8 and latin1 decoding failed"
                 return html
         html = replace_paths("iiab/zim/" + humanReadableId, html)
     return html
@@ -44,5 +46,12 @@ def zim_view(humanReadableId, namespace, url):
 
 
 @blueprint.route('/iframe/<humanReadableId>')
-def iframe_view(humanReadableId):
-    return render_template('zim_iframe.html', humanReadableId=humanReadableId)
+def iframe_main_page_view(humanReadableId):
+    url = '/iiab/zim/' + humanReadableId + '/'
+    return render_template('zim_iframe.html', url=url)
+
+
+@blueprint.route('/iframe/<humanReadableId>/<namespace>/<path:url>')
+def iframe_view(humanReadableId, namespace, url):
+    url = '/iiab/zim/' + humanReadableId + '/' + namespace + '/' + url
+    return render_template('zim_iframe.html', url=url)
