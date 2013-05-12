@@ -308,4 +308,55 @@ After reboot:
     cd /knowledge
     time tar cBf - modules internet-in-a-box sys | (cd /mnt/mnt/knowledge; tar xvBf -)
 
+
+Installing on an OLPC XO Laptop
+-------------------------------
+
+Installation of the Internet-in-a-Box server on an XO-4 running OLPC OS 13.1
+
+1. Flash the OS with a USB key, boot, connect to your wireless network
+
+2. Open Terminal, sudo -i
+
+3. Enable SSHD (optional)
+    vi /etc/ssh/sshd_config
+    Uncomment line "PermitRootLogin yes"
+    systemctl restart sshd
+    passwd root  # Create a root password
+    The rest of these instructions can now be executed via ssh
+ 
+4.  Install compilers and build essentials:
+    (This is overkill - we don't need all these dependencies)
+    yum -y groupinstall "Development Tools"
+    yum -y install python-devel python-pip nginx xz-devel screen vim 
+
+5. Install python dependencies
+    python-pip install Flask-Babel whoosh 
+    # You must clean up the pip-build-root dir before SQLAlchemy
+    # or you will run out of /tmp space
+    rm -rvf /tmp/pip-build-root
+    python-pip install Flask-SQLAlchemy
+
+6. Plug in the Internet-in-a-Box USB Hard Drive
+    It will auto-mount at /run/media/olpc/knowledge
+
+7. Create a link from /knowledge
+    ln -s /run/media/olpc/knowledge/knowledge /knowledge
+
+8. Link nginx configuration
+    ln -s /knowledge/internet-in-a-box/conf/iiab_nginx.conf /etc/nginx/conf.d/
+
+9. Create a local.ini configuration file
+    cd /knowledge/internet-in-a-box 
+    cat <<EOF >local.ini
+    [KIWIX]
+    url = /iiab/zim
+    zimdump = /knowledge/sys/bin-arm/zimdump-patched
+    EOF
+
+
+10. Run!
+    scripts/startup-xo.sh
+
+
 ----
