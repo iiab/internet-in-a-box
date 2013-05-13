@@ -940,4 +940,39 @@ FAILED - cannot allocate memory
 
 Jerry suggests adding a swapfile on an SD card
 
+
+Install along side School Server XS-CE
+
+    First I flashed to 13.1.0
+    Then installed IIAB using the procedure in README.md
+    Then I installed School Server XS-CE
+
+Looks like School Server installs a conflicting older version of SQLAlchemy
+0.7.10 vs pip's 0.8.1.  You must not just remove it, but reinstall from pip
+
+    yum remove python-sqlalchemy
+    python-pip uninstall SQLAlchemy
+    python-pip install SQLAlchemy 
+
+School server mounts the USB hard drive in a different place, in /mnt/usb0
+instead of /run/media/olpc/knowledge.
+
+    ln -sf /mnt/usb0/knowledge /knowledge
+
+School server mounts the USB hard drive with the noexec flag.  Annoying.
+
+School server installed Apache, which conflicts with nginx
+
+    systemctl stop httpd
+
+To turn off the noexec flag
+
+    Edit /etc/usbmount/usbmount.conf
+    Remove noexec from: MOUNTOPTIONS=
+
+To run IIAB:
+
+    Plug in USB drive.
+    /knowledge/internet-in-a-box/scripts/startup-xo.sh
+
 -----
