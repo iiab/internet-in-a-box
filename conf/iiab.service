@@ -1,0 +1,16 @@
+<?xml version="1.0" standalone='no'?><!--*-nxml-*-->
+<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+
+<service-group>
+  <name replace-wildcards="yes">Internet-in-a-Box on %h</name>
+
+  <service>
+    <type>_internet-in-a-box-http._tcp</type>
+    <port>80</port>
+  </service>
+
+  <service>
+    <type>_internet-in-a-box-rsync._tcp</type>
+    <port>873</port>
+  </service>
+</service-group>

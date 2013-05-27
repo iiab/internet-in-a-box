@@ -3,6 +3,8 @@ Internet In A Box
 
 2013
 
+Project Homepage: http://internet-in-a-box.org
+
 *THIS PROJECT IS UNDER HEAVY INITIAL CONSTRUCTION*
 Please come back in a few weeks. :)
 
@@ -241,15 +243,18 @@ Web Service
 -----------
 
 We run nginx as our front end web service:
+
     apt-get install nginx
     cp iiab_nginx.conf /etc/nginx/sites-enabled/
 
 Basic Python requirements:
+
     cd internet-in-a-box
     pip install Flask-Babel whoosh Flask-SQLAlchemy progressbar
     ./run.py
 
 Launch kiwix
+
     cd /knowledge/modules/wikipedia-kiwix
     ../../sys/bin-arm/kiwix-serve --library library.xml --port 25001
 
@@ -293,9 +298,11 @@ After reboot:
 2. Format second partition to ext3 fs with label "data"
 
 3. Mount "data"
+
     mount /dev/sda2 /mnt/mnt
 
 4. Copy knowledge dataset to "data" (using rsync - which is slow)
+
     sudo -i
     cd /mnt/mnt
     mkdir knowledge
@@ -303,6 +310,7 @@ After reboot:
     (takes about 10 hours)
 
 4. Copy knowledge dataset to "data" (using tar)
+
     sudo -i
     mkdir /mnt/mnt/knowledge
     cd /knowledge

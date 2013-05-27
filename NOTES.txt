@@ -976,3 +976,14 @@ To run IIAB:
     /knowledge/internet-in-a-box/scripts/startup-xo.sh
 
 -----
+mDNS Service Discovery - 5/13/13
+
+cp internet-in-a-box/conf/iiab.service /etc/avahi/services/
+
+To browse all services (never terminates)
+avahi-browse -a
+
+A script-friendly command:
+avahi-browse -r -p -t _internet-in-a-box-rsync._tcp
+
+-----
