@@ -1,0 +1,12 @@
+<VirtualHost *>
+
+    WSGIDaemonProcess iiab user=braddock group=braddock threads=5
+    WSGIScriptAlias / /knowledge/internet-in-a-box/iiab.wsgi
+
+    <Directory /knowledge/internet-in-a-box/>
+        WSGIProcessGroup iiab
+        WSGIApplicationGroup %{GLOBAL}
+        Order deny,allow
+        Allow from all
+    </Directory>
+</VirtualHost>
