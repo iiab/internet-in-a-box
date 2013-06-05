@@ -4,7 +4,7 @@ LogLevel info
     ServerName orlop
 
     WSGIDaemonProcess iiab user=braddock group=braddock threads=5
-    WSGIScriptAlias /iiab /knowledge/internet-in-a-box/iiab.wsgi
+    WSGIScriptAlias /iiab /knowledge/internet-in-a-box/iiab/iiab.wsgi
 
     <Directory /knowledge/internet-in-a-box/>
         WSGIProcessGroup iiab

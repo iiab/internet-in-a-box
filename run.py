@@ -30,7 +30,7 @@ def main(argv):
                       help="Disable profiler echo to stdout")
     (options, args) = parser.parse_args()
 
-    load_config('config.ini', [options.config])
+    load_config('iiab/config.ini', [options.config])
 
     # Set command line parameters in our config global
     if options.knowledge is not None:
