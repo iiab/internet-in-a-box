@@ -29,7 +29,6 @@ class IiabConfig(SafeConfigParser):
     def getjson(self, section, name):
         """Load a configuration value string and interpret
            it as a JSON structure"""
-        print "getjson: " + self.get(section, name)
         return loads(self.get(section, name))
 
 

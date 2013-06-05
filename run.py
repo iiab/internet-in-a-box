@@ -41,8 +41,8 @@ def main(argv):
 
     #print "root_dir = "
     #config().get('IIAB', 'root_dir')
-    print "CONFIGURATION"
-    print config().all_items_to_str()
+    #print "CONFIGURATION"
+    #print config().all_items_to_str()
 
     debug = config().getboolean('DEFAULT', 'debug')
     webapp = IiabWebApp(debug, enable_profiler=options.profile, profiler_quiet=options.profiler_quiet)

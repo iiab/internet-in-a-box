@@ -161,6 +161,28 @@ installation under /knowledge/processed/wiki/, which should be linked from
 After this is complete your new wikis should be accessible at http://localhost/wiki/arwiki (for example)
 
 
+Building a patched zimdump
+--------------------------
+
+Due to a bug in zimdump, we need a patched version.
+
+    git clone https://gerrit.wikimedia.org/r/p/openzim.git
+    cd openzim/zimlib
+    patch -p2 </knowledge/internet-in-a-box/patches/openzim.diff
+    ./autogen.sh
+    ./configure
+    make -j4
+    cp src/tools/zimdump /knowledge/sys/bin-amd64/zimdump-patched
+
+To turn on the use of zimdump:
+
+    cd /knowledge/internet-in-a-box
+    cat &lt;&lt;EOF >local.ini
+    [KIWIX]
+    url = /iiab/zim
+    zimdump = /knowledge/sys/bin-amd64/zimdump-patched
+
+
 Kiwix ZIM File Download
 -----------------------
 

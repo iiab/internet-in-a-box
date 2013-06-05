@@ -56,7 +56,7 @@ class IiabWebApp(object):
         self.configure_babel()
         db.init_app(self.app)
 
-        print "URL MAP: ", self.app.url_map
+        #print "URL MAP: ", self.app.url_map
 
         if enable_profiler:
             from werkzeug.contrib.profiler import ProfilerMiddleware, MergeStream
