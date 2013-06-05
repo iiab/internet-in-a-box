@@ -6,6 +6,6 @@ sys.path.append('/knowledge/internet-in-a-box')
 from iiab.webapp import IiabWebApp
 from iiab.config import load_config
     
-load_config('config.ini', [])
+load_config('config.ini', ['wsgi.ini'])
 
 application = IiabWebApp().app

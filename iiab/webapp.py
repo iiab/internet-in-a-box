@@ -31,7 +31,8 @@ class IiabWebApp(object):
             self.app.config['DEBUG'] = True
             self.app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
-        base_prefix = '/iiab/'
+        base_prefix = config().get('WEBAPP', 'base_prefix')
+
         # Static blueprint is used during development to serve static files
         #static_blueprint = Blueprint('static_blueprint', __name__, static_folder='static')
         blueprints = [
