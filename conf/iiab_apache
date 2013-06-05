@@ -1,7 +1,7 @@
 <VirtualHost *>
 
     WSGIDaemonProcess iiab user=braddock group=braddock threads=5
-    WSGIScriptAlias / /knowledge/internet-in-a-box/iiab.wsgi
+    WSGIScriptAlias /iiab /knowledge/internet-in-a-box/iiab.wsgi
 
     <Directory /knowledge/internet-in-a-box/>
         WSGIProcessGroup iiab
@@ -9,4 +9,8 @@
         Order deny,allow
         Allow from all
     </Directory>
+
+    Alias /static /knowledge/internet-in-a-box/iiab/static
+    Alias /khanvideo /knowledge/modules/khanacademy/khanlinks
+    Alias /software /knowledge/modules/ubuntu/12.04/mirror/archive.ubuntu.com/ubuntu
 </VirtualHost>
