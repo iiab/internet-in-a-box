@@ -1,0 +1,3 @@
+recursive-include iiab/templates *
+recursive-include iiab/static *
+include README.md

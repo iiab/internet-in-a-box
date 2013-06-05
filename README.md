@@ -272,7 +272,7 @@ We run nginx as our front end web service:
 Basic Python requirements:
 
     cd internet-in-a-box
-    pip install Flask-Babel whoosh Flask-SQLAlchemy progressbar
+    pip install -r requirements.txt
     ./run.py
 
 Launch kiwix
