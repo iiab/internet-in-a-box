@@ -24,6 +24,7 @@ class IiabWebApp(object):
         self.app = Flask('IiabWebApp')
         self.app.root_path += '/iiab'  # something changed so that root_path changed -- work around until identified
         self.app.url_map.strict_slashes = False
+        self.app.use_x_sendfile = True
 
         # Configuration items
         if debug:
@@ -57,7 +58,7 @@ class IiabWebApp(object):
         self.configure_babel()
         db.init_app(self.app)
 
-        #print "URL MAP: ", self.app.url_map
+        print "URL MAP: ", self.app.url_map
 
         if enable_profiler:
             from werkzeug.contrib.profiler import ProfilerMiddleware, MergeStream

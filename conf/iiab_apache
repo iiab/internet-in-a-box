@@ -1,7 +1,10 @@
 WSGIRestrictStdout Off
 LogLevel info
+XSendFile on
+XSendFilePath /
+
 <VirtualHost *>
-    ServerName orlop
+    ServerName iiab
 
     WSGIDaemonProcess iiab user=braddock group=braddock threads=5
     WSGIScriptAlias /iiab /knowledge/internet-in-a-box/iiab/iiab.wsgi
