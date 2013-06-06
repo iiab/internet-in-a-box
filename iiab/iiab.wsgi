@@ -11,7 +11,8 @@ sys.path.append(parent_dir)
 
 from iiab.webapp import IiabWebApp
 from iiab.config import load_config
-    
-load_config('iiab/config.ini', ['iiab/wsgi.ini'])
+   
+wsgi_config = os.path.join(package_dir, 'wsgi.ini') 
+load_config(None, [wsgi_config])
 
 application = IiabWebApp().app

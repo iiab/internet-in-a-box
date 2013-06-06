@@ -21,10 +21,10 @@ class IiabWebApp(object):
         :param enable_profiler: enable flask profiler, causes function to return ProfilerMiddleware rather than Flask object which can be started by run_simple
         :param profiler_quiet: when profiler enabled sets whether profiler output echoed to stdout
         """
-        self.app = Flask('IiabWebApp')
+        self.app = Flask('iiab')
         self.app.root_path += '/iiab'  # something changed so that root_path changed -- work around until identified
         self.app.url_map.strict_slashes = False
-        self.app.use_x_sendfile = True
+        #self.app.use_x_sendfile = True
 
         # Configuration items
         if debug:

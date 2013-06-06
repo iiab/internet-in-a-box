@@ -2,9 +2,13 @@
 # Internet-In-A-Box by Braddock Gaskill, Feb 2013
 
 import sys
+import os
 from optparse import OptionParser
 
-sys.path.append('.')
+#sys.path.append('.')
+package_dir = os.path.dirname(__file__)
+print "file dir ", package_dir
+sys.path.append(package_dir)
 
 from iiab.webapp import IiabWebApp
 from iiab.config import load_config, config
@@ -30,7 +34,7 @@ def main(argv):
                       help="Disable profiler echo to stdout")
     (options, args) = parser.parse_args()
 
-    load_config('iiab/config.ini', [options.config])
+    load_config(None, [options.config])
 
     # Set command line parameters in our config global
     if options.knowledge is not None:
