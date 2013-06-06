@@ -20,8 +20,7 @@ def create_app(debug=True, enable_profiler=False, profiler_quiet=False):
     :param enable_profiler: enable flask profiler, causes function to return ProfilerMiddleware rather than Flask object which can be started by run_simple
     :param profiler_quiet: when profiler enabled sets whether profiler output echoed to stdout
     """
-    app = Flask("Iiab")  #, static_folder="static")
-    app.root_path += '/iiab'  # something changed so that root_path changed -- work around until identified
+    app = Flask("iiab")
     app.url_map.strict_slashes = False
     #app.use_x_sendfile = True
 
