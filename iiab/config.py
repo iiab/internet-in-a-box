@@ -34,17 +34,16 @@ class IiabConfig(SafeConfigParser):
         return loads(self.get(section, name))
 
 
-def load_config(master_config_file=None, additional_config_files=[]):
-    """First load master_config_file, which is required.
-    Then load optional files in the additional_config_files array
+def load_config(config_files=[]):
+    """First load iiab/defaults.ini, which is required.
+    Then load optional files in the config_files array
     if they exist."""
     global global_config
-    if master_config_file is None:
-        package_dir = os.path.dirname(__file__)
-        master_config_file = os.path.join(package_dir, 'config.ini')
+    package_dir = os.path.dirname(__file__)
+    master_config_file = os.path.join(package_dir, 'defaults.ini')
     config = IiabConfig()
     config.readfp(open(master_config_file, 'r'))
-    config.read(additional_config_files)
+    config.read(config_files)
     global_config = config
     return global_config
 
