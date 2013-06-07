@@ -1,5 +1,7 @@
 # Misc utility functions
 # By Braddock Gaskill, Feb 2013
+from subprocess import Popen, PIPE
+import re
 
 
 def whoosh2dict(hits):
@@ -13,3 +15,16 @@ def whoosh2dict(hits):
             d[k] = v
         m.append(d)
     return m
+
+
+def run_mount():
+    """Run the mount command and return the parsed results"""
+    p = Popen(['mount'], stdout=PIPE)
+    data = p.stdout.readlines()
+    regex = '(.*) on (.*) type ([^ ]*) (.*)\n'
+    r = []
+    for line in data:
+        m = re.match(regex, line)
+        if m is not None:
+            r.append(m.groups())
+    return r
