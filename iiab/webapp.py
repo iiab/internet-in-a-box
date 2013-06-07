@@ -22,7 +22,7 @@ def create_app(debug=True, enable_profiler=False, profiler_quiet=False):
     """
     app = Flask("iiab")
     app.url_map.strict_slashes = False
-    #app.use_x_sendfile = True
+    app.use_x_sendfile = config().getboolean('WEBAPP', 'use_x_sendfile')
 
     # Configuration items
     if debug:

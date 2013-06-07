@@ -1,5 +1,6 @@
 # Video URL views
-from flask import Blueprint, Response, request, redirect, make_response, render_template, send_file
+from flask import (Blueprint, Response, render_template,
+                   send_file, make_response)
 import json
 import os
 import string
@@ -16,8 +17,8 @@ tree_cache = None
 
 def get_tree():
     global tree_cache
-    khan_webm_dir = config().get_path('VIDEO', 'khan_webm_dir')
-    khan_cache_file = config().get_path('VIDEO', 'khan_cache_file')
+    #khan_webm_dir = config().get_path('VIDEO', 'khan_webm_dir')
+    #khan_cache_file = config().get_path('VIDEO', 'khan_cache_file')
     if tree_cache is None:
         tree_cache = get_tree_from_filesystem()
     return tree_cache
@@ -69,28 +70,28 @@ def khan_view(khanpath=''):
         h264 = base_url + '/' + khanpath + ".m4v"
         title = r['breadcrumbs'][-1][1]
         return render_template('khan_video.html', breadcrumbs=r['breadcrumbs'],
-                webm=webm, h264=h264, title=title)
+                               webm=webm, h264=h264, title=title)
     else:
         raise Exception("Unknown return type in Khan Academy tree")
 
 
-# REMOVE - no longer used
-#@blueprint.route('/khanvideo/<path:khanpath>.webm')
+@blueprint.route('/khanvideo/<path:khanpath>.webm')
 def khan_webm_view(khanpath=''):
+    print "webm_view", khanpath
     path = split_khanpath(khanpath)
     tree = get_tree()
     filename = khan.getfile(tree, path)
     khan_webm_dir = config().get_path('VIDEO', 'khan_webm_dir')
-    return send_file(os.path.join(khan_webm_dir, filename))
+    r = send_file(os.path.join(khan_webm_dir, filename))
+    return make_response(r, 200, {'Accept-Ranges': 'bytes'})
 
 
-# REMOVE - no longer used
-#@blueprint.route('/khanvideo/<path:khanpath>.m4v')
+@blueprint.route('/khanvideo/<path:khanpath>.m4v')
 def khan_h264_view(khanpath=''):
     path = split_khanpath(khanpath)
     tree = get_tree()
     filename = khan.getfile(tree, path)
     filename = os.path.splitext(filename)[0] + '.m4v'
     khan_webm_dir = config().get_path('VIDEO', 'khan_h264_dir')
-    return send_file(os.path.join(khan_webm_dir, filename), mimetype='video/mp4')
-
+    r = send_file(os.path.join(khan_webm_dir, filename), mimetype='video/mp4')
+    return make_response(r, 200, {'Accept-Ranges': 'bytes'})

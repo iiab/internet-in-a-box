@@ -4,31 +4,30 @@ import os
 import re
 
 from flask import (Blueprint, render_template, current_app, request, Response,
-                   flash, url_for, redirect, session, abort, safe_join,
+                   flash, url_for, redirect, safe_join,
                    send_file)
 from flaskext.babel import gettext as _
 import json
 
 from contextlib import closing
 
-import whoosh
 from whoosh.index import open_dir
 from whoosh.qparser import MultifieldParser
 from .whoosh_multi_field_spelling_correction import MultiFieldQueryCorrector
 
 from .extensions import db
 from gutenberg_models import (GutenbergBook, GutenbergFile,
-        GutenbergCreator, gutenberg_books_creator_map)
+                              GutenbergCreator, gutenberg_books_creator_map)
 from config import config
 
 import pagination_helper
 from .endpoint_description import EndPointDescription
-from sqlalchemy.orm import subqueryload
 
 gutenberg = Blueprint('gutenberg', __name__, url_prefix='/books')
 etext_regex = re.compile(r'^etext(\d+)$')
-DEFAULT_SEARCH_COLUMNS = ['title', 'creator', 'contributor'] # names correspond to fields in whoosh schema
+DEFAULT_SEARCH_COLUMNS = ['title', 'creator', 'contributor']  # names correspond to fields in whoosh schema
 DEFAULT_RESULTS_PER_PAGE = 20
+
 
 @gutenberg.route('/')
 def index():
@@ -47,6 +46,7 @@ def search():
     #print pagination.items
     return render_template('gutenberg/search.html', pagination=pagination, keywords=query, suggestion=suggestion, fn_author_to_query=author_to_query, endpoint_desc=EndPointDescription('gutenberg.search', None))
 
+
 def author_to_query(author):
     """Helper function for template macro to convert an author string into a
     search query.
@@ -57,6 +57,7 @@ def author_to_query(author):
     # contributor field provides extra details about contirbutor's role in brackets -- strip that off so we can search for author in any role.
     author = re.sub(r'\[[^\]]+\]', '', author).strip()
     return u'creator:"{0}" OR contributor:"{0}"'.format(author)
+
 
 def paginated_search(query_text, page=1, pagelen=DEFAULT_RESULTS_PER_PAGE):
     """
@@ -74,7 +75,7 @@ def paginated_search(query_text, page=1, pagelen=DEFAULT_RESULTS_PER_PAGE):
             # search_page returns whoosh.searching.ResultsPage
             results = searcher.search_page(query, page, pagelen=pagelen, sortedby=sort_column)
             total = results.total
-        except ValueError, e:  # Invalid page number
+        except ValueError:  # Invalid page number
             results = []
             total = 0
         paginate = pagination_helper.Pagination(page, pagelen, total, [dict(r.items()) for r in results])
@@ -83,6 +84,7 @@ def paginated_search(query_text, page=1, pagelen=DEFAULT_RESULTS_PER_PAGE):
         #hf = whoosh.highlight.HtmlFormatter(classname="change")
         #html = corrections.format_string(hf)
         return (paginate, [c.string for c in corrections])
+
 
 def deduplicate_corrections(corrections):
     """
@@ -94,6 +96,7 @@ def deduplicate_corrections(corrections):
     #return {c.string : c for c in corrections if c.original_query != c.query}.values()
     # We can't use dictionary comprehension because we are stuck on python 2.6 for Debian stable
     return dict((c.string, c) for c in corrections if c.original_query != c.query).values()
+
 
 def get_query_corrections(searcher, query, qstring):
     """
@@ -117,12 +120,14 @@ def get_query_corrections(searcher, query, qstring):
 
     return MultiFieldQueryCorrector(correctors, terms, prefix=2, maxdist=1).correct_query(query, qstring)
 
+
 @gutenberg.route('/titles')
 def by_title():
     page = int(request.args.get('page', 1))
     per_page = int(request.args.get('per_page', DEFAULT_RESULTS_PER_PAGE))
     pagination = GutenbergBook.query.order_by(GutenbergBook.title_order).paginate(page, per_page)
     return render_template('gutenberg/title-index.html', pagination=pagination, fn_author_to_query=author_to_query, endpoint_desc=EndPointDescription('.by_title', dict(per_page=per_page)))
+
 
 @gutenberg.route('/authors')
 def by_author():
@@ -132,12 +137,14 @@ def by_author():
 
     return render_template('gutenberg/author-index.html', pagination=pagination, endpoint_desc=EndPointDescription('.by_author', dict(per_page=per_page)))
 
+
 @gutenberg.route('/author/<authorId>')
 def author(authorId):
     page = int(request.args.get('page', 1))
     per_page = int(request.args.get('per_page', DEFAULT_RESULTS_PER_PAGE))
     pagination = GutenbergBook.query.filter(gutenberg_books_creator_map.c.creator_id == authorId).filter(gutenberg_books_creator_map.c.book_id == GutenbergBook.textId).paginate(page, per_page)
     return render_template('gutenberg/title-index.html', pagination=pagination, fn_author_to_query=author_to_query, endpoint_desc=EndPointDescription('.author', dict(authorId=authorId, per_page=per_page)))
+
 
 @gutenberg.route('/text/<textId>/details')
 def text(textId):
@@ -163,8 +170,9 @@ def text(textId):
         (_('Subject'), 'gutenberg_subjects', 'subject'),
         (_('Category'), 'gutenberg_categories', 'category'),
         (_('Language'), 'gutenberg_languages', 'language')
-        ]
+    ]
     return render_template('gutenberg/book_details.html', record=record, fields=fields)
+
 
 @gutenberg.route('/text/<textId>/<int:textIndex>')
 def read(textId, textIndex):
@@ -174,11 +182,13 @@ def read(textId, textIndex):
     fullpath = safe_join(data_dir, files[textIndex].file)
     return send_file(fullpath)
 
+
 def choose_file(textId):
     files = GutenbergFile.query.filter_by(textId=textId)
     #for f in files:
     #    print f
     return files[0].file
+
 
 @gutenberg.route('/autocomplete')
 def autocomplete():
@@ -204,6 +214,7 @@ def autocomplete():
         # this approach we can just change the referencing url
         return redirect(url_for("static", filename="gutenberg_wordlist.json"))
 
+
 def get_autocomplete_matches(prefix, limit=10):
     def get_prefix_like(prefix):
         (result, _) = re.subn(r'\\', u'\\\\', prefix)
@@ -211,17 +222,17 @@ def get_autocomplete_matches(prefix, limit=10):
         (result, _) = re.subn(r'%', u'\%', result)
         (result, _) = re.subn(r'\s+', u'%', result)
         return '%' + result + '%'
+
     def make_sql(colname, tablename, limit):
         sql = "SELECT {0}, downloads FROM {1} WHERE {0} LIKE :like_clause ESCAPE '\\' ORDER BY downloads LIMIT {2};".format(colname, tablename, limit)
         return sql
 
     like_clause = get_prefix_like(prefix)
     search_fields = [('title', 'gutenberg_books'),
-            ('creator', 'gutenberg_creators'),
-            ('contributor', 'gutenberg_contributors')]
+                     ('creator', 'gutenberg_creators'),
+                     ('contributor', 'gutenberg_contributors')]
     results = []
     with closing(db.engine.connect()) as conn:
         for colname, tablename in search_fields:
             results.extend(conn.execute(make_sql(colname, tablename, limit), like_clause=like_clause).fetchall())
     return [row[0] for row in sorted(results, key=lambda r: r[1], reverse=True)]
-
