@@ -16,15 +16,15 @@ tree_cache = None
 
 def get_tree():
     global tree_cache
-    khan_webm_dir = config().get('VIDEO', 'khan_webm_dir')
-    khan_cache_file = config().get('VIDEO', 'khan_cache_file')
+    khan_webm_dir = config().get_path('VIDEO', 'khan_webm_dir')
+    khan_cache_file = config().get_path('VIDEO', 'khan_cache_file')
     if tree_cache is None:
         tree_cache = get_tree_from_filesystem()
     return tree_cache
 
 
 def get_tree_from_filesystem():
-    khan_webm_dir = config().get('VIDEO', 'khan_webm_dir')
+    khan_webm_dir = config().get_path('VIDEO', 'khan_webm_dir')
     return khan.find_khan(khan_webm_dir)
 
 
@@ -80,7 +80,7 @@ def khan_webm_view(khanpath=''):
     path = split_khanpath(khanpath)
     tree = get_tree()
     filename = khan.getfile(tree, path)
-    khan_webm_dir = config().get('VIDEO', 'khan_webm_dir')
+    khan_webm_dir = config().get_path('VIDEO', 'khan_webm_dir')
     return send_file(os.path.join(khan_webm_dir, filename))
 
 
@@ -91,6 +91,6 @@ def khan_h264_view(khanpath=''):
     tree = get_tree()
     filename = khan.getfile(tree, path)
     filename = os.path.splitext(filename)[0] + '.m4v'
-    khan_webm_dir = config().get('VIDEO', 'khan_h264_dir')
+    khan_webm_dir = config().get_path('VIDEO', 'khan_h264_dir')
     return send_file(os.path.join(khan_webm_dir, filename), mimetype='video/mp4')
 

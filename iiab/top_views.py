@@ -10,7 +10,16 @@ blueprint = Blueprint('top_views', __name__,
 
 @blueprint.route('/')
 def index():
-    return render_template("index.html", kiwix_url=config().get('KIWIX', 'url'))
+    error = None
+    if config().get_knowledge_dir() is None:
+        error = "Could not find knowledge directory containing Internet-in-a-Box dataset.  "
+        error += "The configured knowledge_dir path is " + config().get('DEFAULT', 'knowledge_dir')
+        error += " and search_for_knowledge_dir is "
+        if config().get('DEFAULT', 'search_for_knowledge_dir'):
+            error += "ON, so all mounted filesystems were checked."
+        else:
+            error += "OFF, so other mounted filesystems were NOT checked."
+    return render_template("index.html", kiwix_url=config().get('KIWIX', 'url'), error=error)
 
 
 @blueprint.route('test')
@@ -21,7 +30,7 @@ def test():
 
 @blueprint.route('khanvideo/<path:filename>')
 def khanvideo_view(filename):
-    khanacademy_dir = config().get('VIDEO', 'khanacademy_dir')
+    khanacademy_dir = config().get_path('VIDEO', 'khanacademy_dir')
     khanlinks = os.path.join(khanacademy_dir, 'khanlinks')
     print "khanlinks = ", khanlinks, " filename = ", filename
     r = send_from_directory(khanlinks, filename)

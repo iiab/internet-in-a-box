@@ -10,7 +10,7 @@ blueprint = Blueprint('wikipedia_views', __name__,
 
 @blueprint.route('/')
 def wikipedia_view():
-    library_xml = config().get('KIWIX', 'library')
+    library_xml = config().get_path('KIWIX', 'library')
     kiwix_url = config().get('KIWIX', 'url')
     library = parse_library(library_xml)
     langs = get_languages(library)

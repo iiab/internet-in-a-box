@@ -64,7 +64,7 @@ def paginated_search(query_text, page=1, pagelen=DEFAULT_RESULTS_PER_PAGE):
     pagelen specifies number of hits per page
     page specifies page of results (first page is 1)
     """
-    index_dir = config().get('GUTENBERG', 'index_dir')
+    index_dir = config().get_path('GUTENBERG', 'index_dir')
     query_text = unicode(query_text)  # Must be unicode
     ix = open_dir(index_dir)
     sort_column = 'creator'
@@ -168,7 +168,7 @@ def text(textId):
 
 @gutenberg.route('/text/<textId>/<int:textIndex>')
 def read(textId, textIndex):
-    data_dir = config().get('GUTENBERG', 'root_dir')
+    data_dir = config().get_path('GUTENBERG', 'root_dir')
     files = GutenbergFile.query.filter_by(textId=textId).all()
     assert textIndex >= 0 and textIndex < len(files)
     fullpath = safe_join(data_dir, files[textIndex].file)
@@ -184,7 +184,7 @@ def choose_file(textId):
 def autocomplete():
     term = request.args.get('term', '')
     if term != '':
-        index_dir = config().get('GUTENBERG', 'index_dir')
+        index_dir = config().get_path('GUTENBERG', 'index_dir')
         ix = open_dir(index_dir)
         with ix.searcher() as searcher:
             # might use whoosh.analysis.*Analyzer to break query up

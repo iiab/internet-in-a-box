@@ -1,9 +1,12 @@
 # Simple global configuration system
 # Retrieve it with config()
 import os
+import platform
 
 from ConfigParser import SafeConfigParser
 from json import dumps, loads
+
+from utils import run_mount
 
 
 global_config = None
@@ -28,10 +31,42 @@ class IiabConfig(SafeConfigParser):
     def __str__(self):
         return self.all_items_to_str()
 
-    def getjson(self, section, name):
+    def get_json(self, section, name):
         """Load a configuration value string and interpret
            it as a JSON structure"""
         return loads(self.get(section, name))
+
+    def verify_knowledge_dir(self, path=None):
+        """Verify that path is a valid knowledge_dir directory"""
+        if path is None:
+            path = self.get('DEFAULT', 'knowledge_dir')
+        return os.path.isdir(path)
+
+    def get_knowledge_dir(self):
+        """Find a knowledge dataset directory.  Return None if
+        the configured knowledge_dir setting did not exist
+        and a search for the knowledge dir either was not done
+        or failed, depending on the search_for_knowledge_dir setting"""
+        do_search = self.getboolean('DEFAULT', 'search_for_knowledge_dir')
+        path = self.get('DEFAULT', 'knowledge_dir')
+        if self.verify_knowledge_dir(path):
+            return path
+        if do_search:
+            mount_points = run_mount()
+            for mp in mount_points:
+                if mp[0][0] == '/':
+                    path = os.path.join(mp[1], 'knowledge')
+                    if self.verify_knowledge_dir(path):
+                        self.set('DEFAULT', 'knowledge_dir', path)
+                        return path
+        return None
+
+    def get_path(self, section, name):
+        """Used to get a path relative to the knowledge/ dir.
+        This will first search for the knowledge/ dir on mounted volumes if
+        search_for_knowledge_dir is true"""
+        self.get_knowledge_dir()
+        return self.get(section, name)
 
 
 def load_config(config_files=[]):
@@ -44,6 +79,8 @@ def load_config(config_files=[]):
     config = IiabConfig()
     config.readfp(open(master_config_file, 'r'))
     config.read(config_files)
+    # Set the arch variable to our cpu architecture
+    config.set('DEFAULT', 'arch', platform.machine())
     global_config = config
     return global_config
 

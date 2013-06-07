@@ -49,7 +49,7 @@ def create_app(debug=True, enable_profiler=False, profiler_quiet=False):
 
     # set global config variables referenced by SQLAlchemy
     app.config['SQLALCHEMY_ECHO'] = config().getboolean('GUTENBERG', 'sqlalchemy_echo')
-    app.config['SQLALCHEMY_DATABASE_URI'] = config().get('GUTENBERG', 'sqlalchemy_database_uri')
+    app.config['SQLALCHEMY_DATABASE_URI'] = config().get_path('GUTENBERG', 'sqlalchemy_database_uri')
 
     configure_babel(app)
     db.init_app(app)
@@ -74,5 +74,5 @@ def configure_babel(app):
 
     @babel.localeselector
     def get_locale():
-        accept_languages = config().getjson('GUTENBERG', 'babel_accept_languages')
+        accept_languages = config().get_json('GUTENBERG', 'babel_accept_languages')
         return request.accept_languages.best_match(accept_languages)

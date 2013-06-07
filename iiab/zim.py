@@ -33,7 +33,7 @@ def parse_zimdump_info(text):
 
 def get_article_info_by_url(zimfile, namespace, url, cwd='.'):
     name = "X" + namespace + "/" + url
-    exe = config().get('KIWIX', 'zimdump')
+    exe = config().get_path('KIWIX', 'zimdump')
     cmd = [exe,
            '-i', '-u', name,
            zimfile]
@@ -48,7 +48,7 @@ def get_article_info_by_url(zimfile, namespace, url, cwd='.'):
 
 def get_zimfile_info(zimfile, cwd='.'):
     """Return info about the zim file itself"""
-    exe = config().get('KIWIX', 'zimdump')
+    exe = config().get_path('KIWIX', 'zimdump')
     cmd = [exe,
            '-F', '-v',
            zimfile]
@@ -60,7 +60,7 @@ def get_zimfile_info(zimfile, cwd='.'):
 
 
 def get_article_info_by_index(zimfile, idx, cwd='.'):
-    exe = config().get('KIWIX', 'zimdump')
+    exe = config().get_path('KIWIX', 'zimdump')
     cmd = [exe,
            '-i', '-o', str(idx),
            zimfile]
@@ -74,7 +74,7 @@ def get_article_info_by_index(zimfile, idx, cwd='.'):
 
 
 def get_article_data_by_index(zimfile, index, cwd='.'):
-    exe = config().get('KIWIX', 'zimdump')
+    exe = config().get_path('KIWIX', 'zimdump')
     cmd = [exe,
            '-d', '-o', str(index),
            zimfile]
@@ -129,12 +129,12 @@ class ZimFile(object):
         self.book = book
 
     def get_filename(self):
-        kiwix_dir = config().get('KIWIX', 'wikipedia_kiwix_dir')
+        kiwix_dir = config().get_path('KIWIX', 'wikipedia_kiwix_dir')
         path = os.path.join(kiwix_dir, self.book['path'])
         return path
 
     def get_article_by_url(self, namespace, url):
-        kiwix_dir = config().get('KIWIX', 'wikipedia_kiwix_dir')
+        kiwix_dir = config().get_path('KIWIX', 'wikipedia_kiwix_dir')
         path = self.get_filename()
         data, info = get_article_by_url(path, namespace, url, cwd=kiwix_dir)
         article = ZimArticle(data, info)
@@ -144,7 +144,7 @@ class ZimFile(object):
         return article
 
     def get_article_by_index(self, idx):
-        kiwix_dir = config().get('KIWIX', 'wikipedia_kiwix_dir')
+        kiwix_dir = config().get_path('KIWIX', 'wikipedia_kiwix_dir')
         path = self.get_filename()
         data, info = get_article_by_index(path, idx, cwd=kiwix_dir)
         article = ZimArticle(data, info)
@@ -154,7 +154,7 @@ class ZimFile(object):
         return article
 
     def get_info(self):
-        kiwix_dir = config().get('KIWIX', 'wikipedia_kiwix_dir')
+        kiwix_dir = config().get_path('KIWIX', 'wikipedia_kiwix_dir')
         info = get_zimfile_info(self.get_filename(), cwd=kiwix_dir)
         return info
 
