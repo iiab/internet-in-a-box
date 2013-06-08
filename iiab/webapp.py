@@ -1,6 +1,7 @@
 from flask import Flask, request
 #from flask.ext.mako import MakoTemplates
 from flaskext.babel import Babel
+from flask.ext.autoindex import AutoIndex
 
 from config import config
 import top_views
@@ -54,8 +55,6 @@ def create_app(debug=True, enable_profiler=False, profiler_quiet=False):
     configure_babel(app)
     db.init_app(app)
 
-    print "URL MAP: ", app.url_map
-
     if enable_profiler:
         from werkzeug.contrib.profiler import ProfilerMiddleware, MergeStream
         f = open('profiler.log', 'w')
@@ -64,6 +63,18 @@ def create_app(debug=True, enable_profiler=False, profiler_quiet=False):
         else:
             stream = MergeStream(sys.stdout, f)
             app = ProfilerMiddleware(app, stream)
+
+    # Auto Index the software repository
+    autoindex = AutoIndex(app, add_url_rules=False)
+    # FIXME: this should be done more elegantly -bcg'13
+
+    @app.route(base_prefix + 'software/<path:path>')
+    @app.route(base_prefix + 'software')
+    def software_view(path='.'):
+        software_dir = config().get_path('SOFTWARE', 'software_dir')
+        return autoindex.render_autoindex(path, browse_root=software_dir, endpoint='software_view')
+
+    print "URL MAP: ", app.url_map
 
     return app
 

@@ -8,14 +8,14 @@
 
   <title>Internet-in-a-Box</title>
 
-  <!--link rel="stylesheet" href="/static/lib/jquery.mobile-1.3.0/jquery.mobile-1.3.0.min.css" -->
-  <link rel="stylesheet" href="/static/lib/jquery.mobile-1.2.1.min.css">
-  <link rel="stylesheet" href="/static/iiab.css">
-  <script src="/static/lib/jquery-1.9.0.min.js"></script>
-  <script src="/static/lib/jquery-migrate-1.0.0.js"></script>
-  <!--script src="/static/lib/jquery.mobile-1.3.0/jquery.mobile-1.3.0.min.js"></script> -->
-  <script src="/static/lib/jquery.mobile-1.2.1.min.js"></script>
-  <!-- script src="/static/js/iiab.js"></script -->
+  <!--link rel="stylesheet" href="{{ url_for('static', filename='lib/jquery.mobile-1.3.0/jquery.mobile-1.3.0.min.css') }}" -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='lib/jquery.mobile-1.2.1.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='iiab.css') }}">
+  <script src="{{ url_for('static', filename='lib/jquery-1.9.0.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='lib/jquery-migrate-1.0.0.js') }}"></script>
+  <!--script src="{{ url_for('static', filename='lib/jquery.mobile-1.3.0/jquery.mobile-1.3.0.min.js') }}"></script> -->
+  <script src="{{ url_for('static', filename='lib/jquery.mobile-1.2.1.min.js') }}"></script>
+  <!-- script src="{{ url_for('static', filename='js/iiab.js') }}"></script -->
 
   <!-- User-generated css -->
   <style>
@@ -94,7 +94,7 @@
                   </a>
               </li>
               <li data-theme="c">
-                  <a href="/static/map.html" data-transition="slide" data-ajax="false">
+              <a href="{{ url_for('static', filename='map.html') }}" data-transition="slide" data-ajax="false">
                       Maps
                       <span class="ui-li-count">
                           3
@@ -159,7 +159,7 @@
               Download Linux
           </a>
 
-          <a data-role="button" data-theme="b" href="/software/pool" data-ajax="false">
+          <a data-role="button" data-theme="b" href="/iiab/software/pool" data-ajax="false">
               Browse Open Source Software
           </a>
       </div>

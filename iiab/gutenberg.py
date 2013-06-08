@@ -4,8 +4,8 @@ import os
 import re
 
 from flask import (Blueprint, render_template, current_app, request, Response,
-                   flash, url_for, redirect, safe_join,
-                   send_file)
+                   flash, url_for, redirect, safe_join, make_response,
+                   send_file, send_from_directory)
 from flaskext.babel import gettext as _
 import json
 
@@ -45,6 +45,14 @@ def search():
         flash(_('Please input keyword(s)'), 'error')
     #print pagination.items
     return render_template('gutenberg/search.html', pagination=pagination, keywords=query, suggestion=suggestion, fn_author_to_query=author_to_query, endpoint_desc=EndPointDescription('gutenberg.search', None))
+
+
+@gutenberg.route('/mirror/<path:filename>')
+def gutenberg_mirror(filename):
+    mirror_dir = config().get_path('GUTENBERG', 'gutenberg_mirror')
+    print "mirror", mirror_dir, filename
+    r = send_from_directory(mirror_dir, filename)
+    return make_response(r, 200, {'Accept-Ranges': 'bytes'})
 
 
 def author_to_query(author):
@@ -146,6 +154,18 @@ def author(authorId):
     return render_template('gutenberg/title-index.html', pagination=pagination, fn_author_to_query=author_to_query, endpoint_desc=EndPointDescription('.author', dict(authorId=authorId, per_page=per_page)))
 
 
+def mirror_path(filename):
+    """Determines the full path to a gutenberg text in the mirror"""
+    mirror_dir = config().get_path('GUTENBERG', 'gutenberg_mirror')
+    path = os.path.join(mirror_dir, filename)
+    return path
+
+
+def mirror_exists(file_rec):
+    path = mirror_path(file_rec.file)
+    return os.path.exists(path)
+
+
 @gutenberg.route('/text/<textId>/details')
 def text(textId):
     # Profiling results showing occasional lags.
@@ -154,11 +174,10 @@ def text(textId):
     # Tested no options, joinedload and subqueryload with no consistent winner.
     record = GutenbergBook.query.filter_by(textId=textId).first()
     # if blueprint has a different static_folder specified we might need to use blueprint.static_folder but currently None
-    filter_func = lambda file_rec: os.path.exists(os.path.join(current_app.static_folder, file_rec.file))
     for x in record.gutenberg_files:
-        if not filter_func(x):
-            print "WARNING: Gutenberg file " + os.path.join(current_app.static_folder, x.file) + " not found"
-    record.gutenberg_files = filter(filter_func, record.gutenberg_files)
+        if not mirror_exists(x):
+            print "WARNING: Gutenberg file " + mirror_path(x.file) + " not found"
+    record.gutenberg_files = filter(mirror_exists, record.gutenberg_files)
 
     # fields format is list of tuples:
     # (Table row heading for display, gutenberg_books col name,

@@ -7,7 +7,6 @@ from optparse import OptionParser
 
 #sys.path.append('.')
 package_dir = os.path.dirname(__file__)
-print "file dir ", package_dir
 sys.path.append(package_dir)
 
 from iiab.webapp import create_app
@@ -22,12 +21,12 @@ def main(argv):
                       help="Use to configure the app to not run in debug mode")
     parser.add_option("--port", dest="port", action="store", type="int",
                       default=None, help="The network port the app will use")
+    parser.add_option("--interface", dest="interface", action="store", type="str",
+                      default=None, help="The network interface the app will use (defaults to all interfaces with 0.0.0.0)")
     parser.add_option("--config", dest="config", default="local.ini",
                       help="Optional additional config file to read instead of local.ini")
     parser.add_option("--knowledge", dest="knowledge", default=None,
                       help="Path to knowledge directory")
-    parser.add_option("--tornado", action="store_true", default=False,
-                      help="Use the Tornado web server")
     parser.add_option("--profile", action="store_true", default=False,
                       help="Enable profiler")
     parser.add_option("--profiler_quiet", action="store_true", default=False,
@@ -41,6 +40,8 @@ def main(argv):
         config().set('DEFAULT', 'knowledge_dir', options.knowledge)
     if options.port is not None:
         config().set('WEBAPP', 'port', str(options.port))
+    if options.interface is not None:
+        config().set('WEBAPP', 'interface', str(options.interface))
     config().set('DEFAULT', 'debug', str(options.debug))
 
     #print "root_dir = "
@@ -57,32 +58,23 @@ def main(argv):
     except:
         print "ERROR loading Khan Videos: " + str(sys.exc_info())
 
-    if options.tornado:
-        from tornado.wsgi import WSGIContainer
-        from tornado.httpserver import HTTPServer
-        from tornado.ioloop import IOLoop
-
-        http_server = HTTPServer(WSGIContainer(webapp.app))
-        http_server.listen(config().getint('WEBAPP', 'port'))
-        IOLoop.instance().start()
+    host = config().get('WEBAPP', 'interface')
+    port = config().getint('WEBAPP', 'port')
+    if not options.profile:
+        webapp.run(debug=debug, port=port, host=host)
     else:
-        host = '0.0.0.0'
-        port = config().getint('WEBAPP', 'port')
-        if not options.profile:
-            webapp.run(debug=debug, port=port, host=host)
-        else:
-            # adapted from flask.Flask.run for use with middleware
-            from werkzeug.serving import run_simple
-            options = {}
-            options.setdefault('use_reloader', debug)
-            options.setdefault('use_debugger', debug)
-            try:
-                run_simple(host, port, webapp, **options)
-            finally:
-                # reset the first request information if the development server
-                # resetted normally.  This makes it possible to restart the server
-                # without reloader and that stuff from an interactive shell.
-                webapp.app._got_first_request = False
+        # adapted from flask.Flask.run for use with middleware
+        from werkzeug.serving import run_simple
+        options = {}
+        options.setdefault('use_reloader', debug)
+        options.setdefault('use_debugger', debug)
+        try:
+            run_simple(host, port, webapp, **options)
+        finally:
+            # reset the first request information if the development server
+            # resetted normally.  This makes it possible to restart the server
+            # without reloader and that stuff from an interactive shell.
+            webapp.app._got_first_request = False
 
 
 if __name__ == "__main__":
