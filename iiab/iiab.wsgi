@@ -1,6 +1,14 @@
 # WSGI interface file for Apache's mod_wsgi
+
+# If you are using a virtualenv, set this path
+path_to_virtualenv = None
+
 import sys
 import os
+
+if path_to_virtualenv is not None:
+    activate_this = os.path.join(path_to_virtualenv, 'bin/activate_this.py')
+    execfile(activate_this, dict(__file__=activate_this))
 
 # iiab directory
 package_dir = os.path.dirname(__file__)
