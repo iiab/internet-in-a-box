@@ -23,8 +23,8 @@ def main(argv):
                       default=None, help="The network port the app will use")
     parser.add_option("--interface", dest="interface", action="store", type="str",
                       default=None, help="The network interface the app will use (defaults to all interfaces with 0.0.0.0)")
-    parser.add_option("--config", dest="config", default="local.ini",
-                      help="Optional additional config file to read instead of local.ini")
+    parser.add_option("--config", dest="config", default=None,
+                      help="Optional additional config file to read")
     parser.add_option("--knowledge", dest="knowledge", default=None,
                       help="Path to knowledge directory")
     parser.add_option("--profile", action="store_true", default=False,
@@ -33,7 +33,11 @@ def main(argv):
                       help="Disable profiler echo to stdout")
     (options, args) = parser.parse_args()
 
-    load_config([options.config])
+    config_files = ['/etc/iiab.conf',
+                    os.path.join(os.path.expanduser('~'), '.iiab.conf')]
+    if options.config is not None:
+        config_files.append(options.config)
+    load_config(config_files)
 
     # Set command line parameters in our config global
     if options.knowledge is not None:

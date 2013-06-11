@@ -1,0 +1,153 @@
+Internet-in-a-Box Installation
+==============================
+
+While the complete dataset for the Internet-in-a-Box project is over 700 GB,
+you can install the 500 MB QuickStart Sampler dataset to try the software
+without needing the full dataset.
+
+There are several methods to install and run Internet-in-a-Box (IIAB).
+
+For installation: you can install IIAB as a Python package using the Python
+package manager pip.  Or you can install from source using git.
+
+To run: you can run IIAB as a stand-alone server, or you can integrate
+it with your Apache installation using WSGI as a gateway.
+
+
+Quick Start
+-----------
+
+1. Install the Python package manager, pip:
+
+    Ubuntu/Debian:
+    sudo apt-get install python-pip
+
+    Fedora:
+    sudo yum install python-pip
+
+
+2. Install Internet-in-a-Box and its dependencies (on Fedora, use 'python-pip'
+instead of 'pip')
+
+    sudo pip install Internet-in-a-Box
+
+
+3. Download the QuickStart Sampler dataset and untar
+
+    mkdir iiab
+    cd iiab/
+    wget http://braddock.com/~braddock/iiab/IIAB_QuickStart_Sampler_20130610.tgz
+    tar xvzf IIAB_QuickStart_Sampler_20130610.tgz
+
+
+4. Run the stand-alone server from the directory you untarred the QuickStart sampler.
+    cd iiab/
+    iiab-server
+
+
+5. Point your web browser to http://localhost:25000/iiab
+
+
+ALTERNATIVE: Installation from Git Sources using a Virtual Environment
+----------------------------------------------------------------------
+
+Recommended for developers.
+
+1. Install pip and virtualenv
+
+    Ubuntu/Debian:
+    sudo apt-get install python-pip python-virtualenv
+
+    Fedora:
+    sudo yum install python-pip python-virtualenv
+
+
+2. Clone Internet-in-a-Box from github
+
+    git clone https://github.com/braddockcg/internet-in-a-box
+
+
+3. Create virtualenv and install dependencies
+
+    cd internet-in-a-box
+    virtualenv venv
+    . venv/bin/activate
+    pip install -r requirements.txt
+
+
+4. Download and untar the QuickStart Sampler dataset
+
+    wget http://braddock.com/~braddock/iiab/IIAB_QuickStart_Sampler_20130610.tgz
+    tar xvzf IIAB_QuickStart_Sampler_20130610.tgz
+
+
+4. Run stand-alone server
+
+    . venv/bin/activate
+    ./iiab-server
+
+
+5. Point your web browser to http://localhost:25000/iiab
+
+
+
+Building a patched zimdump
+--------------------------
+
+We use the zimdump command line utility for our Wikipedia functionality.  We
+provide binaries in the QuickStart Sampler for i686 and x86_64, but if you are
+on another platform you will need to build a patched version of zimdump.  By
+default IIAB will look for an executable named zimdump-patched in the
+knowledge/sys/bin-`uname -m`/ directory, where `uname -m` is your machine
+architecture.
+
+Due to a bug in zimdump, we need a patched version.
+
+    git clone https://gerrit.wikimedia.org/r/p/openzim.git
+    cd openzim/zimlib
+    patch -p2 </knowledge/internet-in-a-box/patches/openzim.diff
+    ./autogen.sh
+    ./configure
+    make -j4
+    mkdir -p /knowledge/sys/bin-`uname -m`
+    cp src/tools/zimdump /knowledge/sys/bin-`uname -m`/zimdump-patched
+
+
+Dataset Location
+----------------
+
+The IIAB dataset is stored in a directory named 'knowledge'.  
+
+By default, the IIAB software searches for its dataset 'knowledge' directory in
+the root filesystem, and then in the root of every mounted disk.  It then
+checks for 'knowledge' in the current working directory.  
+
+So if you have placed the dataset in a directory named 'knowledge' on an
+external USB drive, IIAB should find it by default.
+
+You can specify another location by setting 'knowledge_dir' in the 'DEFAULT'
+section of the configuration file.  For example:
+
+cat <<EOF >/etc/iiab.conf
+[DEFAULT]
+knowledge_dir = /mnt/data/knowledge
+search_for_knowledge_dir = False
+EOF
+
+
+Configuration Files
+-------------------
+
+Upon startup, IIAB reads the following configuration files in order if they
+exist:
+
+    (install dir)/iiab/defaults.ini
+    (install dir)/iiab/wsgi.ini (Only if run as a WSGI script)
+    /etc/iiab.conf
+    $(HOME)/.iiab.conf
+    Any file specified with command line --config option
+
+Directives in later files can override earlier directives.  See
+iiab/defaults.ini for available options.
+
+----
