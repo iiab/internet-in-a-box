@@ -1,6 +1,5 @@
 # ZIM file URL views (for Wikipedia)
 from flask import Blueprint, Response, render_template
-import sys
 
 from zim import Library, replace_paths
 from config import config
@@ -16,10 +15,9 @@ def zim_main_page_view(humanReadableId):
     lib = Library(library_xml)
     zimfile = lib.get_zimfile(humanReadableId)
     try:
-        info = zimfile.get_info()
-        article = zimfile.get_article_by_index(info.get('main page', 1))
-        html = mangle_article(article, humanReadableId)
-        return Response(html, mimetype=article.mime_type)
+        article, mimetype, ns = zimfile.get_main_page()
+        html = mangle_article(article, mimetype, humanReadableId)
+        return Response(html, mimetype=mimetype)
     except OSError as e:
         html = "<html><body>"
         html += "<p>Error accessing article.  Possible failure to run zimdump command</p>"
@@ -29,9 +27,8 @@ def zim_main_page_view(humanReadableId):
         return Response(html)
 
 
-def mangle_article(article, humanReadableId):
-    html = article.data
-    if article.mime_type in ['text/html; charset=utf-8', 'stylesheet/css', 'text/html']:
+def mangle_article(html, mimetype, humanReadableId):
+    if mimetype in ['text/html; charset=utf-8', 'stylesheet/css', 'text/html']:
         try:
             html = html.decode('utf-8')
         except UnicodeDecodeError:
@@ -49,9 +46,9 @@ def mangle_article(article, humanReadableId):
 def zim_view(humanReadableId, namespace, url):
     library_xml = config().get_path('KIWIX', 'library')
     lib = Library(library_xml)
-    article = lib.get_article_by_url(humanReadableId, namespace, url)
-    html = mangle_article(article, humanReadableId)
-    return Response(html, mimetype=article.mime_type)
+    article, mimetype, ns = lib.get_article_by_url(humanReadableId, namespace, url)
+    html = mangle_article(article, mimetype, humanReadableId)
+    return Response(html, mimetype=mimetype)
 
 
 @blueprint.route('/iframe/<humanReadableId>')
