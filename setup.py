@@ -8,7 +8,7 @@ setup(
     license="LICENSE.txt",
     long_description=__doc__,
     packages=['iiab'],
-    scripts=['iiab-server'],
+    scripts=['iiab-server', 'iiab.wsgi'],
     include_package_data=True,
     zip_safe=False,
     install_requires=[

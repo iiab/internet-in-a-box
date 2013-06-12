@@ -53,13 +53,13 @@ ALTERNATIVE: Installation from Git Sources using a Virtual Environment
 
 Recommended for developers.
 
-1. Install pip and virtualenv
+1. Install pip
 
     Ubuntu/Debian:
-    sudo apt-get install python-pip python-virtualenv
+    sudo apt-get install python-pip
 
     Fedora:
-    sudo yum install python-pip python-virtualenv
+    sudo yum install python-pip
 
 
 2. Clone Internet-in-a-Box from github
@@ -67,11 +67,9 @@ Recommended for developers.
     git clone https://github.com/braddockcg/internet-in-a-box
 
 
-3. Create virtualenv and install dependencies
+3. Install dependencies
 
     cd internet-in-a-box
-    virtualenv venv
-    . venv/bin/activate
     pip install -r requirements.txt
 
 
@@ -83,12 +81,41 @@ Recommended for developers.
 
 4. Run stand-alone server
 
-    . venv/bin/activate
     ./iiab-server
 
 
 5. Point your web browser to http://localhost:25000/iiab
 
+
+6. (OPTIONAL) Install IIAB to system
+
+    cd internet-in-a-box
+    python setup.py install
+
+
+(OPTIONAL) Installation in a Virtual Environment
+------------------------------------------------
+
+By installing in a Python virtual environment, you will completely isolate
+IIAB's python dependencies and can install them without being root.
+
+1. Install virtualenv
+
+    Ubuntu/Debian:
+    sudo apt-get install python-virtualenv
+
+    Fedora:
+    sudo yum install python-virtualenv
+
+
+2. Create a virtualenv directory and activate it
+
+    virtualenv venv
+    . venv/bin/activate
+
+3. Follow previous instructions to install IIAB using pip or git as normal
+(except you don't need sudo).  IIAB and all python dependencies will be
+installed into the venv/ directory
 
 
 Building a patched zimdump
@@ -113,6 +140,34 @@ Due to a bug in zimdump, we need a patched version.
     cp src/tools/zimdump /knowledge/sys/bin-`uname -m`/zimdump-patched
 
 
+Installation as an Apache WSGI Service
+--------------------------------------
+
+IIAB can be installed under Apache to run as a WSGI service.  In this case, you
+will not need to start IIAB as a stand-alone server - Apache's mod_wsgi will
+launch instances of the IIAB software as needed to respond to HTTP requests.
+
+Running IIAB as a WSGI service requires two additional Apache modules: mod_wsgi
+and mod_sendfile
+
+1. Install and activate mod_wsgi and mod_sendfile
+
+    Debian/Ubuntu:
+    apt-get install libapache2-mod-wsgi libapache2-mod-xsendfile
+
+    # Enable WSGI and X-SendFile modules
+    a2enmod wsgi xsendfile
+
+
+2. Copy the iiab.wsgi script to /var/www (this assumes /var/www is your
+document root)
+
+    cp `which iiab.wsgi` /var/www/
+
+
+3. Configure Apache for IIAB    
+
+
 Dataset Location
 ----------------
 
@@ -123,7 +178,8 @@ the root filesystem, and then in the root of every mounted disk.  It then
 checks for 'knowledge' in the current working directory.  
 
 So if you have placed the dataset in a directory named 'knowledge' on an
-external USB drive, IIAB should find it by default.
+external USB drive, IIAB should find it by default when the drive
+auto-mounts.
 
 You can specify another location by setting 'knowledge_dir' in the 'DEFAULT'
 section of the configuration file.  For example:

@@ -5,7 +5,6 @@
 from subprocess import Popen, PIPE
 import os
 import re
-import string
 
 import kiwix
 from config import config
@@ -24,7 +23,6 @@ def parse_zimdump_info(text):
     d = {}
     lines = text.split("\n")
     for line in lines:
-        print line
         name, value = parse_zimdump_line(line)
         if name is not None:
             d[name] = value
@@ -37,7 +35,7 @@ def get_article_info_by_url(zimfile, namespace, url, cwd='.'):
     cmd = [exe,
            '-i', '-u', name,
            zimfile]
-    print string.join(cmd, " ")
+    cmd = [x.encode('utf-8') for x in cmd]
     p = Popen(cmd, stdout=PIPE, cwd=cwd)
     data = p.stdout.read()
     if len(data) == 0:
@@ -52,7 +50,8 @@ def get_zimfile_info(zimfile, cwd='.'):
     cmd = [exe,
            '-F', '-v',
            zimfile]
-    print string.join(cmd, " ")
+    #print string.join(cmd, " ")
+    cmd = [x.encode('utf-8') for x in cmd]
     p = Popen(cmd, stdout=PIPE, cwd=cwd)
     data = p.stdout.read()
     info = parse_zimdump_info(data)
@@ -64,7 +63,8 @@ def get_article_info_by_index(zimfile, idx, cwd='.'):
     cmd = [exe,
            '-i', '-o', str(idx),
            zimfile]
-    print string.join(cmd, " ")
+    #print string.join(cmd, " ")
+    cmd = [x.encode('utf-8') for x in cmd]
     p = Popen(cmd, stdout=PIPE, cwd=cwd)
     data = p.stdout.read()
     if len(data) == 0:
@@ -78,7 +78,8 @@ def get_article_data_by_index(zimfile, index, cwd='.'):
     cmd = [exe,
            '-d', '-o', str(index),
            zimfile]
-    print string.join(cmd, " ")
+    #print string.join(cmd, " ")
+    cmd = [x.encode('utf-8') for x in cmd]
     p = Popen(cmd, stdout=PIPE, cwd=cwd)
     data = p.stdout.read()
     if len(data) == 0:
@@ -165,7 +166,6 @@ class Library(object):
         self.readableToBooks = dict([(x['humanReadableId'], ZimFile(x)) for x in self.books])
 
     def get_article_by_url(self, humanReadableId, namespace, url):
-        print "URL: " + namespace + "/" + url
         zimfile = self.get_zimfile(humanReadableId)
         if zimfile is None:
             return None

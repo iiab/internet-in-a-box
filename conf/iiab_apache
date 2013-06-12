@@ -6,18 +6,14 @@ XSendFilePath /
 <VirtualHost *>
     ServerName iiab
 
-    WSGIDaemonProcess iiab user=braddock group=braddock threads=5
-    WSGIScriptAlias /iiab /knowledge/internet-in-a-box/iiab/iiab.wsgi
+    WSGIDaemonProcess iiab user=www-data group=www-data threads=5
+    WSGIScriptAlias /iiab /var/www/iiab.wsgi
 
-    <Directory /knowledge/internet-in-a-box/>
+    <Directory /var/www/>
         WSGIProcessGroup iiab
         WSGIApplicationGroup %{GLOBAL}
         WSGIScriptReloading On
         Order deny,allow
         Allow from all
     </Directory>
-
-    Alias /static /knowledge/internet-in-a-box/iiab/static
-    Alias /khanvideo /knowledge/modules/khanacademy/khanlinks
-    Alias /software /knowledge/modules/ubuntu/12.04/mirror/archive.ubuntu.com/ubuntu
 </VirtualHost>
