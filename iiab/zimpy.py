@@ -190,9 +190,14 @@ class ZimFile(object):
 
     def read_cluster_pointer(self, index):
         """Returns a pointer to the cluster and the cluster size"""
+        # FIXME: we assume clusters are listed in order to obtain size
         self.f.seek(self.header['clusterPtrPos'] + 8 * index)
         buf = self.f.read(16)
         fields = struct.unpack('QQ', buf)
+        # FIXME: If last cluster, we use the checksumPos which is guaranteed to
+        # point to 16 bytes before the end of file.
+        if index == self.header['clusterCount'] - 1:
+            return fields[0], self.header['checksumPos'] - fields[0]
         return fields[0], fields[1] - fields[0]
 
     def read_directory_entry_by_index(self, index):
@@ -229,6 +234,8 @@ class ZimFile(object):
 
     def get_article_by_index(self, index):
         entry = self.read_directory_entry_by_index(index)
+        if 'redirectIndex' in entry.keys():
+            return None, entry['redirectIndex'], entry['namespace']
         data = self.read_blob(entry['clusterNumber'], entry['blobNumber'])
         mime = self.mimeTypeList[entry['mimetype']]
         namespace = entry['namespace']
@@ -250,3 +257,23 @@ class ZimFile(object):
     def get_main_page(self):
         main_index = self.header['mainPage']
         return self.get_article_by_index(main_index)
+
+    def validate(self):
+        """This is a mostly a self-test, but will validate various assumptions"""
+        # Test that URLs are properly ordered
+        last = None
+        for i in range(self.header['articleCount']):
+            entry = self.read_directory_entry_by_index(i)
+            assert entry is not None
+            if last is not None:
+                assert entry['url'] > last
+                last = entry['url']
+        # Test load of the last article
+        article, mime, ns = self.get_article_by_index(self.header['articleCount'] - 1)
+        # Test load of all articles
+        for i in range(self.header['articleCount']):
+            if i % 500 == 0:
+                print i
+            article, mime, ns = self.get_article_by_index(i)
+            if article is None:  # Redirect
+                assert mime is not None
