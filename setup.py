@@ -16,6 +16,7 @@ setup(
         'Flask-Babel',
         'Flask-AutoIndex',
         'Flask-SQLAlchemy',
-        'whoosh'
+        'whoosh',
+        'pyliblzma'
     ]
 )

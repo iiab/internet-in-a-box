@@ -17,13 +17,13 @@ it with your Apache installation using WSGI as a gateway.
 Quick Start
 -----------
 
-1. Install the Python package manager, pip:
+1. Install the Python package manager, pip, and the lzma library:
 
     Ubuntu/Debian:
-    sudo apt-get install python-pip
+    sudo apt-get install python-pip python-lzma
 
     Fedora:
-    sudo yum install python-pip
+    sudo yum install python-pip python-lzma
 
 
 2. Install Internet-in-a-Box and its dependencies (on Fedora, use 'python-pip'
@@ -56,10 +56,10 @@ Recommended for developers.
 1. Install pip
 
     Ubuntu/Debian:
-    sudo apt-get install python-pip
+    sudo apt-get install python-pip python-lzma
 
     Fedora:
-    sudo yum install python-pip
+    sudo yum install python-pip python-lzma
 
 
 2. Clone Internet-in-a-Box from github
@@ -116,28 +116,6 @@ IIAB's python dependencies and can install them without being root.
 3. Follow previous instructions to install IIAB using pip or git as normal
 (except you don't need sudo).  IIAB and all python dependencies will be
 installed into the venv/ directory
-
-
-Building a patched zimdump
---------------------------
-
-We use the zimdump command line utility for our Wikipedia functionality.  We
-provide binaries in the QuickStart Sampler for i686 and x86_64, but if you are
-on another platform you will need to build a patched version of zimdump.  By
-default IIAB will look for an executable named zimdump-patched in the
-knowledge/sys/bin-`uname -m`/ directory, where `uname -m` is your machine
-architecture.
-
-Due to a bug in zimdump, we need a patched version.
-
-    git clone https://gerrit.wikimedia.org/r/p/openzim.git
-    cd openzim/zimlib
-    patch -p2 </knowledge/internet-in-a-box/patches/openzim.diff
-    ./autogen.sh
-    ./configure
-    make -j4
-    mkdir -p /knowledge/sys/bin-`uname -m`
-    cp src/tools/zimdump /knowledge/sys/bin-`uname -m`/zimdump-patched
 
 
 Installation as an Apache WSGI Service
