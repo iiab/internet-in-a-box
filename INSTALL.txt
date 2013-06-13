@@ -117,6 +117,10 @@ IIAB's python dependencies and can install them without being root.
 (except you don't need sudo).  IIAB and all python dependencies will be
 installed into the venv/ directory
 
+You can install IIAB as a WSGI service from within a virtualenv.  To do so,
+you must edit the "path_to_virtualenv" variable at the top of the iiab.wsgi
+file.
+
 
 Installation as an Apache WSGI Service
 --------------------------------------
@@ -143,7 +147,25 @@ document root)
     cp `which iiab.wsgi` /var/www/
 
 
-3. Configure Apache for IIAB    
+3. Configure Apache for IIAB
+
+You must turn on XSendFile and add a WSGI script alias to the iiab.wsgi script.
+
+Here is an example of a minimal site configuration which could be used by
+itself by pasting it into a file in /etc/apache2/sites-enabled/ (and disabling
+your default site).
+
+    XSendFile on
+    XSendFilePath /
+
+    <VirtualHost *>
+        WSGIScriptAlias /iiab /var/www/iiab.wsgi
+
+        <Directory /var/www/>
+            Order deny,allow
+            Allow from all
+        </Directory>
+    </VirtualHost>
 
 
 Dataset Location
