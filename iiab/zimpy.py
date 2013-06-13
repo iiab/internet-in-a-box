@@ -263,10 +263,14 @@ class ZimFile(object):
         return raw[p:n - 1]
 
     @timepro.profile()
-    def get_article_by_index(self, index):
+    def get_article_by_index(self, index, follow_redirect=True):
         entry = self.read_directory_entry_by_index(index)
         if 'redirectIndex' in entry.keys():
-            return None, entry['redirectIndex'], entry['namespace']
+            if follow_redirect:
+                print "REDIRECT TO " + str(entry['redirectIndex'])
+                return self.get_article_by_index(entry['redirectIndex'], follow_redirect)
+            else:
+                return None, entry['redirectIndex'], entry['namespace']
         data = self.read_blob(entry['clusterNumber'], entry['blobNumber'])
         mime = self.mimeTypeList[entry['mimetype']]
         namespace = entry['namespace']
@@ -292,13 +296,13 @@ class ZimFile(object):
         if m is None:
             return None
         entry = self.read_directory_entry_by_index(m)
-        return entry
+        return entry, m
 
-    def get_article_by_url(self, namespace, url):
-        idx = self.get_entry_by_url(namespace, url)
+    def get_article_by_url(self, namespace, url, follow_redirect=True):
+        entry, idx = self.get_entry_by_url(namespace, url)
         if idx is None:
             return None
-        return self.get_article_by_index(idx)
+        return self.get_article_by_index(idx, follow_redirect=follow_redirect)
 
     def get_main_page(self):
         main_index = self.header['mainPage']
@@ -321,7 +325,7 @@ class ZimFile(object):
         # Test load by url performance
         for i in range(0, self.header['articleCount'], 100):
             entry = self.read_directory_entry_by_index(i)
-            entry2 = self.get_entry_by_url(entry['namespace'], entry['url'])
+            entry2, idx = self.get_entry_by_url(entry['namespace'], entry['url'])
             assert entry2 is not None
         timepro.log_all()
         timepro.reset()
@@ -329,7 +333,7 @@ class ZimFile(object):
         # Test load of the last article
         article, mime, ns = self.get_article_by_index(self.header['articleCount'] - 1)
         entry = self.read_directory_entry_by_index(self.header['articleCount'] - 1)
-        entry2 = self.get_entry_by_url(entry['namespace'], entry['url'])
+        entry2, idx = self.get_entry_by_url(entry['namespace'], entry['url'])
         assert entry2 is not None
 
         # Test load subset of all articles

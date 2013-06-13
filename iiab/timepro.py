@@ -10,7 +10,6 @@ log.setLevel(logging.DEBUG)
 from time import time
 from functools import wraps
 import threading
-from psutil import Process
 from os import getpid
 
 
@@ -19,12 +18,16 @@ start_time = time()
 
 global_active = False
 
-
-def get_memory_usage():
-    pid = getpid()
-    proc = Process(pid)
-    mem = proc.get_memory_info()
-    return mem
+try:
+    from psutil import Process
+    def get_memory_usage():
+        pid = getpid()
+        proc = Process(pid)
+        mem = proc.get_memory_info()
+        return mem
+except Exception:
+    def get_memory_usage():
+        return 0
 
 
 class TimePro(object):
