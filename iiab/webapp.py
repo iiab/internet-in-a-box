@@ -2,6 +2,7 @@ from flask import Flask, request
 #from flask.ext.mako import MakoTemplates
 from flaskext.babel import Babel
 from flask.ext.autoindex import AutoIndex
+import os
 
 from config import config
 import top_views
@@ -47,7 +48,9 @@ def create_app(debug=True, enable_profiler=False, profiler_quiet=False):
 
     # set global config variables referenced by SQLAlchemy
     app.config['SQLALCHEMY_ECHO'] = config().getboolean('GUTENBERG', 'sqlalchemy_echo')
-    app.config['SQLALCHEMY_DATABASE_URI'] = config().get_path('GUTENBERG', 'sqlalchemy_database_uri')
+    database_path = config().get_path('GUTENBERG', 'sqlalchemy_database_uri')
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.abspath(database_path)
+    print 'SQLALCHEMY_URI', app.config['SQLALCHEMY_DATABASE_URI']
 
     configure_babel(app)
     db.init_app(app)

@@ -198,7 +198,7 @@ def read(textId, textIndex):
     data_dir = config().get_path('GUTENBERG', 'root_dir')
     files = GutenbergFile.query.filter_by(textId=textId).all()
     assert textIndex >= 0 and textIndex < len(files)
-    fullpath = safe_join(data_dir, files[textIndex].file)
+    fullpath = safe_join(os.path.abspath(data_dir), files[textIndex].file)
     return send_file(fullpath)
 
 

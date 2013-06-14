@@ -82,7 +82,7 @@ def khan_webm_view(khanpath=''):
     tree = get_tree()
     filename = khan.getfile(tree, path)
     khan_webm_dir = config().get_path('VIDEO', 'khan_webm_dir')
-    r = send_file(os.path.join(khan_webm_dir, filename))
+    r = send_file(os.path.abspath(os.path.join(khan_webm_dir, filename)))
     return make_response(r, 200, {'Accept-Ranges': 'bytes'})
 
 
@@ -93,5 +93,5 @@ def khan_h264_view(khanpath=''):
     filename = khan.getfile(tree, path)
     filename = os.path.splitext(filename)[0] + '.m4v'
     khan_webm_dir = config().get_path('VIDEO', 'khan_h264_dir')
-    r = send_file(os.path.join(khan_webm_dir, filename), mimetype='video/mp4')
+    r = send_file(os.path.abspath(os.path.join(khan_webm_dir, filename)), mimetype='video/mp4')
     return make_response(r, 200, {'Accept-Ranges': 'bytes'})

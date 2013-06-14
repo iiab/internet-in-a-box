@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='Internet-in-a-Box',
-    version='0.3',
+    version='0.3.4',
     author="Braddock Gaskill",
     author_email="braddock@braddock.com",
     license="LICENSE.txt",
@@ -12,7 +12,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=[
-        'Flask=0.10',
+        'Flask',
         'Flask-Babel',
         'Flask-AutoIndex',
         'Flask-SQLAlchemy',

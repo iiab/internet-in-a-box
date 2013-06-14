@@ -61,8 +61,8 @@ class IiabConfig(SafeConfigParser):
                         return path
             # Check current directory
             if self.verify_knowledge_dir('knowledge'):
-                self.set('DEFAULT', 'knowledge_dir', path)
-                return path
+                self.set('DEFAULT', 'knowledge_dir', 'knowledge')
+                return 'knowledge'
         return None
 
     def get_path(self, section, name):
