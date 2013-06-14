@@ -22,9 +22,9 @@ def index():
 
 
 # This is a hack because of the double //static path issue
-@blueprint.route('static/<path:filename>')
-def static(filename):
-    return blueprint.send_static_file(filename)
+#@blueprint.route('static/<path:filename>')
+#def static(filename):
+#    return blueprint.send_static_file(filename)
 
 
 @blueprint.route('test')

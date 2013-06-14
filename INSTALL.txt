@@ -23,7 +23,7 @@ Quick Start
     sudo apt-get install python-pip python-lzma
 
     Fedora:
-    sudo yum install python-pip python-lzma
+    sudo yum install python-pip pyliblzma
 
 
 2. Install Internet-in-a-Box and its dependencies (on Fedora, use 'python-pip'
@@ -48,7 +48,7 @@ instead of 'pip')
 5. Point your web browser to http://localhost:25000/iiab
 
 
-ALTERNATIVE: Installation from Git Sources using a Virtual Environment
+ALTERNATIVE: Installation from Git Sources
 ----------------------------------------------------------------------
 
 Recommended for developers.
@@ -59,7 +59,7 @@ Recommended for developers.
     sudo apt-get install python-pip python-lzma
 
     Fedora:
-    sudo yum install python-pip python-lzma
+    sudo yum install python-pip pyliblzma
 
 
 2. Clone Internet-in-a-Box from github
@@ -99,13 +99,16 @@ Recommended for developers.
 By installing in a Python virtual environment, you will completely isolate
 IIAB's python dependencies and can install them without being root.
 
-1. Install virtualenv
+1. Install virtualenv and dependencies
+
+Because we will be building our python modules from scratch, we require a few
+additional dependencies.
 
     Ubuntu/Debian:
     sudo apt-get install python-virtualenv
 
     Fedora:
-    sudo yum install python-virtualenv
+    sudo yum install python-virtualenv xz-devel
 
 
 2. Create a virtualenv directory and activate it
