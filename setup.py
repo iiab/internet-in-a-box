@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='Internet-in-a-Box',
-    version='0.3.4',
+    version='0.3.5',
     author="Braddock Gaskill",
     author_email="braddock@braddock.com",
     license="LICENSE.txt",

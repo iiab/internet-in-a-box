@@ -34,14 +34,11 @@ instead of 'pip')
 
 3. Download the QuickStart Sampler dataset and untar
 
-    mkdir iiab
-    cd iiab/
     wget http://braddock.com/~braddock/iiab/IIAB_QuickStart_Sampler_20130610.tgz
     tar xvzf IIAB_QuickStart_Sampler_20130610.tgz
 
 
 4. Run the stand-alone server from the directory you untarred the QuickStart sampler.
-    cd iiab/
     iiab-server
 
 
@@ -56,10 +53,10 @@ Recommended for developers.
 1. Install pip
 
     Ubuntu/Debian:
-    sudo apt-get install python-pip python-lzma
+    sudo apt-get install python-pip python-lzma git
 
     Fedora:
-    sudo yum install python-pip pyliblzma
+    sudo yum install python-pip pyliblzma git
 
 
 2. Clone Internet-in-a-Box from github
@@ -68,9 +65,10 @@ Recommended for developers.
 
 
 3. Install dependencies
+    (use python-pip instead of pip if in Fedora)
 
     cd internet-in-a-box
-    pip install -r requirements.txt
+    sudo pip install -r requirements.txt
 
 
 4. Download and untar the QuickStart Sampler dataset
@@ -140,6 +138,9 @@ and mod_sendfile
     Debian/Ubuntu:
     apt-get install libapache2-mod-wsgi libapache2-mod-xsendfile
 
+    Fedora/OLPC:
+    yum install mod_wsgi mod_xsendfile
+
     # Enable WSGI and X-SendFile modules
     a2enmod wsgi xsendfile
 
@@ -169,6 +170,13 @@ your default site).
             Allow from all
         </Directory>
     </VirtualHost>
+
+Under Fedora, adding the following three lines to your
+/etc/httpd/conf/httpd.conf file will work:
+
+XSendFile on
+XSendFilePath /
+WSGIScriptAlias /iiab /var/www/iiab.wsgi
 
 
 Dataset Location

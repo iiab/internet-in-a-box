@@ -1010,3 +1010,10 @@ Due to a bug in zimdump, we need a patched version.
     cp src/tools/zimdump /knowledge/sys/bin-`uname -m`/zimdump-patched
 
 ----
+Building a Fedora RPM - 6/15/13
+
+sudo yum install fedora-packager
+cd internet-in-a-box
+python setup.py bdist_rpm
+
+----
