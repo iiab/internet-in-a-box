@@ -19,4 +19,5 @@ setup(
         'whoosh',
         'pyliblzma'
     ]
+    #data_files=[("", ["LICENSE.txt", "README.md", "INSTALL.txt"])]
 )

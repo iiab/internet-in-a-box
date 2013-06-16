@@ -1016,4 +1016,6 @@ sudo yum install fedora-packager
 cd internet-in-a-box
 python setup.py bdist_rpm
 
+rpm -qpil dist/Internet-in-a-Box-0.3.5-1.noarch.rpm
+
 ----
