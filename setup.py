@@ -2,11 +2,13 @@ from setuptools import setup
 
 setup(
     name='Internet-in-a-Box',
-    version='0.3.5',
+    version='0.3.6',
     author="Braddock Gaskill",
     author_email="braddock@braddock.com",
-    license="LICENSE.txt",
-    long_description="Sharing the world's Free information",
+    license="2-clause BSD license",
+    description="Sharing the world's Free information",
+    long_description=open('README.md').read(),
+    url="http://internet-in-a-box.org",
     packages=['iiab'],
     scripts=['iiab-server', 'iiab.wsgi'],
     include_package_data=True,

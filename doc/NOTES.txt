@@ -1013,9 +1013,39 @@ Due to a bug in zimdump, we need a patched version.
 Building a Fedora RPM - 6/15/13
 
 sudo yum install fedora-packager
+
+# Build whoosh RPM
+wget https://pypi.python.org/packages/source/W/Whoosh/Whoosh-2.4.1.tar.gz
+tar xvzf Whoosh-2.4.1.tar.gz
+cd Whoosh-2.4.1/
+python setup.py bdist_rpm
+
+# Build IIAB RPM
 cd internet-in-a-box
 python setup.py bdist_rpm
 
+# See info
 rpm -qpil dist/Internet-in-a-Box-0.3.5-1.noarch.rpm
+
+# Manually Install RPM
+sudo yum install python-flask python-flask-autoindex python-flask-babel python-flask-sqlalchemy pyliblzma
+sudo rpm -i Woosh-2.4.1/dist/Whoosh-2.4.1-1.noarch.rpm
+sudo rpm -i internet-in-a-box/dist/Internet-in-a-Box-0.3.5-1.noarch.rpm
+
+# Create Yum repository
+mkdir iiab-fedora18
+cp -v */dist/*.rpm iiab-fedora18/
+createrepo --verbose iiab-fedora18
+
+# Add Yum repository
+cat <<EOF >/etc/yum.repos.d/iiab.repo
+[iiab]
+name=Internet-in-a-Box
+baseurl=file:///home/braddock/repo/iiab-fedora18
+enabled=1
+EOF
+
+# Install using yum
+yum install Internet-in-a-Box
 
 ----
