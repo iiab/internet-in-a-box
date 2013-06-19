@@ -1052,3 +1052,12 @@ yum --nogpgcheck install Internet-in-a-Box
 # Equivalent to apt-get update
 yum clean expire-cache && yum check-update
 ----
+Module Sizes
+
+223G    gutenberg-mirror
+161G    wikipedia-zim
+82G     wikipedia-kiwix
+102G    openstreetmap
+92G ubuntu
+73G khanacademy
+
