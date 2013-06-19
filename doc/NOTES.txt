@@ -1036,16 +1036,19 @@ sudo rpm -i internet-in-a-box/dist/Internet-in-a-Box-0.3.5-1.noarch.rpm
 mkdir iiab-fedora18
 cp -v */dist/*.rpm iiab-fedora18/
 createrepo --verbose iiab-fedora18
+rsync -avrP iiab-fedora18 braddock.com:public_html/
 
 # Add Yum repository
 cat <<EOF >/etc/yum.repos.d/iiab.repo
 [iiab]
 name=Internet-in-a-Box
-baseurl=file:///home/braddock/repo/iiab-fedora18
+baseurl=http://braddock.com/~braddock/iiab-fedora18
 enabled=1
 EOF
 
 # Install using yum
-yum install Internet-in-a-Box
+yum --nogpgcheck install Internet-in-a-Box
 
+# Equivalent to apt-get update
+yum clean expire-cache && yum check-update
 ----

@@ -34,8 +34,8 @@ instead of 'pip')
 
 3. Download the QuickStart Sampler dataset and untar
 
-    wget http://braddock.com/~braddock/iiab/IIAB_QuickStart_Sampler_20130610.tgz
-    tar xvzf IIAB_QuickStart_Sampler_20130610.tgz
+    wget http://downloads.internet-in-a-box.org/IIAB_QuickStart_Sampler_20130618.tgz
+    tar xvzf IIAB_QuickStart_Sampler_20130618.tgz
 
 
 4. Run the stand-alone server from the directory you untarred the QuickStart sampler.
@@ -43,6 +43,28 @@ instead of 'pip')
 
 
 5. Point your web browser to http://localhost:25000/iiab
+
+
+ALTERNATIVE: Installation from yum repository on Fedora 18 or OLPC OS
+---------------------------------------------------------------------
+
+RPM packages are available for Fedora 18 and OLPC OS 13.1
+
+1. Configure Internet-in-a-Box repository
+
+cat <<EOF >/etc/yum.repos.d/iiab.repo
+[iiab]
+name=Internet-in-a-Box
+baseurl=http://downloads.internet-in-a-box.org/fedora/18
+enabled=1
+EOF
+
+2. Install Internet-in-a-Box from Yum
+
+    yum --nogpgcheck install Internet-in-a-Box
+
+3. Follow instructions 3 - 5 from Quick Start section above, or WSGI
+configuration section below.
 
 
 ALTERNATIVE: Installation from Git Sources
@@ -73,8 +95,8 @@ Recommended for developers.
 
 4. Download and untar the QuickStart Sampler dataset
 
-    wget http://braddock.com/~braddock/iiab/IIAB_QuickStart_Sampler_20130610.tgz
-    tar xvzf IIAB_QuickStart_Sampler_20130610.tgz
+    wget http://downloads.internet-in-a-box.org/IIAB_QuickStart_Sampler_20130618.tgz
+    tar xvzf IIAB_QuickStart_Sampler_20130618.tgz
 
 
 4. Run stand-alone server
@@ -177,6 +199,18 @@ Under Fedora, adding the following three lines to your
 XSendFile on
 XSendFilePath /
 WSGIScriptAlias /iiab /var/www/iiab.wsgi
+
+
+4. Restart Apache
+
+Debian/Ubuntu:
+    /etc/init.d/apache2 restart
+Fedora/OLPC:
+    systemctl restart httpd
+
+
+5. Point your browser at:
+    http://localhost/iiab
 
 
 Dataset Location
