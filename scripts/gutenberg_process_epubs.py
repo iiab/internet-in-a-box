@@ -119,8 +119,11 @@ def convert(sources, dst_dir, nthreads):
                 # Atomically rename file
                 tmp_output = j[1]
                 output = j[2]
-                print "Completed %s" % (output)
-                os.rename(tmp_output, output)
+                if os.path.exists(tmp_output):
+		    print "Completed %s" % (output)
+		    os.rename(tmp_output, output)
+                else:
+                    print "JOB FAILED NO OUTPUT FILE " + tmp_output
             else:
                 newjobs.append(j)
         jobs = newjobs
