@@ -183,7 +183,7 @@ def main(argv):
 
     if 2 in stages:
         print "STAGE 2: Converting epubs (no images) to htmlz"
-        os.makedirs(htmlz_dir)
+        mkdirs(htmlz_dir)
         epubs = find_files(epub_dir)
         # We shuffle the processing order so we can run from multiple nodes
         # without a lot of collisions
@@ -192,7 +192,7 @@ def main(argv):
 
     if 3 in stages:
         print "STAGE 3: Converting epubs including images to htmlz"
-        os.makedirs(htmlz_images_dir)
+        mkdirs(htmlz_images_dir)
         epubs = find_files(epub_images_dir)
         # We shuffle the processing order so we can run from multiple nodes
         # without a lot of collisions
