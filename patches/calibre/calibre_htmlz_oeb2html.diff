@@ -1,0 +1,63 @@
+*** orig/oeb2html.py	2013-06-19 16:33:16.097579808 -0700
+--- oeb2html.py	2013-06-19 19:44:04.140190425 -0700
+***************
+*** 53,58 ****
+--- 53,59 ----
+          for item in oeb_book.spine:
+              self.log.debug('Converting %s to HTML...' % item.href)
+              self.rewrite_ids(item.data, item)
++         for item in oeb_book.spine:
+              rewrite_links(item.data, partial(self.rewrite_link, page=item))
+              stylizer = Stylizer(item.data, item.href, oeb_book, self.opts)
+              output += self.dump_text(item.data.find(XHTML('body')), stylizer, item)
+***************
+*** 101,110 ****
+          if not page:
+              return url
+          abs_url = page.abshref(url)
+!         if abs_url in self.images:
+!             return 'images/%s' % self.images[abs_url]
+!         if abs_url in self.links:
+!             return self.links[abs_url]
+          return url
+  
+      def rewrite_ids(self, root, page):
+--- 102,112 ----
+          if not page:
+              return url
+          abs_url = page.abshref(url)
+!         quoted_url = abs_url.replace('@', '%40')
+!         if quoted_url in self.images:
+!             return 'images/%s' % self.images[quoted_url]
+!         if quoted_url in self.links:
+!             return self.links[quoted_url]
+          return url
+  
+      def rewrite_ids(self, root, page):
+***************
+*** 126,132 ****
+                  css = item.data.cssText
+                  break
+          return css
+!     
+      def prepare_string_for_html(self, raw):
+          raw = prepare_string_for_xml(raw)
+          raw = raw.replace(u'\u00ad', '&shy;')
+--- 128,134 ----
+                  css = item.data.cssText
+                  break
+          return css
+! 
+      def prepare_string_for_html(self, raw):
+          raw = prepare_string_for_xml(raw)
+          raw = raw.replace(u'\u00ad', '&shy;')
+***************
+*** 305,310 ****
+--- 307,313 ----
+          for item in oeb_book.spine:
+              self.log.debug('Converting %s to HTML...' % item.href)
+              self.rewrite_ids(item.data, item)
++         for item in oeb_book.spine:
+              rewrite_links(item.data, partial(self.rewrite_link, page=item))
+              stylizer = Stylizer(item.data, item.href, oeb_book, self.opts)
+              output += self.dump_text(item.data.find(XHTML('body')), stylizer, item)
