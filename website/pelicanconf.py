@@ -19,4 +19,13 @@ DEFAULT_PAGINATION = 0
 # Custom theme based on Github Pages slate theme
 THEME = "theme/bootlex"
 
+DISPLAY_PAGES_ON_MENU = False
+INDEX_SAVE_AS = "news.html"
+INDEX_PAGE_TITLE = "News"
+
+MENUITEMS = ( ('Home', '/'),
+              ('News', '/news.html'),
+              ('About', '/pages/about.html'),
+            )
+
 FILES_TO_COPY = (("CNAME","CNAME"), ("201304_SGVLUG_Presentation.pdf", "201304_SGVLUG_Presentation.pdf"))
