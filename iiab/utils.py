@@ -28,3 +28,13 @@ def run_mount():
         if m is not None:
             r.append(m.groups())
     return r
+
+
+def mdns_resolve(mdnsname):
+    p = Popen(['avahi-resolve', '-4', '-n', mdnsname], stdout=PIPE)
+    data = p.stdout.read()
+    if data == '':  # Failed to resolve
+        return None
+    data = data.rstrip()
+    fields = data.split("\t")
+    return fields[1]

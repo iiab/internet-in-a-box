@@ -12,6 +12,7 @@ import video_views
 import gutenberg
 import wikipedia_views
 import zim_views
+import htmlz_views
 from extensions import db
 import sys
 
@@ -41,7 +42,8 @@ def create_app(debug=True, enable_profiler=False, profiler_quiet=False):
         (map_views.blueprint, base_prefix + "maps"),
         (video_views.blueprint, base_prefix + "video"),
         (wikipedia_views.blueprint, base_prefix + "wikipedia"),
-        (zim_views.blueprint, base_prefix + "zim")
+        (zim_views.blueprint, base_prefix + "zim"),
+        (htmlz_views.blueprint, base_prefix + "htmlz")
     ]
     for blueprint, prefix in blueprints:
         app.register_blueprint(blueprint, url_prefix=prefix)
