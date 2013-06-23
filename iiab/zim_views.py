@@ -1,8 +1,16 @@
 # ZIM file URL views (for Wikipedia)
-from flask import Blueprint, Response, render_template
+import re
+
+from flask import Blueprint, Response, render_template, request, flash, url_for
+from flaskext.babel import gettext as _
 
 from zim import Library, replace_paths
 from config import config
+
+from .endpoint_description import EndPointDescription
+import pagination_helper
+
+DEFAULT_RESULTS_PER_PAGE = 20
 
 blueprint = Blueprint('zim_views', __name__,
                       template_folder='templates', static_folder='static')
@@ -53,11 +61,38 @@ def zim_view(humanReadableId, namespace, url):
 
 @blueprint.route('/iframe/<humanReadableId>')
 def iframe_main_page_view(humanReadableId):
-    url = '/iiab/zim/' + humanReadableId + '/'
-    return render_template('zim_iframe.html', url=url)
-
+    url = url_for('zim_views.zim_main_page_view', humanReadableId=humanReadableId)
+    return render_template('zim/iframe.html', url=url, humanReadableId=humanReadableId)
 
 @blueprint.route('/iframe/<humanReadableId>/<namespace>/<path:url>')
 def iframe_view(humanReadableId, namespace, url):
-    url = '/iiab/zim/' + humanReadableId + '/' + namespace + '/' + url
-    return render_template('zim_iframe.html', url=url)
+    url = url_for('zim_views.zim_view', humanReadableId=humanReadableId, namespace=namespace, url=url)
+    return render_template('zim/iframe.html', url=url, humanReadableId=humanReadableId)
+
+def paginated_search(humanReadableId, query_text, page=1, pagelen=DEFAULT_RESULTS_PER_PAGE):
+    library_xml = config().get_path('KIWIX', 'library')
+    lib = Library(library_xml)
+    zimfile = lib.get_zimfile(humanReadableId) 
+    matched_results = []
+    for item in zimfile.get_all_articles_info():
+        if re.search(query_text, item['title'], re.IGNORECASE):
+            matched_results.append(item)
+
+    paginate = pagination_helper.Pagination(page, pagelen, len(matched_results), matched_results)
+    return (paginate, None)
+
+@blueprint.route('/iframe/search/<humanReadableId>')
+def iframe_search(humanReadableId):
+    url = url_for('zim_views.search', humanReadableId=humanReadableId, **request.args)
+    return render_template('zim/iframe.html', url=url, humanReadableId=humanReadableId)
+
+@blueprint.route('/search/<humanReadableId>')
+def search(humanReadableId):
+    query = request.args.get('q', '').strip()
+    pagination = None
+    if query:
+        page = int(request.args.get('page', 1))
+        (pagination, suggestion) = paginated_search(humanReadableId, query, page)
+    else:
+        flash(_('Please input keyword(s)'), 'error')
+    return render_template('zim/search.html', humanReadableId=humanReadableId, pagination=pagination, suggestion=suggestion, keywords=query, endpoint_desc=EndPointDescription('zim_views.search', {'humanReadableId':humanReadableId}))
