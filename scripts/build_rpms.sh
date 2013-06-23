@@ -25,4 +25,4 @@ cp -v */dist/*.rpm fedora/18/
 createrepo --verbose fedora/18/
 
 echo "rsyncing to braddock.com - enter password"
-rsync -avrP fedora braddock@braddock.com:public_html/downloads.internet-in-a-box.org/
+rsync -avrP --delete fedora braddock@braddock.com:public_html/downloads.internet-in-a-box.org/
