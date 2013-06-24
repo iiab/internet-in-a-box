@@ -210,7 +210,7 @@ class ZimFile(object):
         buf = self.f.read(8)
         fields = struct.unpack('Q', buf)
         return fields[0]
-    
+
     def read_title_pointer(self, index):
         self.f.seek(self.header['titlePtrPos'] + 4 * index)
         buf = self.f.read(4)
@@ -313,6 +313,13 @@ class ZimFile(object):
     def get_main_page(self):
         main_index = self.header['mainPage']
         return self.get_article_by_index(main_index)
+
+    def articles(self):
+        """Generator which iterates through all articles"""
+        for i in range(self.header['articleCount']):
+            entry = self.read_directory_entry_by_index(i)
+            entry['fullUrl'] = full_url(entry['namespace'], entry['url']) + "\n"
+            yield entry
 
     def validate(self):
         """This is a mostly a self-test, but will validate various assumptions"""
