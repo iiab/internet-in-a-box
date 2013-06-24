@@ -60,6 +60,38 @@ def passes_whitelist(record, feature_code_whitelist):
     # keep if on whitelist or no feature_code defined
     return 'feature_code' not in record or record['feature_code'] in feature_code_whitelist
 
+class WhooshGenerator:
+    def setup(self, index_dir, schema):
+        self.whoosh_index = create_in(index_dir, schema)
+        self.writer = whoosh_index.writer()
+
+    def write(self, record):
+        self.writer.add_document(**record)
+
+    def commit(self):
+        print 'committing... (this may take some time)'
+        self.writer.commit()
+
+class StdoutGenerator:
+    def setup(self, index_dir, schema):
+        pass
+
+    def write(self, record):
+        print record
+
+    def commit(self):
+        pass
+
+class NullGenerator:
+    def setup(self, index_dir, schema):
+        pass
+
+    def write(self, record):
+        pass
+
+    def commit(self):
+        pass
+
 # http://download.geonames.org/export/dump/readme.txt
 # The main 'geoname' table has the following fields :
 #    ---------------------------------------------------
@@ -84,6 +116,12 @@ def passes_whitelist(record, feature_code_whitelist):
 #    modification date : date of last modification in yyyy-MM-dd format
 #
 def parse_geo(geo, index_dir, whitelist_filename):
+    """
+    Parse geo data file and generate records for storage in whoosh or stdout.
+    :param geo: filename of tab delimited text file with geo data to be parsed
+    :param index_dir: directory into which whoosh data should be stored
+    :param whitelist_filename: filename containing feature codes to be indexed.
+    """
     sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)   # don't buffer stdout
 
     field_names = ('geonameid', 'name', 'asciiname', 'altnames',
@@ -95,18 +133,22 @@ def parse_geo(geo, index_dir, whitelist_filename):
 
     omitted_count = 0
 
+    generator = WhooshGenerator()
+    #generator = StdoutGenerator()
+    #generator = NullGenerator()
+
     with codecs.open(geo, encoding='utf-8') as f:
         schema = get_schema()
-        whoosh_index = create_in(index_dir, schema)
-        writer = whoosh_index.writer()
+        generator.setup(index_dir, schema)
         for count, line in enumerate(f):
             line = line.rstrip()
             record = dict(zip(field_names, line.split('\t')))
 
+            # Note that whitelist filter should be applied before filtering out non-schema fields
             if passes_whitelist(record, feature_code_whitelist):
                 # remove fields not stored in the schema
                 pruned_record = { k: v for k,v in record.items() if k in schema }
-                writer.add_document(**pruned_record)
+                generator.write(pruned_record)
             else:
                 omitted_count += 1
 
@@ -117,9 +159,9 @@ def parse_geo(geo, index_dir, whitelist_filename):
                 else:
                     print '.',
 
+        print 'parsing complete'
         print 'omitted %d items' % omitted_count
-        print 'committing... (this may take some time)'
-        writer.commit()
+        generator.commit()
         print 'done'
         
 
