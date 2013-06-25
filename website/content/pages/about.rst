@@ -11,13 +11,6 @@ We can deploy a "knowledge hotspot" anywhere in the world - even under solar pow
 
 This Open Source project is being developed by volunteers in southern California. We are seeking schools and communities worldwide who would benefit from our work. We anticipate an initial trial release within four months.
 
-A ten minute introduction and demo of our current capabilities:
-
-
-.. raw:: html
-   
-   <iframe width="640" height="360" src="http://www.youtube.com/embed/KAADBRZVncs" frameborder="0" allowfullscreen></iframe>
-
 On April 11th we presented to the `San Gabriel Valley Linux Users' Group <http://sgvlug.org>`_.
 
 Video of the full presentation (about an hour - for highlights, see the "Quick Overview and Demo" video above).

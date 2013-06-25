@@ -211,6 +211,12 @@ class ZimFile(object):
         fields = struct.unpack('Q', buf)
         return fields[0]
 
+    def read_title_pointer(self, index):
+        self.f.seek(self.header['titlePtrPos'] + 4 * index)
+        buf = self.f.read(4)
+        fields = struct.unpack('L', buf)
+        return fields[0]
+
     @timepro.profile()
     def read_cluster_pointer(self, index):
         """Returns a pointer to the cluster and the cluster size"""
@@ -308,6 +314,13 @@ class ZimFile(object):
         main_index = self.header['mainPage']
         return self.get_article_by_index(main_index)
 
+    def articles(self):
+        """Generator which iterates through all articles"""
+        for i in range(self.header['articleCount']):
+            entry = self.read_directory_entry_by_index(i)
+            entry['fullUrl'] = full_url(entry['namespace'], entry['url']) + "\n"
+            yield entry
+
     def validate(self):
         """This is a mostly a self-test, but will validate various assumptions"""
         # Test that URLs are properly ordered
@@ -353,3 +366,12 @@ class ZimFile(object):
             entry = self.read_directory_entry_by_index(i)
             s += full_url(entry['namespace'], entry['url']) + "\n"
         return s
+
+    @timepro.profile()
+    def get_all_articles_info(self):
+        articles_info = []
+        for i in range(self.header['articleCount']):
+            entry = self.read_directory_entry_by_index(i)
+            if len(entry['title']) > 0:
+                articles_info.append(entry)
+        return articles_info
