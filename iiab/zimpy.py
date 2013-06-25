@@ -2,6 +2,9 @@ import struct
 import string
 import liblzma
 import timepro
+import logging
+
+logger = logging.getLogger()
 
 HEADER_FORMAT = [
     ('I', 'magicNumber'),
@@ -193,6 +196,9 @@ class ZimFile(object):
         self.header = dict(HeaderFormat().unpack_from_file(self.f))
         self.mimeTypeList = MimeTypeListFormat().unpack_from_file(self.f, self.header['mimeListPos'])
 
+    def close(self):
+        self.f.close()
+
     @timepro.profile()
     def read_directory_entry(self, offset):
         """May return either a Redirect or Article entry depending on flag"""
@@ -273,7 +279,7 @@ class ZimFile(object):
         entry = self.read_directory_entry_by_index(index)
         if 'redirectIndex' in entry.keys():
             if follow_redirect:
-                print "REDIRECT TO " + str(entry['redirectIndex'])
+                logger.debug("REDIRECT TO " + str(entry['redirectIndex']))
                 return self.get_article_by_index(entry['redirectIndex'], follow_redirect)
             else:
                 return None, entry['redirectIndex'], entry['namespace']
@@ -366,12 +372,3 @@ class ZimFile(object):
             entry = self.read_directory_entry_by_index(i)
             s += full_url(entry['namespace'], entry['url']) + "\n"
         return s
-
-    @timepro.profile()
-    def get_all_articles_info(self):
-        articles_info = []
-        for i in range(self.header['articleCount']):
-            entry = self.read_directory_entry_by_index(i)
-            if len(entry['title']) > 0:
-                articles_info.append(entry)
-        return articles_info
