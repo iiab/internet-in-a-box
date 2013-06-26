@@ -3,6 +3,7 @@
 
 import sys
 import os
+import re
 import argparse
 import logging
 from whoosh.index import create_in, open_dir
@@ -28,7 +29,7 @@ def remove_html(text):
 
     body_tag = soup.find("body")
 
-    # No body contents in article
+    # No body in contents of article
     if body_tag == None:
         return u''
 
@@ -49,11 +50,18 @@ def main(argv):
                         default="./zim-index",
                         help="The base directory where Woosh indexes are written. One sub directory per file.")
     parser.add_argument("-m", "--mime-types", dest="mime_types",
-                        metavar="INT", nargs="*", default=[0,6],
+                        metavar="MIME_TYPE", nargs="*", 
+                        default=["text/html", "text/plain"],
                         help="Mimetypes of articles to index")
     parser.add_argument("--no-contents", dest="index_contents", action="store_false",
                         default=True,
                         help="Turn of indexing of article contents")
+    parser.add_argument("--memory-limit", dest="memory_limit", action="store",
+                        default=256, type=int,
+                        help="Set maximum memory in Mb to consume by writer")
+    parser.add_argument("--processors", dest="processors", action="store",
+                        default=1, type=int,
+                        help="Set the number of processors for use by the writer")
     parser.add_argument("-v", dest="verbose", action="store_true",
                         help="Turn on verbose logging")
 
@@ -75,7 +83,7 @@ def main(argv):
     # Create schema use by all indexes
     schema = Schema(title=TEXT(stored=True), 
                     url=ID(stored=True),
-                    contents=TEXT(stored=False),
+                    content=TEXT(stored=False),
                     blobNumber=NUMERIC(stored=True),
                     fullUrl=ID,
                     clusterNumber=NUMERIC,
@@ -94,7 +102,15 @@ def main(argv):
         if not args.index_contents:
             logger.info("Not indexing article contents")        
 
-        logger.info("Using mime types: %s" % [ zim_obj.mimeTypeList[i] for i in args.mime_types ])
+        # Figure out which mime type indexes from this file we will use
+        logger.debug("All mime type names: %s" % zim_obj.mimeTypeList)
+        logger.info("Using mime types:")
+        mime_type_indexes = []
+        for mt_re in args.mime_types:
+            for mt_idx, mt_name in enumerate(zim_obj.mimeTypeList):
+                if re.search(mt_re, mt_name):
+                    mime_type_indexes.append(mt_idx)
+                    logger.info(mt_name)
 
         index_dir = os.path.join(args.output_dir, os.path.splitext(os.path.basename(zim_file))[0])
         if not os.path.exists(index_dir):
@@ -102,33 +118,39 @@ def main(argv):
             os.mkdir(index_dir)
 
         ix = create_in(index_dir, schema)
-        writer = ix.writer()
+        writer = ix.writer(limitmb=args.memory_limit, proc=args.processors)
+
+        # Get the analyzer object from a text field
+        stem_ana = writer.schema["content"].analyzer
+        # Set the cachesize to -1 to indicate unbounded caching
+        # to speed up batch processing
+        stem_ana.cachesize = -1
 
         pbar = ProgressBar(widgets=[Percentage(), Bar()], maxval=zim_obj.header['articleCount']).start()
 
         for idx, article_info in enumerate(zim_obj.articles()):
             # Skip articles of undesired mime types
-            if article_info['mimetype'] not in args.mime_types:
+            if article_info['mimetype'] not in mime_type_indexes:
                 continue
 
             if args.index_contents:
                 # Strip out HTML so it is not indexed
                 # It also converts to unicode in the process
                 # Only do the stripping on HTML article types
-                raw_contents = zim_obj.get_article_by_index(article_info['blobNumber'])[0]
+                raw_content = zim_obj.get_article_by_index(article_info['blobNumber'])[0]
                 if "html" in zim_obj.mimeTypeList[article_info['mimetype']]:
-                    contents = remove_html(raw_contents)
+                    content = remove_html(raw_content)
                 else:
-                    contents = unicode(raw_contents)
+                    content = unicode(raw_content)
 
             else:
-                contents = None
+                content = None
 
             # Make any strings into unicode objects
             for k,v in article_info.items():
                 if type(v) is str:
                     article_info[k] = unicode(v)
-            writer.add_document(contents=contents, **article_info)
+            writer.add_document(content=content, **article_info)
 
 
             pbar.update(idx+1)
