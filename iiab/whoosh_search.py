@@ -53,7 +53,6 @@ def paginated_search(index_dir, search_columns, query_text, page=1, pagelen=DEFA
         try:
             # search_page returns whoosh.searching.ResultsPage
             results = searcher.search_page(query, page, pagelen=pagelen, sortedby=sort_column)
-            print "---->", [dict(r.items()) for r in results]
             total = results.total
         except ValueError:  # Invalid page number
             results = []
