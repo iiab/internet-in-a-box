@@ -51,7 +51,7 @@ def organize_books_by_language(filenames):
 @blueprint.route('/')
 def wikipedia_view():
     zim_url = config().get('ZIM', 'url')
-    wikipedia_zim_dir = config().get('ZIM', 'wikipedia_dir')
+    wikipedia_zim_dir = config().get('ZIM', 'wikipedia_zim_dir')
     langs = organize_books_by_language(glob(os.path.join(wikipedia_zim_dir, "*.zim")))
     ajax = False
     if zim_url == "/iiab/zim":

@@ -8,8 +8,8 @@ from flaskext.babel import gettext
 from zimpy import ZimFile
 from config import config
 
+from whoosh_search import paginated_search
 from .endpoint_description import EndPointDescription
-import pagination_helper
 
 DEFAULT_RESULTS_PER_PAGE = 20
 
@@ -17,7 +17,7 @@ blueprint = Blueprint('zim_views', __name__,
                       template_folder='templates', static_folder='static')
 
 def load_zim_file(humanReadableId):
-    zim_dir = config().get_path("ZIM", "wikipedia_dir")
+    zim_dir = config().get_path("ZIM", "wikipedia_zim_dir")
     zim_fn = os.path.join(zim_dir, humanReadableId + ".zim")
     return ZimFile(zim_fn)
 
@@ -76,16 +76,6 @@ def iframe_view(humanReadableId, namespace, url):
     url = url_for('zim_views.zim_view', humanReadableId=humanReadableId, namespace=namespace, url=url)
     return render_template('zim/iframe.html', url=url, humanReadableId=humanReadableId)
 
-def paginated_search(humanReadableId, query_text, page=1, pagelen=DEFAULT_RESULTS_PER_PAGE):
-    zimfile = load_zim_file(humanReadableId)
-    matched_results = []
-    for item in zimfile.get_all_articles_info():
-        if re.search(query_text, item['title'], re.IGNORECASE):
-            matched_results.append(item)
-
-    paginate = pagination_helper.Pagination(page, pagelen, len(matched_results), matched_results)
-    return (paginate, None)
-
 @blueprint.route('/iframe/search/<humanReadableId>')
 def iframe_search(humanReadableId):
     url = url_for('zim_views.search', humanReadableId=humanReadableId, **request.args)
@@ -96,8 +86,10 @@ def search(humanReadableId):
     query = request.args.get('q', '').strip()
     pagination = None
     if query:
+        index_base_dir = config().get_path("ZIM", "wikipedia_index_dir")
+        index_dir = os.path.join(index_base_dir, humanReadableId)
         page = int(request.args.get('page', 1))
-        (pagination, suggestion) = paginated_search(humanReadableId, query, page)
+        (pagination, suggestion) = paginated_search(index_dir, ["title", "content"], query, page)
     else:
         flash(gettext('Please input keyword(s)'), 'error')
     return render_template('zim/search.html', humanReadableId=humanReadableId, pagination=pagination, suggestion=suggestion, keywords=query, endpoint_desc=EndPointDescription('zim_views.search', {'humanReadableId':humanReadableId}))

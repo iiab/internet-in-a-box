@@ -85,10 +85,10 @@ def main(argv):
                     url=ID(stored=True),
                     content=TEXT(stored=False),
                     blobNumber=NUMERIC(stored=True),
+                    namespace=ID(stored=True),
                     fullUrl=ID,
                     clusterNumber=NUMERIC,
                     mimetype=NUMERIC,
-                    namespace=ID,
                     parameter=ID,
                     parameterLen=NUMERIC,
                     revision=NUMERIC,)
@@ -156,6 +156,8 @@ def main(argv):
             pbar.update(idx+1)
 
         pbar.finish()
+
+        logger.info("Commiting index")
         writer.commit()
         zim_obj.close()
 

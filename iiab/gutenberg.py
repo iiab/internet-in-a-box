@@ -11,23 +11,17 @@ import json
 
 from contextlib import closing
 
-from whoosh.index import open_dir
-from whoosh.qparser import MultifieldParser
-from .whoosh_multi_field_spelling_correction import MultiFieldQueryCorrector
-
 from .extensions import db
 from gutenberg_models import (GutenbergBook, GutenbergFile,
                               GutenbergCreator, gutenberg_books_creator_map)
 from config import config
 
-import pagination_helper
+from whoosh_search import paginated_search
 from .endpoint_description import EndPointDescription
 
 gutenberg = Blueprint('gutenberg', __name__, url_prefix='/books')
 etext_regex = re.compile(r'^etext(\d+)$')
 DEFAULT_SEARCH_COLUMNS = ['title', 'creator', 'contributor']  # names correspond to fields in whoosh schema
-DEFAULT_RESULTS_PER_PAGE = 20
-
 
 @gutenberg.route('/')
 def index():
@@ -39,8 +33,9 @@ def search():
     query = request.args.get('q', '').strip()
     pagination = None
     if query:
+        index_dir = config().get_path('GUTENBERG', 'index_dir')
         page = int(request.args.get('page', 1))
-        (pagination, suggestion) = paginated_search(query, page)
+        (pagination, suggestion) = paginated_search(index_dir, DEFAULT_SEARCH_COLUMNS, query, page, sort_column='creator')
     else:
         flash(_('Please input keyword(s)'), 'error')
     #print pagination.items
@@ -65,69 +60,6 @@ def author_to_query(author):
     # contributor field provides extra details about contirbutor's role in brackets -- strip that off so we can search for author in any role.
     author = re.sub(r'\[[^\]]+\]', '', author).strip()
     return u'creator:"{0}" OR contributor:"{0}"'.format(author)
-
-
-def paginated_search(query_text, page=1, pagelen=DEFAULT_RESULTS_PER_PAGE):
-    """
-    Return a tuple consisting of an object that emulates an SQLAlchemy pagination object and corrected query suggestion
-    pagelen specifies number of hits per page
-    page specifies page of results (first page is 1)
-    """
-    index_dir = config().get_path('GUTENBERG', 'index_dir')
-    query_text = unicode(query_text)  # Must be unicode
-    ix = open_dir(index_dir)
-    sort_column = 'creator'
-    with ix.searcher() as searcher:
-        query = MultifieldParser(DEFAULT_SEARCH_COLUMNS, ix.schema).parse(query_text)
-        try:
-            # search_page returns whoosh.searching.ResultsPage
-            results = searcher.search_page(query, page, pagelen=pagelen, sortedby=sort_column)
-            total = results.total
-        except ValueError:  # Invalid page number
-            results = []
-            total = 0
-        paginate = pagination_helper.Pagination(page, pagelen, total, [dict(r.items()) for r in results])
-        corrections = deduplicate_corrections(get_query_corrections(searcher, query, query_text))  # list of Corrector objects
-
-        #hf = whoosh.highlight.HtmlFormatter(classname="change")
-        #html = corrections.format_string(hf)
-        return (paginate, [c.string for c in corrections])
-
-
-def deduplicate_corrections(corrections):
-    """
-    Return list of correction that omits entries where the query is unmodified
-    :param corrections: list of Corrector objects
-    :returns: list of Corrector objects
-    """
-    # Using values from a dictionary comprehension rather than a list comprehension in order to deduplicate
-    #return {c.string : c for c in corrections if c.original_query != c.query}.values()
-    # We can't use dictionary comprehension because we are stuck on python 2.6 for Debian stable
-    return dict((c.string, c) for c in corrections if c.original_query != c.query).values()
-
-
-def get_query_corrections(searcher, query, qstring):
-    """
-    Suggest alternate spelling for search terms by searching each column with
-    spelling correction support in turn.
-
-    :param searcher: whoosh searcher object
-    :param query: whoosh query object
-    :param qstring: search string that was passed to the query object
-    :returns: MultiFieldQueryCorrector with one corrector for each corrected column
-    """
-    fieldnames = [name for name, field in searcher.schema.items() if field.spelling]
-    correctors = {}
-    for fieldname in fieldnames:
-        if fieldname not in correctors:
-            correctors[fieldname] = searcher.corrector(fieldname)
-    terms = []
-    for token in query.all_tokens():
-        if token.fieldname in correctors:
-            terms.append((token.fieldname, token.text))
-
-    return MultiFieldQueryCorrector(correctors, terms, prefix=2, maxdist=1).correct_query(query, qstring)
-
 
 @gutenberg.route('/titles')
 def by_title():
