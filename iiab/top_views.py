@@ -20,7 +20,7 @@ def index():
             error += "ON, so all mounted filesystems were checked."
         else:
             error += "OFF, so other mounted filesystems were NOT checked."
-    return render_template("index.html", kiwix_url=config().get('KIWIX', 'url'), error=error)
+    return render_template("index.html", error=error)
 
 
 @blueprint.route('detect')

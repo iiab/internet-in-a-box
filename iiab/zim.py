@@ -1,3 +1,6 @@
+# DEPRECATED:
+# zim_views.py now uses ZimFile directly to get file metadata
+
 import re
 import os
 

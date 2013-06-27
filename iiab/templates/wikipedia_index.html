@@ -11,12 +11,12 @@
             </li>
             {% for book in language['books'] %}
             <li data-theme="c">
-            <a href="{{ kiwix_url + '/' + book.get('humanReadableId') + '/' }}" data-transition="slide" data-ajax="{{ 'true' if ajax else 'false' }}">
-                <h3>{{ book.get('title') }}</h3>
-                {% if 'description' in book %}
-                <p style="white-space: normal;" class="float-left">{{ book.get('description') }}</p>
+            <a href="{{ zim_url + '/' + book['humanReadableId'] + '/' }}" data-transition="slide" data-ajax="{{ 'true' if ajax else 'false' }}">
+                <h3>{{ book['Title'] }}</h3>
+                {% if book.has_key('Description') %}
+                <p style="white-space: normal;" class="float-left">{{ book['Description'] }}</p>
                 {% endif %}
-                <p class="float-right">{{ book['articleCountString'] }} Articles</p>
+                <p class="float-right">{{ book['articleCount'] }} Articles</p>
             </a>
             </li>
             {% endfor %}

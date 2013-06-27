@@ -272,7 +272,7 @@ class ZimFile(object):
         if n > len(raw):
             raise Exception("Blob specified beyond end of cluster. " + str(p) + " to " + str(n - 1) + " in cluster of length " + str(len(raw)))
         #length = n - p
-        return raw[p:n - 1]
+        return raw[p:n]
 
     @timepro.profile()
     def get_article_by_index(self, index, follow_redirect=True):
@@ -319,6 +319,17 @@ class ZimFile(object):
     def get_main_page(self):
         main_index = self.header['mainPage']
         return self.get_article_by_index(main_index)
+
+    def metadata(self):
+        metadata = {}
+        for i in range(self.header['articleCount'])[::-1]:
+            entry = self.read_directory_entry_by_index(i)
+            if entry['namespace'] == 'M':
+                metadata[entry['url']] = self.get_article_by_index(i)[0]
+            else:
+                break
+
+        return metadata
 
     def articles(self):
         """Generator which iterates through all articles"""

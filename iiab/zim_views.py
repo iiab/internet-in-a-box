@@ -1,10 +1,11 @@
 # ZIM file URL views (for Wikipedia)
+import os
 import re
 
 from flask import Blueprint, Response, render_template, request, flash, url_for
-from flaskext.babel import gettext as _
+from flaskext.babel import gettext 
 
-from zim import Library, replace_paths
+from zimpy import ZimFile
 from config import config
 
 from .endpoint_description import EndPointDescription
@@ -15,21 +16,28 @@ DEFAULT_RESULTS_PER_PAGE = 20
 blueprint = Blueprint('zim_views', __name__,
                       template_folder='templates', static_folder='static')
 
+def load_zim_file(humanReadableId):
+    zim_dir = config().get_path("ZIM", "wikipedia_dir")
+    zim_fn = os.path.join(zim_dir, humanReadableId + ".zim")
+    return ZimFile(zim_fn)
+
+def replace_paths(top_url, html):
+    replace = u"\\1\\2" + top_url + "/\\3/"
+    html = re.sub(u'(href|src)(=["\']/)([A-Z\-])/', replace, html)
+    html = re.sub(u'(@import[ ]+)(["\']/)([A-Z\-])/', replace, html)
+    return html
 
 @blueprint.route('/<humanReadableId>')
 def zim_main_page_view(humanReadableId):
     """Returns the main page of the zim file"""
-    library_xml = config().get_path('KIWIX', 'library')
-    lib = Library(library_xml)
-    zimfile = lib.get_zimfile(humanReadableId)
+    zimfile = load_zim_file(humanReadableId)
     try:
         article, mimetype, ns = zimfile.get_main_page()
         html = mangle_article(article, mimetype, humanReadableId)
         return Response(html, mimetype=mimetype)
     except OSError as e:
         html = "<html><body>"
-        html += "<p>Error accessing article.  Possible failure to run zimdump command</p>"
-        html += "<p>zimdump = " + config().get_path('KIWIX', 'zimdump') + "</p>\n"
+        html += "<p>Error accessing article.</p>"
         html += "<p>Exception: " + str(e) + "</p>\n"
         html += "</body></html>"
         return Response(html)
@@ -52,9 +60,8 @@ def mangle_article(html, mimetype, humanReadableId):
 
 @blueprint.route('/<humanReadableId>/<namespace>/<path:url>')
 def zim_view(humanReadableId, namespace, url):
-    library_xml = config().get_path('KIWIX', 'library')
-    lib = Library(library_xml)
-    article, mimetype, ns = lib.get_article_by_url(humanReadableId, namespace, url)
+    zimfile = load_zim_file(humanReadableId)
+    article, mimetype, ns = zimfile.get_article_by_url(namespace, url)
     html = mangle_article(article, mimetype, humanReadableId)
     return Response(html, mimetype=mimetype)
 
@@ -70,9 +77,7 @@ def iframe_view(humanReadableId, namespace, url):
     return render_template('zim/iframe.html', url=url, humanReadableId=humanReadableId)
 
 def paginated_search(humanReadableId, query_text, page=1, pagelen=DEFAULT_RESULTS_PER_PAGE):
-    library_xml = config().get_path('KIWIX', 'library')
-    lib = Library(library_xml)
-    zimfile = lib.get_zimfile(humanReadableId) 
+    zimfile = load_zim_file(humanReadableId)
     matched_results = []
     for item in zimfile.get_all_articles_info():
         if re.search(query_text, item['title'], re.IGNORECASE):
@@ -94,5 +99,5 @@ def search(humanReadableId):
         page = int(request.args.get('page', 1))
         (pagination, suggestion) = paginated_search(humanReadableId, query, page)
     else:
-        flash(_('Please input keyword(s)'), 'error')
+        flash(gettext('Please input keyword(s)'), 'error')
     return render_template('zim/search.html', humanReadableId=humanReadableId, pagination=pagination, suggestion=suggestion, keywords=query, endpoint_desc=EndPointDescription('zim_views.search', {'humanReadableId':humanReadableId}))
