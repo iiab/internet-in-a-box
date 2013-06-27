@@ -3,14 +3,31 @@ import string
 import liblzma
 import timepro
 import logging
+import uuid
 
 logger = logging.getLogger()
 
 HEADER_FORMAT = [
     ('I', 'magicNumber'),
     ('I', 'version'),
-    ('Q', 'uuidLow'),
-    ('Q', 'uuidHigh'),
+    #('Q', 'uuidLow'),
+    #('Q', 'uuidHigh'),
+    ('B', 'uuid0'),
+    ('B', 'uuid1'),
+    ('B', 'uuid2'),
+    ('B', 'uuid3'),
+    ('B', 'uuid4'),
+    ('B', 'uuid5'),
+    ('B', 'uuid6'),
+    ('B', 'uuid7'),
+    ('B', 'uuid8'),
+    ('B', 'uuid9'),
+    ('B', 'uuid10'),
+    ('B', 'uuid11'),
+    ('B', 'uuid12'),
+    ('B', 'uuid13'),
+    ('B', 'uuid14'),
+    ('B', 'uuid15'),
     ('I', 'articleCount'),
     ('I', 'clusterCount'),
     ('Q', 'urlPtrPos'),
@@ -198,6 +215,23 @@ class ZimFile(object):
 
     def close(self):
         self.f.close()
+
+    def get_uuid(self):
+        """Returns the UUID for this ZIM file"""
+        h = self.header
+        uuid_bytes = [h['uuid0'], h['uuid1'], h['uuid2'], h['uuid3'], h['uuid4'],
+                      h['uuid5'], h['uuid6'], h['uuid7'], h['uuid8'], h['uuid9'],
+                      h['uuid10'], h['uuid11'], h['uuid12'], h['uuid13'], h['uuid14'],
+                      h['uuid15']]
+        s = string.join([chr(x) for x in uuid_bytes], "")
+        return uuid.UUID(bytes=s)
+
+    def get_kiwix_uuid(self):
+        """Kiwix seems to have a bug in their library.xml which causes the
+        third UUID group to be repeated."""
+        u = self.get_uuid()
+        s = str(u).split("-")
+        return s[0] + "-" + s[1] + "-" + s[2] + "-" + s[2] + "-" + s[3] + s[4]
 
     @timepro.profile()
     def read_directory_entry(self, offset):
