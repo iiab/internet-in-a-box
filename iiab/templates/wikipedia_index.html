@@ -12,9 +12,9 @@
             {% for book in language['books'] %}
             <li data-theme="c">
             <a href="{{ zim_url + '/' + book['humanReadableId'] + '/' }}" data-transition="slide" data-ajax="{{ 'true' if ajax else 'false' }}">
-                <h3>{{ book['Title'] }}</h3>
-                {% if book.has_key('Description') %}
-                <p style="white-space: normal;" class="float-left">{{ book['Description'] }}</p>
+                <h3>{{ book['title'] }}</h3>
+                {% if book.has_key('description') %}
+                <p style="white-space: normal;" class="float-left">{{ book['description'] }}</p>
                 {% endif %}
                 <p class="float-right">{{ book['articleCount'] }} Articles</p>
             </a>

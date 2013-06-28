@@ -1,3 +1,4 @@
+import re
 import struct
 import string
 import liblzma
@@ -359,7 +360,10 @@ class ZimFile(object):
         for i in range(self.header['articleCount'])[::-1]:
             entry = self.read_directory_entry_by_index(i)
             if entry['namespace'] == 'M':
-                metadata[entry['url']] = self.get_article_by_index(i)[0]
+                m_name = entry['url'] 
+                # Lower case first letter to match kiwix-library names convention 
+                m_name = re.sub(r'^([A-Z])', lambda pat: pat.group(1).lower(), m_name) 
+                metadata[m_name] = self.get_article_by_index(i)[0]
             else:
                 break
 
