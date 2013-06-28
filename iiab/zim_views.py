@@ -57,7 +57,6 @@ def mangle_article(html, mimetype, humanReadableId):
         html = replace_paths("iiab/zim/" + humanReadableId, html)
     return html
 
-
 @blueprint.route('/<humanReadableId>/<namespace>/<path:url>')
 def zim_view(humanReadableId, namespace, url):
     zimfile = load_zim_file(humanReadableId)

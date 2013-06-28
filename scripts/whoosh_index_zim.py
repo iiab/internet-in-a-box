@@ -16,8 +16,8 @@ from iiab.zimpy import ZimFile
 # to help understand where the processing is
 from progressbar import ProgressBar, Percentage, Bar
 
-# For stripping out html tags
-from BeautifulSoup import BeautifulSoup
+# For rendering HTML to text for indexing
+from html2text import html2text
 
 logger = logging.getLogger()
 
@@ -134,15 +134,18 @@ def main(argv):
                 continue
 
             if args.index_contents:
+                raw_content = zim_obj.get_article_by_index(idx)[0]
+            
+                try:
+                    content = raw_content.decode("utf-8")
+                except:
+                    content = raw_content.decode("latin1")
+                
                 # Strip out HTML so it is not indexed
                 # It also converts to unicode in the process
                 # Only do the stripping on HTML article types
-                raw_content = zim_obj.get_article_by_index(article_info['blobNumber'])[0]
                 if "html" in zim_obj.mimeTypeList[article_info['mimetype']]:
-                    content = remove_html(raw_content)
-                else:
-                    content = unicode(raw_content)
-
+                    content = html2text(content)
             else:
                 content = None
 
@@ -150,6 +153,7 @@ def main(argv):
             for k,v in article_info.items():
                 if type(v) is str:
                     article_info[k] = unicode(v)
+
             writer.add_document(content=content, **article_info)
 
 
