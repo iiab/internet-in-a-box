@@ -4,8 +4,6 @@ from whoosh.qparser import MultifieldParser
 from .whoosh_multi_field_spelling_correction import MultiFieldQueryCorrector
 import pagination_helper
 
-DEFAULT_RESULTS_PER_PAGE = 20
-
 def get_query_corrections(searcher, query, qstring):
     """
     Suggest alternate spelling for search terms by searching each column with
@@ -40,7 +38,7 @@ def deduplicate_corrections(corrections):
     return dict((c.string, c) for c in corrections if c.original_query != c.query).values()
 
 
-def paginated_search(index_dir, search_columns, query_text, page=1, pagelen=DEFAULT_RESULTS_PER_PAGE, sort_column=None):
+def paginated_search(index_dir, search_columns, query_text, page=1, pagelen=20, sort_column=None):
     """
     Return a tuple consisting of an object that emulates an SQLAlchemy pagination object and corrected query suggestion
     pagelen specifies number of hits per page

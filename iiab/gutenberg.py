@@ -19,9 +19,11 @@ from config import config
 from whoosh_search import paginated_search
 from .endpoint_description import EndPointDescription
 
+DEFAULT_RESULTS_PER_PAGE = 20
+DEFAULT_SEARCH_COLUMNS = ['title', 'creator', 'contributor']  # names correspond to fields in whoosh schema
+
 gutenberg = Blueprint('gutenberg', __name__, url_prefix='/books')
 etext_regex = re.compile(r'^etext(\d+)$')
-DEFAULT_SEARCH_COLUMNS = ['title', 'creator', 'contributor']  # names correspond to fields in whoosh schema
 
 @gutenberg.route('/')
 def index():
