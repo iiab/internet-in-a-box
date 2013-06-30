@@ -1,10 +1,22 @@
 import re
 import struct
 import string
-import liblzma
 import timepro
 import logging
 import uuid
+
+import sys
+# Import lzma this way so we get the built in version for
+# Python 3.3 or the backported one otherwize. Don't just
+# do a try/catch for import lzma because the older 
+# pyliblzma uses that package name, and we do not want
+# to use it.
+if sys.version_info[0:3] >= (3,3,0):
+    import lzma
+else:
+    from backports import lzma
+
+from StringIO import StringIO
 
 logger = logging.getLogger()
 
@@ -147,6 +159,97 @@ class ClusterFormat(Format):
     def __init__(self):
         super(ClusterFormat, self).__init__(CLUSTER_FORMAT)
 
+class ClusterData(object):
+    def __init__(self, file_buffer, ptr):
+        cluster_info = dict(ClusterFormat().unpack_from_file(file_buffer, ptr))
+        self.compressed = cluster_info['compressionType'] == 4
+
+        self.file_buf = file_buffer
+        self.uncomp_buf = None
+        self.ptr = ptr
+
+        self.offsets = []
+
+        if self.compressed:
+            self._decompress()
+
+        self.read_offsets()
+
+    def _decompress(self, chunk_size=32):
+        """Decompresses the cluster if compression flag was found. Stores
+        uncompressed results internally."""
+
+        if not self.compressed:
+            return
+
+        self.file_buf.seek(self.ptr + 1)
+
+        # Store uncompressed cluster data for use as uncompressed data
+        self.uncomp_buf = StringIO() 
+
+        decomp = lzma.LZMADecompressor()
+        while not decomp.eof:
+            comp_data = self.file_buf.read(chunk_size)
+
+            uncomp_data = decomp.decompress(comp_data)
+            self.uncomp_buf.write(uncomp_data)
+
+        return self.uncomp_buf
+
+    def source_buffer(self):
+        """Returns the buffer to read from, either the file buffer
+        passed or the uncompressed lzma data. Will seek to the 
+        beginning of the cluster after the 1 byte compression flag"""
+
+        if self.compressed:
+            self.uncomp_buf.seek(0)
+            return self.uncomp_buf
+        else:
+            self.file_buf.seek(self.ptr + 1)
+            return self.file_buf
+
+    def unpack_blob_index(self, buf):
+        ptr = struct.unpack('I', buf)[0]
+        return ptr
+
+    def read_offsets(self):
+        """Reads the cluster header with the offsets of the blobs"""
+
+        src_buf = self.source_buffer() 
+
+        raw = src_buf.read(4)
+        offset0 = self.unpack_blob_index(raw)
+        self.offsets.append(offset0)
+        nblob = offset0 / 4
+
+        for idx in range(nblob-1):
+            raw = src_buf.read(4)
+            offset = self.unpack_blob_index(raw)
+            self.offsets.append(offset)
+
+        return self.offsets
+
+    def read_blob(self, blob_index):
+        """Reads a blob from the cluster"""
+
+        if blob_index >= len(self.offsets) - 1:
+            raise IOError("Blob index exceeds number of blobs available: %s" % blob_index)
+
+        src_buf = self.source_buffer()
+
+        blob_size = self.offsets[blob_index+1] - self.offsets[blob_index] 
+
+        # For uncompressed data, seek from beginning of file
+        # Otherwise seek the compressed data with just and offset
+        if not self.compressed:
+            seek_beg = self.ptr + 1
+        else:
+            seek_beg = 0
+        src_buf.seek(seek_beg + self.offsets[blob_index])
+
+        blob_data = src_buf.read(blob_size)
+
+        return blob_data
 
 class ArticleEntryFormat(Format):
     def __init__(self):
@@ -260,54 +363,23 @@ class ZimFile(object):
 
     @timepro.profile()
     def read_cluster_pointer(self, index):
-        """Returns a pointer to the cluster and the cluster size"""
-        # FIXME: we assume clusters are listed in order to obtain size
+        """Returns a pointer to the cluster"""
+
         self.f.seek(self.header['clusterPtrPos'] + 8 * index)
-        buf = self.f.read(16)
-        fields = struct.unpack('QQ', buf)
-        # FIXME: If last cluster, we use the checksumPos which is guaranteed to
-        # point to 16 bytes before the end of file.
-        if index == self.header['clusterCount'] - 1:
-            return fields[0], self.header['checksumPos'] - fields[0]
-        return fields[0], fields[1] - fields[0]
+        buf = self.f.read(8)
+        fields = struct.unpack('Q', buf)
+        return fields[0]
 
     @timepro.profile()
     def read_directory_entry_by_index(self, index):
         ptr = self.read_url_pointer(index)
         return self.read_directory_entry(ptr)
 
-    def unpack_blob_ptr(self, buf, index):
-        ptr = struct.unpack_from('I', buf, 4 * index)[0]
-        return ptr
-
     @timepro.profile()
     def read_blob(self, cluster_index, blob_index):
-        ptr, size = self.read_cluster_pointer(cluster_index)
-        cluster = self.clusterFormat.unpack_from_file(self.f, ptr)
-        cluster = dict(cluster)
-        self.f.seek(ptr + 1)
-        timepro.start('read')
-        raw = self.f.read(size - 1)
-        timepro.end('read')
-        if cluster['compressionType'] in [0, 1]:
-            pass  # uncompressed
-        elif cluster['compressionType'] == 4:
-            timepro.start('decompress')
-            raw = liblzma.decompress(raw)
-            timepro.end('decompress')
-        else:
-            raise Exception("Unknown ZIM file compression type in cluster " + str(cluster_index) + " got type " + str(cluster['compressionType']))
-        blob0 = self.unpack_blob_ptr(raw, 0)
-        # Number of blobs in cluster
-        nblob = blob0 / 4
-        if nblob < blob_index + 1:
-            raise Exception("Blob index specified beyond end of cluster.  Blob " + str(blob_index) + " requested but only " + str(nblob) + " exist")
-        p = self.unpack_blob_ptr(raw, blob_index)
-        n = self.unpack_blob_ptr(raw, blob_index + 1)  # Next blob
-        if n > len(raw):
-            raise Exception("Blob specified beyond end of cluster. " + str(p) + " to " + str(n - 1) + " in cluster of length " + str(len(raw)))
-        #length = n - p
-        return raw[p:n]
+        ptr = self.read_cluster_pointer(cluster_index)
+        cluster_data = ClusterData(self.f, ptr)
+        return cluster_data.read_blob(blob_index)
 
     @timepro.profile()
     def get_article_by_index(self, index, follow_redirect=True):

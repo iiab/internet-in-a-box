@@ -3,4 +3,4 @@ Flask-Babel==0.8
 Flask-SQLAlchemy==0.16
 Flask-AutoIndex
 Whoosh==2.4.1
-pyliblzma
+backports.lzma>=0.0.2
