@@ -1,7 +1,7 @@
 Successful deployment in Sierra Leone
 #####################################
 
-:date: 2013-07-13
+:date: 2013-07-01
 
 Finally heard back from the school in Sierra Leone!  Looks like they
 are up and running well with Internet-in-a-Box.  Sent us some nice
