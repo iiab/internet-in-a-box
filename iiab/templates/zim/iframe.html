@@ -1,3 +1,6 @@
+{% extends "base.html" %}
+{% block content %}
+
 <div data-role="page" data-theme="b" id="zim-iframe">
     <div data-role="header">
         <div class="ui-grid-b">
@@ -13,7 +16,7 @@
                     </label>
                     <form class="form-search" action="{{ url_for('zim_views.iframe_search', humanReadableId=humanReadableId) }}" method="get">
                         <input name="q" data-mini="true" id="wikisearch" placeholder="Search" value="" type="search">
-                        <button type="submit" class="btn">Search</button>
+                        <button type="submit" class="btn">Search</button> 
                     </form>
                 </fieldset>
             </div>
@@ -27,3 +30,4 @@
     </div>
 </div>
 
+{% endblock %}
