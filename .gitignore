@@ -36,3 +36,6 @@ local.ini
 # Website generated output
 website/output
 website/*.pid
+
+# Vim swap files
+*.swp
