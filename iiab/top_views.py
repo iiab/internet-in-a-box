@@ -20,7 +20,7 @@ def index():
             error += "ON, so all mounted filesystems were checked."
         else:
             error += "OFF, so other mounted filesystems were NOT checked."
-    return render_template("index.html", error=error)
+    return render_template("home.html", error=error)
 
 
 @blueprint.route('detect')
