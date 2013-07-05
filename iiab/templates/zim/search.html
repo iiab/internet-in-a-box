@@ -1,3 +1,5 @@
+{% extends "zim/base.html" %}
+
 {#
     :param humanReadableId: Id of the Zim book being searched
     :param keywords: string search terms
@@ -5,7 +7,7 @@
     :param suggestions: string or list of alterate spelling suggestions
     :param endpoint_desc: EndPointDescription for use by pagination
 #}
-{% from 'macros/_misc.html' import render_pagination, render_zim_search_table %}
+{% from 'macros/_zim_search.html' import render_pagination, render_zim_search %}
 
 {% if keywords %}
     {% set page_title = _('Search results for "%(keywords)s"', keywords=keywords) %}
@@ -13,10 +15,10 @@
     {% set page_title = _('Keywords needed!') %}
 {% endif %}
 
-{% block body %}
+{% block zim_content %}
     {% if pagination and pagination.pages > 0 %}
-        <p>{% trans total=pagination.total, keywords=keywords %}<strong>{{ total }}</strong> found for your search "<strong>{{ keywords }}</strong>".{% endtrans %}</p>
-        {{ render_zim_search_table(humanReadableId, pagination.items, pagination.per_page * (pagination.page - 1), 'table table-striped table-hover') }}
+        <p>{% trans total=pagination.total_count, keywords=keywords %}<strong>{{ total }}</strong> found for your search "<strong>{{ keywords }}</strong>".{% endtrans %}</p>
+        {{ render_zim_search(humanReadableId, pagination.items, pagination.per_page * (pagination.page - 1), 'table table-striped table-hover') }}
         {{ render_pagination(pagination, endpoint_desc, query=keywords) }}
     {% else %}
         <p>{% trans keywords=keywords %}Sorry, Nothing found for your search "<strong>{{ keywords }}</strong>".{% endtrans %}</p>

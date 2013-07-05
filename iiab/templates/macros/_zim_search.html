@@ -10,7 +10,7 @@
 {% macro render_zim_search(humanReadableId, results, offset, class='') %}
 <ol data-role="listview" data-inset="true" data-theme="d" start="{{ offset + 1 }}">
     {% for result in results %}
-    <li><a href="{{ url_for('zim_views.zim_view', humanReadableId=humanReadableId, namespace=result['namespace'], url=result['url']) }}">{{ list_to_html_multiline(result['title']) }}</a></li>
+    <li><a href="{{ url_for('zim_views.iframe_view', humanReadableId=humanReadableId, namespace=result['namespace'], url=result['url']) }}">{{ list_to_html_multiline(result['title']) }}</a></li>
     {% endfor %}
 </ol> 
 {% endmacro %}

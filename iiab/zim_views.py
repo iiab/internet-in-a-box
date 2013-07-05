@@ -27,22 +27,6 @@ def replace_paths(top_url, html):
     html = re.sub(u'(@import[ ]+)(["\']/)([A-Z\-])/', replace, html)
     return html
 
-@blueprint.route('/<humanReadableId>')
-def zim_main_page_view(humanReadableId):
-    """Returns the main page of the zim file"""
-    zimfile = load_zim_file(humanReadableId)
-    try:
-        article, mimetype, ns = zimfile.get_main_page()
-        html = mangle_article(article, mimetype, humanReadableId)
-        return Response(html, mimetype=mimetype)
-    except OSError as e:
-        html = "<html><body>"
-        html += "<p>Error accessing article.</p>"
-        html += "<p>Exception: " + str(e) + "</p>\n"
-        html += "</body></html>"
-        return Response(html)
-
-
 def mangle_article(html, mimetype, humanReadableId):
     if mimetype in ['text/html; charset=utf-8', 'stylesheet/css', 'text/html']:
         try:
@@ -57,6 +41,21 @@ def mangle_article(html, mimetype, humanReadableId):
         html = replace_paths("iiab/zim/" + humanReadableId, html)
     return html
 
+@blueprint.route('/<humanReadableId>')
+def zim_main_page_view(humanReadableId):
+    """Returns the main page of the zim file"""
+    zimfile = load_zim_file(humanReadableId)
+    try:
+        article, mimetype, ns = zimfile.get_main_page()
+        html = mangle_article(article, mimetype, humanReadableId)
+        return Response(html, mimetype=mimetype) 
+    except OSError as e:
+        html = "<html><body>"
+        html += "<p>Error accessing article.</p>"
+        html += "<p>Exception: " + str(e) + "</p>\n"
+        html += "</body></html>"
+        return Response(html)
+
 @blueprint.route('/<humanReadableId>/<namespace>/<path:url>')
 def zim_view(humanReadableId, namespace, url):
     zimfile = load_zim_file(humanReadableId)
@@ -64,21 +63,15 @@ def zim_view(humanReadableId, namespace, url):
     html = mangle_article(article, mimetype, humanReadableId)
     return Response(html, mimetype=mimetype)
 
-
 @blueprint.route('/iframe/<humanReadableId>')
 def iframe_main_page_view(humanReadableId):
     url = url_for('zim_views.zim_main_page_view', humanReadableId=humanReadableId)
-    return render_template('zim/iframe.html', url=url, humanReadableId=humanReadableId)
+    return render_template('zim/iframe.html', main_page=True, url=url, humanReadableId=humanReadableId)
 
 @blueprint.route('/iframe/<humanReadableId>/<namespace>/<path:url>')
 def iframe_view(humanReadableId, namespace, url):
     url = url_for('zim_views.zim_view', humanReadableId=humanReadableId, namespace=namespace, url=url)
-    return render_template('zim/iframe.html', url=url, humanReadableId=humanReadableId)
-
-@blueprint.route('/iframe/search/<humanReadableId>')
-def iframe_search(humanReadableId):
-    url = url_for('zim_views.search', humanReadableId=humanReadableId, **request.args)
-    return render_template('zim/iframe.html', url=url, humanReadableId=humanReadableId)
+    return render_template('zim/iframe.html', main_page=False, url=url, humanReadableId=humanReadableId)
 
 @blueprint.route('/search/<humanReadableId>')
 def search(humanReadableId):

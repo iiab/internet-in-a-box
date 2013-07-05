@@ -147,37 +147,6 @@
 </table>
 {% endmacro %}
 
-{#
-    render_zim_search_table - Format Zim Search results into a table for display
-    humanReadableId - Id of the Zim book being searched
-    results - whoosh search results (format differ from typical sqlite results)
-    offset - the index into the total result sets of the first result on this page.
-    class - css class for the table
-#}
-{% macro render_zim_search_table(humanReadableId, results, offset, class='') %}
-<table class='{{ class }}'>
-    <thead>
-        <tr>
-            <td>#</td>
-            <td>Title</td>
-            <td>Language</td>
-        </tr>
-    </thead>
-    <tbody>
-        {% for result in results %}
-        <tr>
-            <td>{{ loop.index + offset }}</td>
-            <td><a href="{{ url_for('zim_views.zim_view', humanReadableId=humanReadableId, namespace=result['namespace'], url=result['url']) }}">{{ list_to_html_multiline(result['title']) }}</a></td>
-            <td>
-                {{ list_to_html_multiline(result['language']) }}
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% endmacro %}
-
-
 {% macro render_pagination(pagination, endpoint_desc, query='') %}
     {% if pagination.pages > 1 %}
         <div class='pagination'>

@@ -14,7 +14,7 @@
             </li>
             {% for book in language['books'] %}
             <li data-theme="c">
-            <a href="{{ zim_url + '/' + book['humanReadableId'] + '/' }}" data-transition="slide" data-ajax="{{ 'true' if ajax else 'false' }}">
+	    <a href="{{ url_for('zim_views.iframe_main_page_view', humanReadableId=book['humanReadableId']) }}" data-transition="slide" data-ajax="false">
                 <h3>{{ book['title'] }}</h3>
                 {% if book.has_key('description') %}
                 <p style="white-space: normal;" class="float-left">{{ book['description'] }}</p>

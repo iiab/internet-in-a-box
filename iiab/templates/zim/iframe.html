@@ -1,33 +1,35 @@
-{% extends "base.html" %}
-{% block content %}
+{% extends "zim/base.html" %}
 
-<div data-role="page" data-theme="b" id="zim-iframe">
-    <div data-role="header">
-        <div class="ui-grid-b">
-            <div class="ui-block-a">
-                <a href="/iiab/" data-role="button" data-icon="home" data-mini="true" data-iconpos="notext" data-direction="reverse">Home</a>
-            </div>
-            <div class="ui-block-b">
-                <h1 class="ui-title">Wikipedia</h1>
-            </div>
-            <div class="ui-block-c">
-                <fieldset style="margin: 0px" data-role="controlgroup">
-                    <label for="searchinput1">
-                    </label>
-                    <form class="form-search" action="{{ url_for('zim_views.iframe_search', humanReadableId=humanReadableId) }}" method="get">
-                        <input name="q" data-mini="true" id="wikisearch" placeholder="Search" value="" type="search">
-                        <button type="submit" class="btn">Search</button> 
-                    </form>
-                </fieldset>
-            </div>
-        </div>
-    </div>
-    <div data-role="content">
-        <div class="iframe-wrap">
-            <iframe class="wiki-iframe" frameborder="0" height="100%" width="100%" src="{{ url }}">
-            </iframe>
-        </div>
-    </div>
-</div>
+{% block head %}
+  <style type='text/css'>
+      <!--
+      /* CSS for Wikipedia iframe in zim_iframe.html */
+      .iframe-wrap {
+          position: fixed;
+          top: 45px;
+          left: 0;
+          width: 100%;
+          height: 100%;
+      }
+      .wiki-iframe {
+          height: 90%;
+          width: 100%;
+      }
+      @media only screen and (min-width: 900px) {
+          .iframe-wrap {
+              width: 900px !important;
+              left: 50%;
+              margin-left: -450px;
+          }
+      }
+      -->
+   </style>
+{% endblock %}
 
+
+{% block zim_content %}
+    <div class="iframe-wrap">
+        <iframe class="wiki-iframe" frameborder="0" height="100%" width="100%" src="{{ url }}">
+        </iframe>
+    </div>
 {% endblock %}

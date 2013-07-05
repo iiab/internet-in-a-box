@@ -6,7 +6,7 @@
         <div class="ui-grid-b">
             <div class="ui-block-a">
                  <a href="/iiab/" data-role="button" data-icon="home" data-mini="true" data-inline="true" data-iconpos="notext" data-direction="reverse">Home</a>
-                 <a href="{{ url_for('wikipedia_views.wikipedia_view') }}" data-role="button" data-icon="arrow-u" data-mini="true" data-inline="true" data-iconpos="notext" data-direction="reverse">Wikipedia</a>
+                 <a href="{% if main_page %}{{ url_for('wikipedia_views.wikipedia_view') }}{% else %}{{ url_for('zim_views.iframe_main_page_view', humanReadableId=humanReadableId) }}{% endif %}" data-role="button" data-icon="arrow-u" data-mini="true" data-inline="true" data-iconpos="notext" data-direction="reverse">Wikipedia</a>
             </div>
             <div class="ui-block-b">
                 <h6 class="ui-title">Wikipedia</h6>

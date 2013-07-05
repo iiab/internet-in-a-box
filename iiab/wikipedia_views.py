@@ -60,12 +60,7 @@ def organize_books_by_language(filenames, library_file):
 
 @blueprint.route('/')
 def wikipedia_view():
-    zim_url = config().get('ZIM', 'url')
     wikipedia_zim_dir = config().get('ZIM', 'wikipedia_zim_dir')
     library_file = config().get('ZIM', 'kiwix_library_file')
     langs = organize_books_by_language(glob(os.path.join(wikipedia_zim_dir, "*.zim")), library_file)
-    ajax = False
-    if zim_url == "/iiab/zim":
-        zim_url = "/iiab/zim/iframe"
-        ajax = True
-    return render_template('wikipedia_index.html', languages=langs, zim_url=zim_url, ajax=ajax)
+    return render_template('wikipedia_index.html', languages=langs)
