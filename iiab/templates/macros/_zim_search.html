@@ -19,7 +19,7 @@
     {% if pagination.pages > 1 %}
     <div data-role="controlgroup" data-type="horizontal">
             {% if pagination.has_prev %}
-            <a href="{{ url_for(endpoint_desc.endpoint, page=pagination.page-1, q=query, **endpoint_desc.values) }}" data-role="button" data-icon="arrow-l">Previous</a>
+            <a href="{{ url_for(endpoint_desc.endpoint, page=pagination.page-1, q=query, **endpoint_desc.values) }}" data-role="button" data-icon="arrow-l" data-iconpos="notext">Previous</a>
             {% endif %}
             {% for page in pagination.iter_pages() %}
                 {% if page %}
@@ -29,7 +29,7 @@
                 {% endif %}
             {% endfor %}
             {% if pagination.has_next %}
-            <a href="{{ url_for(endpoint_desc.endpoint, page=pagination.page+1,q=query, **endpoint_desc.values) }}" data-role="button" data-icon="arrow-r" data-iconpos="right">Next</a>
+            <a href="{{ url_for(endpoint_desc.endpoint, page=pagination.page+1,q=query, **endpoint_desc.values) }}" data-role="button" data-icon="arrow-r" data-iconpos="notext">Next</a>
             {% endif %}
         </div>
     {% endif %}
