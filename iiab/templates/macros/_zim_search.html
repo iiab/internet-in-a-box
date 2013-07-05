@@ -1,0 +1,37 @@
+{% from 'macros/_misc.html' import list_to_html_multiline %}
+
+{#
+    render_zim_search_table - Format Zim Search results into a table for display
+    humanReadableId - Id of the Zim book being searched
+    results - whoosh search results (format differ from typical sqlite results)
+    offset - the index into the total result sets of the first result on this page.
+    class - css class for the table
+#}
+{% macro render_zim_search(humanReadableId, results, offset, class='') %}
+<ol data-role="listview" data-inset="true" data-theme="d" start="{{ offset + 1 }}">
+    {% for result in results %}
+    <li><a href="{{ url_for('zim_views.zim_view', humanReadableId=humanReadableId, namespace=result['namespace'], url=result['url']) }}">{{ list_to_html_multiline(result['title']) }}</a></li>
+    {% endfor %}
+</ol> 
+{% endmacro %}
+
+{% macro render_pagination(pagination, endpoint_desc, query='') %}
+    {% if pagination.pages > 1 %}
+    <div data-role="controlgroup" data-type="horizontal">
+            {% if pagination.has_prev %}
+            <a href="{{ url_for(endpoint_desc.endpoint, page=pagination.page-1, q=query, **endpoint_desc.values) }}" data-role="button" data-icon="arrow-l">Previous</a>
+            {% endif %}
+            {% for page in pagination.iter_pages() %}
+                {% if page %}
+                <a href='{{ url_for(endpoint_desc.endpoint, page=page, q=query, **endpoint_desc.values) }}' class='{% if page == pagination.page %}ui-btn-active{% endif %}' data-role="button">{{ page }}</a>
+                {% else %}
+                <a href='#' data-role="button">...</a>
+                {% endif %}
+            {% endfor %}
+            {% if pagination.has_next %}
+            <a href="{{ url_for(endpoint_desc.endpoint, page=pagination.page+1,q=query, **endpoint_desc.values) }}" data-role="button" data-icon="arrow-r" data-iconpos="right">Next</a>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endmacro %}
+

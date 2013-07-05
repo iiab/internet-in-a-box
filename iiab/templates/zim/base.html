@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div data-role="page" data-theme="b" id="zim-iframe">
+    <div data-role="header">
+        <div class="ui-grid-b">
+            <div class="ui-block-a">
+                 <a href="/iiab/" data-role="button" data-icon="home" data-mini="true" data-inline="true" data-iconpos="notext" data-direction="reverse">Home</a>
+                 <a href="{{ url_for('wikipedia_views.wikipedia_view') }}" data-role="button" data-icon="arrow-u" data-mini="true" data-inline="true" data-iconpos="notext" data-direction="reverse">Wikipedia</a>
+            </div>
+            <div class="ui-block-b">
+                <h6 class="ui-title">Wikipedia</h6>
+            </div>
+            <div class="ui-block-c">
+                <fieldset style="margin: 0px" data-role="controlgroup">
+                    <label for="searchinput1">
+                    </label>
+                    <form class="form-search" action="{{ url_for('zim_views.search', humanReadableId=humanReadableId) }}" method="get">
+                        <input name="q" data-mini="true" id="wikisearch" placeholder="Search" value="" type="search">
+                        <!-- <button type="submit" class="btn">Search</button> -->
+                    </form>
+                </fieldset>
+            </div>
+        </div>
+    </div>
+    <div data-role="content">
+    {% block zim_content %}
+    {% endblock %}
+    </div>
+</div>
+
+{% endblock %}
