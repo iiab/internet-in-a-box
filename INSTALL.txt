@@ -20,10 +20,10 @@ Quick Start
 1. Install the Python package manager, pip, and the lzma library:
 
     Ubuntu/Debian:
-    sudo apt-get install python-pip python-lzma
+    sudo apt-get install python-pip gcc python-dev liblzma-dev
 
     Fedora:
-    sudo yum install python-pip pyliblzma
+    sudo yum install python-pip gcc python-devel xz-devel
 
 
 2. Install Internet-in-a-Box and its dependencies (on Fedora, use 'python-pip'
@@ -57,6 +57,7 @@ cat <<EOF >/etc/yum.repos.d/iiab.repo
 name=Internet-in-a-Box
 baseurl=http://downloads.internet-in-a-box.org/fedora/18
 enabled=1
+gpgcheck=0
 EOF
 
 2. Install Internet-in-a-Box from Yum
@@ -75,10 +76,10 @@ Recommended for developers.
 1. Install pip
 
     Ubuntu/Debian:
-    sudo apt-get install python-pip python-lzma git
+    sudo apt-get install python-pip gcc python-dev liblzma-dev git
 
     Fedora:
-    sudo yum install python-pip pyliblzma git
+    sudo yum install python-pip python-devel gcc git xz-devel
 
 
 2. Clone Internet-in-a-Box from github

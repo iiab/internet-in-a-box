@@ -19,7 +19,7 @@ setup(
         'Flask-AutoIndex',
         'Flask-SQLAlchemy',
         'whoosh',
-        'pyliblzma'
+        'backports.lzma'
     ]
     #data_files=[("", ["LICENSE.txt", "README.md", "INSTALL.txt"])]
 )
