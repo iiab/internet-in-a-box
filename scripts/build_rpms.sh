@@ -16,7 +16,7 @@ if [ ! -e backports.lzma-0.0.2.tar.gz ]; then
 fi
 
 tar xzf backports.lzma-0.0.2.tar.gz
-(cd backports-lzma-0.0.2; python setup.py bdist_rpm)
+(cd backports.lzma-0.0.2; python setup.py bdist_rpm)
 
 if [ ! -e Whoosh-2.4.1.tar.gz ]; then
     echo "Downloading Whoosh..."
