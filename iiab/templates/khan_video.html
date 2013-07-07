@@ -1,11 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+
 <div data-role="page" data-theme="b" id="khan-video">
     <div data-role="header">
         <a href="/iiab/" data-icon="home" data-iconpos="notext" data-direction="reverse">Home</a>
-        <p>
+        <h1>
             {% for level in breadcrumbs %}
-            &gt; {{ level[1] }}
+            {% if not loop.first %}&gt;{% endif %} {{ level[1] }}
             {% endfor %}
-        </p>
+        </h1>
     </div>
     <div data-role="content">
 
@@ -22,3 +25,5 @@
         </script -->
     </div>
 </div>
+
+{% endblock %}
