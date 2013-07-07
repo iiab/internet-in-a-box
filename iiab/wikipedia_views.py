@@ -12,13 +12,16 @@ from kiwix import Library
 blueprint = Blueprint('wikipedia_views', __name__,
                       template_folder='templates')
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 def organize_books_by_language(filenames, library_file):
+    if not os.path.exists(library_file):
+        logger.error("Can not find Kiwix library file: %s" % library_file)
+
     kiwix_lib = Library(library_file)
 
     languages = {} 
-    print "Entering"
+
     for zim_fn in filenames:
         zim_obj = ZimFile(zim_fn)
         book_data = zim_obj.metadata()
@@ -62,5 +65,10 @@ def organize_books_by_language(filenames, library_file):
 def wikipedia_view():
     wikipedia_zim_dir = config().get('ZIM', 'wikipedia_zim_dir')
     library_file = config().get('ZIM', 'kiwix_library_file')
+    old_library_file = config().get('ZIM', 'old_kiwix_library_file')
+    # Old location before being moved, for backwards compatibility
+    if not os.path.exists(library_file):
+        logger.info("Kiwix library file not found at: %s, using old location: %s" % (library_file, old_library_file))
+        library_file = old_library_file
     langs = organize_books_by_language(glob(os.path.join(wikipedia_zim_dir, "*.zim")), library_file)
     return render_template('wikipedia_index.html', languages=langs)
