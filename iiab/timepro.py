@@ -3,9 +3,6 @@
 
 import logging
 log = logging.getLogger(__name__)
-#log.addHandler(logging.NullHandler())
-log.addHandler(logging.StreamHandler())
-log.setLevel(logging.DEBUG)
 
 from time import time
 from functools import wraps

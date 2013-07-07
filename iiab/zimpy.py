@@ -18,7 +18,7 @@ else:
 
 from StringIO import StringIO
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 HEADER_FORMAT = [
     ('I', 'magicNumber'),
