@@ -15,7 +15,17 @@ if [ ! -e backports.lzma-0.0.2.tar.gz ]; then
     wget https://pypi.python.org/packages/source/b/backports.lzma/backports.lzma-0.0.2.tar.gz
 fi
 
+if [ -d backports.lzma-0.0.2 ]; then
+    rm -rf backports.lzma-0.0.2
+fi
 tar xzf backports.lzma-0.0.2.tar.gz
+
+# We need to rename the namespace from backports to backportslzma
+# because the python-backports-ssl_match_hostname RPM already creates
+# a conflicting backports namespace
+mv backports.lzma-0.0.2/backports backports.lzma-0.0.2/backportslzma
+patch -p1 backports.lzma-0.0.2/setup.py <internet-in-a-box/patches/backports.lzma/backports.lzma-0.0.2_setup.py.diff
+
 (cd backports.lzma-0.0.2; python setup.py bdist_rpm)
 
 if [ ! -e Whoosh-2.4.1.tar.gz ]; then
