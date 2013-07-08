@@ -14,7 +14,13 @@ import sys
 if sys.version_info[0:3] >= (3,3,0):
     import lzma
 else:
-    from backports import lzma
+    try:
+        from backports import lzma
+    except ImportError as e:
+        # On Fedora/OLPC we have a namespace conflict
+        # with another package, so we had to rename the
+        # namespace until we get it resolved upstream
+        from backportslzma import lzma
 
 from StringIO import StringIO
 
