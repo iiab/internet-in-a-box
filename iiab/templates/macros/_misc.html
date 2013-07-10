@@ -149,6 +149,19 @@
 </table>
 {% endmacro %}
 
+{% macro render_book_htmlz_or_epub(htmlz_url, epub_url) %}
+    {% if htmlz_url != None %}
+    <div>
+        <a href="{{ htmlz_url }}">Read</a>
+    </div>
+    {% endif %}
+    {% if epub_url != None %}
+    <div>
+        <a href="{{ epub_url }}">Download (EPub)</a>
+    </div>
+    {% endif %}
+{% endmacro %}
+
 {% macro render_pagination(pagination, endpoint_desc, query='') %}
     {% if pagination.pages > 1 %}
         <div class='pagination'>

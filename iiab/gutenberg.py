@@ -3,7 +3,7 @@
 import os
 import re
 
-from flask import (Blueprint, render_template, current_app, request, Response,
+from flask import (Blueprint, render_template, request, Response,
                    flash, url_for, redirect, safe_join, make_response,
                    send_file, send_from_directory)
 from flaskext.babel import gettext as _
@@ -14,9 +14,11 @@ from contextlib import closing
 from .extensions import db
 from gutenberg_models import (GutenbergBook, GutenbergFile,
                               GutenbergCreator, gutenberg_books_creator_map)
+from gutenberg_content import find_htmlz, find_epub
 from config import config
 
 from whoosh_search import paginated_search
+from whoosh.index import open_dir
 from .endpoint_description import EndPointDescription
 
 DEFAULT_RESULTS_PER_PAGE = 20
@@ -24,6 +26,7 @@ DEFAULT_SEARCH_COLUMNS = ['title', 'creator', 'contributor']  # names correspond
 
 gutenberg = Blueprint('gutenberg', __name__, url_prefix='/books')
 etext_regex = re.compile(r'^etext(\d+)$')
+
 
 @gutenberg.route('/')
 def index():
@@ -63,6 +66,7 @@ def author_to_query(author):
     author = re.sub(r'\[[^\]]+\]', '', author).strip()
     return u'creator:"{0}" OR contributor:"{0}"'.format(author)
 
+
 @gutenberg.route('/titles')
 def by_title():
     page = int(request.args.get('page', 1))
@@ -100,6 +104,10 @@ def mirror_exists(file_rec):
     return os.path.exists(path)
 
 
+def textId2number(textId):
+    return int(textId[5:])
+
+
 @gutenberg.route('/text/<textId>/details')
 def text(textId):
     # Profiling results showing occasional lags.
@@ -113,6 +121,16 @@ def text(textId):
             print "WARNING: Gutenberg file " + mirror_path(x.file) + " not found"
     record.gutenberg_files = filter(mirror_exists, record.gutenberg_files)
 
+    pgid = textId2number(textId)
+    if find_htmlz(pgid) is not None:
+        htmlz_url = url_for('gutenberg_content_views.htmlz_index', pgid=pgid)
+    else:
+        htmlz_url = None
+    if find_epub(pgid) is not None:
+        epub_url =  url_for('gutenberg_content_views.epub_ext', pgid=pgid)
+    else:
+        epub_url = None
+
     # fields format is list of tuples:
     # (Table row heading for display, gutenberg_books col name,
     #  sub-table col name if applicable)
@@ -124,7 +142,8 @@ def text(textId):
         (_('Category'), 'gutenberg_categories', 'category'),
         (_('Language'), 'gutenberg_languages', 'language')
     ]
-    return render_template('gutenberg/book_details.html', record=record, fields=fields)
+    return render_template('gutenberg/book_details.html', record=record,
+                           fields=fields, epub_url=epub_url, htmlz_url=htmlz_url)
 
 
 @gutenberg.route('/text/<textId>/<int:textIndex>')

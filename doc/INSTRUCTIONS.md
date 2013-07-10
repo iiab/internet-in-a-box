@@ -375,14 +375,19 @@ Installation of the Internet-in-a-Box server on an XO-4 running OLPC OS 13.1
     scripts/startup-xo.sh
 
 
-BUILDING FEDORA RPMS
---------------------
+BUILDING FEDORA RPMS AND PyPi
+-----------------------------
 
 Tested on Fedora 18.
 
     sudo yum install git wget rsync python-pip python-devel gcc xz-devel
     git clone https://github.com/braddockcg/internet-in-a-box
     ./internet-in-a-box/scripts/build_rpms.sh
+
+Upload an update to PyPi
+
+    cd internet-in-a-box
+    python setup.py sdist upload
 
 
 ----

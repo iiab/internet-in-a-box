@@ -1,8 +1,10 @@
 {#
 :param record: book record
 :param fields: list of tuples (header_name, record_key)
+:param epub_url: url to epub format version of book, or None
+:param htmlz_url: url to htmlz format version of book, or None
 #}
-{% from 'macros/_misc.html' import render_book_details, render_book_files %}
+{% from 'macros/_misc.html' import render_book_details, render_book_files, render_book_htmlz_or_epub %}
 
 {% extends 'layouts/base_navsearch.html' %}
 
@@ -11,4 +13,5 @@
 {% block body %}
     {{ render_book_details(record, fields, 'table') }}
     {{ render_book_files(record, fields, 'table') }}
+    {{ render_book_htmlz_or_epub(htmlz_url, epub_url) }}
 {% endblock %}
