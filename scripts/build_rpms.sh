@@ -1,6 +1,10 @@
 #!/bin/bash
 # Create RPMs for Internet-in-a-box
-# sudo yum install fedora-packager
+# sudo yum install fedora-packager wget rsync
+
+# OLPC OS sets PYTHONOPTIMIZE, which generates 
+# .pyo instead of the .pyc files bdist_rpm expects.
+unset PYTHONOPTIMIZE
 
 if [ ! -d internet-in-a-box/.git ]; then
     echo "Must be run from parent of internet-in-a-box clone"
