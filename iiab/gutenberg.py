@@ -44,7 +44,10 @@ def search():
     else:
         flash(_('Please input keyword(s)'), 'error')
     #print pagination.items
-    return render_template('gutenberg/search.html', pagination=pagination, keywords=query, suggestion=suggestion, fn_author_to_query=author_to_query, endpoint_desc=EndPointDescription('gutenberg.search', None))
+    return render_template('gutenberg/search.html', pagination=pagination,
+                           keywords=query, suggestion=suggestion, fn_author_to_query=author_to_query,
+                           endpoint_desc=EndPointDescription('gutenberg.search', None),
+                           files_exist=files_exist)
 
 
 @gutenberg.route('/mirror/<path:filename>')
@@ -108,6 +111,24 @@ def textId2number(textId):
     return int(textId[5:])
 
 
+def files_exist(textId, record=None):
+    """Returns true if any files exist for this e-text
+    in the local dataset"""
+    if record is None:
+        record = GutenbergBook.query.filter_by(textId=textId).first()
+    if record is None:
+        return False
+    for x in record.gutenberg_files:
+        if mirror_exists(x):
+            return True
+    pgid = textId2number(textId)
+    if find_htmlz(pgid) is not None:
+        return True
+    if find_epub(pgid) is not None:
+        return True
+    return False
+
+
 @gutenberg.route('/text/<textId>/details')
 def text(textId):
     # Profiling results showing occasional lags.
@@ -127,7 +148,7 @@ def text(textId):
     else:
         htmlz_url = None
     if find_epub(pgid) is not None:
-        epub_url =  url_for('gutenberg_content_views.epub_ext', pgid=pgid)
+        epub_url = url_for('gutenberg_content_views.epub_ext', pgid=pgid)
     else:
         epub_url = None
 

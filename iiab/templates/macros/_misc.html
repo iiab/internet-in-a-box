@@ -21,7 +21,7 @@
     fn_author_to_query - function that accepts an author string an returns a query value that searches for the author
     class - css class for the table
 #}
-{% macro render_book_search_table(results, offset, fn_author_to_query, class='') %}
+{% macro render_book_search_table(results, offset, fn_author_to_query, class='', files_exist=None) %}
 <table class='{{ class }}'>
     <thead>
         <tr>
@@ -35,7 +35,12 @@
         {% for result in results %}
         <tr>
             <td>{{ loop.index + offset }}</td>
-            <td><a href="{{ url_for('.text', textId=result['textId']) }}">{{ list_to_html_multiline(result['title']) }}</a></td>
+            <td>
+                <a href="{{ url_for('.text', textId=result['textId']) }}">{{ list_to_html_multiline(result['title']) }}</a>
+                {% if files_exist != None and not files_exist(result['textId']) -%}
+                <em>(Not Available)</em>
+                {% endif -%}
+            </td>
             <td>
                 {%- for k,v in result['creator'] -%}
                 <a href="{{ url_for('.search', q=fn_author_to_query(v)) }}">{{ v }}</a><br/>

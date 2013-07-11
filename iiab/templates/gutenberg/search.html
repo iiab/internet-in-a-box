@@ -4,6 +4,7 @@
     :param suggestions: string or list of alterate spelling suggestions
     :param fn_author_to_query: function that accepts an author string and returns a query string to search for the author
     :param endpoint_desc: EndPointDescription for use by pagination
+    :param files_exist: function to check if etext files exist
 #}
 {% from 'macros/_misc.html' import render_pagination, render_book_search_table %}
 
@@ -18,7 +19,7 @@
 {% block body %}
     {% if pagination and pagination.pages > 0 %}
         <p>{% trans total=pagination.total, keywords=keywords %}<strong>{{ total }}</strong> found for your search "<strong>{{ keywords }}</strong>".{% endtrans %}</p>
-        {{ render_book_search_table(pagination.items, pagination.per_page * (pagination.page - 1), fn_author_to_query, 'table table-striped table-hover') }}
+        {{ render_book_search_table(pagination.items, pagination.per_page * (pagination.page - 1), fn_author_to_query, 'table table-striped table-hover', files_exist) }}
         {{ render_pagination(pagination, endpoint_desc, query=keywords) }}
     {% else %}
         <p>{% trans keywords=keywords %}Sorry, Nothing found for your search "<strong>{{ keywords }}</strong>".{% endtrans %}</p>
