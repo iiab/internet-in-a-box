@@ -145,7 +145,11 @@ def main(argv):
                 # It also converts to unicode in the process
                 # Only do the stripping on HTML article types
                 if "html" in zim_obj.mimeTypeList[article_info['mimetype']]:
-                    content = html2text(content)
+                    try:
+                        content = html2text(content)
+                    except ValueError:
+                        logger.error("Failed converting html to text at index: %d, skipping article" % idx)
+                        content = None
             else:
                 content = None
 
