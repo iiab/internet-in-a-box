@@ -1,8 +1,20 @@
+import os
+
 from whoosh.index import open_dir
 from whoosh.qparser import MultifieldParser
 
 from .whoosh_multi_field_spelling_correction import MultiFieldQueryCorrector
 import pagination_helper
+
+def index_directory_path(base_path, zim_name):
+    """Returns the directory where a ZIM file's index should be located, given
+    a base path where all the index files are located as well as a filename
+    or partial filename of the zim file.
+    """
+
+    index_dir = os.path.join(base_path, os.path.splitext(os.path.basename(zim_name))[0])
+    return index_dir
+
 
 def get_query_corrections(searcher, query, qstring):
     """

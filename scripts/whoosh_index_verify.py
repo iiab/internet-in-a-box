@@ -8,6 +8,7 @@ import logging
 from whoosh.index import open_dir
 
 from iiab.zimpy import ZimFile
+from iiab.whoosh_search import index_directory_path
 
 def main(argv):
     parser =  argparse.ArgumentParser(description="Checks that Whoosh indexes have the same number of items as their corresponding ZIM file")
@@ -30,7 +31,7 @@ def main(argv):
     logging.basicConfig(level=level, stream=sys.stdout, format="%(message)s")
 
     for zim_fn in args.zim_files:
-        index_dir = os.path.join(args.index_dir, os.path.splitext(os.path.basename(zim_fn))[0])
+        index_dir = index_directory_path(args.index_dir, zim_fn)
 
         if not os.path.exists(index_dir):
             logging.info("Index does not exist for %s" % zim_fn)
