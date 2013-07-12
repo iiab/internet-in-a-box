@@ -130,30 +130,34 @@ def index_zim_file(zim_filename, output_dir=".", index_contents=True, mime_types
 
     # Set up a function to be called when a signal is thrown to commit
     # what was indexed so far in the case of kills
-    def finish():
+    def finish(*args):
         logger.info("Commiting index")
         zim_obj.close()
         writer.commit()
+        sys.exit(1)
 
     signal.signal(signal.SIGTERM, finish)
 
     pbar = ProgressBar(widgets=[Percentage(), Bar()], maxval=zim_obj.header['articleCount']).start()
 
-    for idx, article_info in enumerate(article_info_as_unicode(zim_obj.articles())):
-        # Skip articles of undesired mime types
-        if article_info['mimetype'] not in mime_type_indexes:
-            continue
+    try:
+        for idx, article_info in enumerate(article_info_as_unicode(zim_obj.articles())):
+            # Skip articles of undesired mime types
+            if article_info['mimetype'] not in mime_type_indexes:
+                continue
 
-        if index_contents:
-            content = content_as_text(zim_obj, article_info, idx)
-        else:
-            content = None
+            if index_contents:
+                content = content_as_text(zim_obj, article_info, idx)
+            else:
+                content = None
 
-        writer.add_document(content=content, **article_info)
+            writer.add_document(content=content, **article_info)
 
-        pbar.update(idx+1)
+            pbar.update(idx+1)
 
-    pbar.finish()
+        pbar.finish()
+    except KeyboardInterrupt:
+        logger.info("Indexing interrupted, will try and commit")
 
     finish() 
 
