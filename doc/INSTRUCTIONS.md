@@ -1,4 +1,4 @@
-Internet In A Box
+﻿Internet In A Box
 =================
 
 2013
@@ -10,8 +10,7 @@ OpenStreetMap
 We are installing on an Ubuntu 12.04 quad-core 3GHz machine with
 16 GB RAM and a 500GB SSD.  Planet import took 91 hours.
 
-You must have a beefy machine.  Note that on an quad-core 8GB RAM
-2.5GHz machine the planet import time was TWO WEEKS!
+You must have a beefy machine.  Note that on an 2.5GHz quad-core 8GB RAM machine the planet import time was TWO WEEKS!
 
 More detailed instructions are available from the switch2osm.org project.  This is generally what I followed:
 http://switch2osm.org/serving-tiles/building-a-tile-server-from-packages/
@@ -31,7 +30,6 @@ The latest planet.osm.pbf.torrent can be downloaded via bittorrent from:
 http://osm-torrent.torres.voyager.hr/files/planet-latest.osm.pbf.torrent
 
 planet.osm.pbf is about 20 GB in size.
-
 
 
 2. Install OSM Software
@@ -238,6 +236,14 @@ Rsync to Device
     cd /knowledge
     time rsync --delete -avrP rsync://orlop/knowledge/modules/ modules
 
+Rsync Server
+------------
+
+    apt-get install rsyncd
+    ln -s /knowledge/internet-in-a-box/conf/rsyncd.conf /etc/rsyncd.conf
+    Edit /etc/default/rsync and set RSYNC_ENABLE=true
+    /etc/init.d/rsyncd start
+
 
 Web Service
 -----------
@@ -259,13 +265,7 @@ Launch kiwix
     ../../sys/bin-arm/kiwix-serve --library library.xml --port 25001
 
 
-Rsync Server
-------------
 
-    apt-get install rsyncd
-    ln -s /knowledge/internet-in-a-box/conf/rsyncd.conf /etc/rsyncd.conf
-    Edit /etc/default/rsync and set RSYNC_ENABLE=true
-    /etc/init.d/rsyncd start
 
 
 Installing on the GoFlex Home

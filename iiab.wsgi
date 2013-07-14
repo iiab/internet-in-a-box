@@ -13,7 +13,7 @@ if path_to_virtualenv is not None:
     execfile(activate_this, dict(__file__=activate_this))
 
 # Add iiab directory if we are running from the git sources
-parent_dir = os.path.dirname(os.path.dirname(__file__))
+parent_dir = os.path.dirname(__file__)
 sys.path.append(parent_dir)
 
 import iiab

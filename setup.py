@@ -1,8 +1,9 @@
 from setuptools import setup
+import iiab
 
 setup(
     name='Internet-in-a-Box',
-    version='0.4.2',
+    version=iiab.__version__,
     author="Braddock Gaskill",
     author_email="braddock@braddock.com",
     license="2-clause BSD license",
