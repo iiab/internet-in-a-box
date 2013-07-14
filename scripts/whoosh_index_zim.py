@@ -18,7 +18,7 @@ from iiab.whoosh_search import index_directory_path
 
 # Install progress bar package as it is really needed
 # to help understand where the processing is
-from progressbar import ProgressBar, Percentage, Bar
+from progressbar import ProgressBar, Percentage, Bar, ETA
 
 # For rendering HTML to text for indexing
 from html2text import html2text
@@ -95,7 +95,23 @@ def get_schema():
                     revision=NUMERIC,)
     return schema
 
-def index_zim_file(zim_filename, output_dir=".", index_contents=True, mime_types=DEFAULT_MIME_TYPES, memory_limit=DEFAULT_MEMORY_LIMIT, processors=1, **kwargs):
+class InProgress(object):
+    """Stores articles being added to the index in case the writer stage is interrupted."""
+    written = True
+    content = None
+    article_info = {}
+
+    def start(self, content, article_info):
+        self.written = False
+        self.content = content
+        self.article_info
+
+    def finish(self):
+        self.written = True
+        self.content = None
+        self.article_info = {}
+
+def index_zim_file(zim_filename, output_dir=".", index_contents=True, mime_types=DEFAULT_MIME_TYPES, memory_limit=DEFAULT_MEMORY_LIMIT, processors=1, optimize=False, **kwargs):
     zim_obj = ZimFile(zim_filename)
 
     logger.info("Indexing: %s" % zim_filename)
@@ -122,28 +138,44 @@ def index_zim_file(zim_filename, output_dir=".", index_contents=True, mime_types
     if index.exists_in(index_dir):
         logger.debug("Loading existing index")
         ix = index.open_dir(index_dir)
+        searcher = ix.searcher()
     else:
         logger.debug("Creating new index")
-        ix = index.create_in(index_dir, schema)
+        ix = index.create_in(index_dir, get_schema())
+        searcher = None
 
     writer = ix.writer(limitmb=memory_limit, proc=processors)
+
+    # Store the current document being updated here
+    inprogress = InProgress()
 
     # Set up a function to be called when a signal is thrown to commit
     # what was indexed so far in the case of kills
     def finish(*args):
+        # Add last document that was interrupted
+        if not inprogress.written:
+            logger.info("Rewriting interrupted article")
+            writer.add_document(content=inprogress.content, **inprogress.article_info)
         logger.info("Commiting index")
         zim_obj.close()
-        writer.commit()
+        if searcher != None:
+            searcher.close()
+        writer.commit(optimize=optimize)
         sys.exit(1)
 
     signal.signal(signal.SIGTERM, finish)
 
-    pbar = ProgressBar(widgets=[Percentage(), Bar()], maxval=zim_obj.header['articleCount']).start()
+    pbar = ProgressBar(widgets=[Percentage(), Bar(), ETA()], maxval=zim_obj.header['articleCount']).start()
 
     try:
         for idx, article_info in enumerate(article_info_as_unicode(zim_obj.articles())):
+            pbar.update(idx)
+
             # Skip articles of undesired mime types
+            # and those that have already been indexed
             if article_info['mimetype'] not in mime_type_indexes:
+                continue
+            elif searcher != None and searcher.document(url=article_info['url']) != None:
                 continue
 
             if index_contents:
@@ -151,12 +183,20 @@ def index_zim_file(zim_filename, output_dir=".", index_contents=True, mime_types
             else:
                 content = None
 
+            # The inprogress object stores what is being
+            # written by the writer in case it gets interrupted
+            # if this article is not rewritten by finish()
+            # then the index would become corrupted with
+            # a mismatch in the number of articles
+            inprogress.start(content, article_info)
             writer.add_document(content=content, **article_info)
-
-            pbar.update(idx+1)
+            inprogress.finish()
 
         pbar.finish()
     except KeyboardInterrupt:
+        # Run add document again, so if interrupt happened
+        # during this call the index will not be corrupted
+        # by partially written data
         logger.info("Indexing interrupted, will try and commit")
 
     finish() 
@@ -175,6 +215,9 @@ def main(argv):
     parser.add_argument("--no-contents", dest="index_contents", action="store_false",
                         default=True,
                         help="Turn of indexing of article contents")
+    parser.add_argument("--optimize", dest="optimize", action="store_true",
+                        default=False,
+                        help="Optimize index on commit, only necessary if multiple index segments exist already")
     parser.add_argument("--memory-limit", dest="memory_limit", action="store",
                         default=DEFAULT_MEMORY_LIMIT, type=int,
                         help="Set maximum memory in Mb to consume by writer")
