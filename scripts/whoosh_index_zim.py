@@ -74,7 +74,7 @@ def content_as_text(zim_obj, article_info, index):
         try:
             content = html2text(content)
         except ValueError:
-            logger.error("Failed converting html to text from: %s at index: %d, skipping article" % (os.path.basename(zim_file), idx))
+            logger.error("Failed converting html to text from: %s at index: %d, skipping article" % (os.path.basename(zim_obj.filename), idx))
             content = None
 
     return content
