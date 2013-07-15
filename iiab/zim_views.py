@@ -3,7 +3,7 @@ import os
 import re
 
 from flask import Blueprint, Response, render_template, request, flash, url_for
-from flaskext.babel import gettext 
+from flaskext.babel import gettext as _
 
 from zimpy import ZimFile
 from config import config
@@ -51,8 +51,8 @@ def zim_main_page_view(humanReadableId):
         return Response(html, mimetype=mimetype) 
     except OSError as e:
         html = "<html><body>"
-        html += "<p>Error accessing article.</p>"
-        html += "<p>Exception: " + str(e) + "</p>\n"
+        html += "<p>" + _('Error accessing article.') + "</p>"
+        html += "<p>" + _('Exception:') + " " + str(e) + "</p>\n"
         html += "</body></html>"
         return Response(html)
 
@@ -83,5 +83,5 @@ def search(humanReadableId):
         page = int(request.args.get('page', 1))
         (pagination, suggestion) = paginated_search(index_dir, ["title", "content"], query, page)
     else:
-        flash(gettext('Please input keyword(s)'), 'error')
+        flash(_('Please input keyword(s)'), 'error')
     return render_template('zim/search.html', humanReadableId=humanReadableId, pagination=pagination, suggestion=suggestion, keywords=query, endpoint_desc=EndPointDescription('zim_views.search', {'humanReadableId':humanReadableId}))
