@@ -144,7 +144,7 @@ def index_zim_file(zim_filename, output_dir=".", index_contents=True, mime_types
         ix = index.create_in(index_dir, get_schema())
         searcher = None
 
-    writer = ix.writer(limitmb=memory_limit, proc=processors)
+    writer = ix.writer(limitmb=memory_limit, procs=processors)
 
     # Store the current document being updated here
     inprogress = InProgress()
