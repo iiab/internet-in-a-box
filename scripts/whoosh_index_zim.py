@@ -31,24 +31,6 @@ DEFAULT_MEMORY_LIMIT = 256
 # Strip these tags that contain text between them that should not be indexed
 STRIP_TEXT_TAGS = ["script"]
 
-def remove_html(text):
-    soup = BeautifulSoup(text)
-
-    body_tag = soup.find("body")
-
-    # No body in contents of article
-    if body_tag == None:
-        return u''
-
-    # Remove script tags since they contain "text"
-    for strip_tag_name in STRIP_TEXT_TAGS:
-        tag_find = body_tag.findAll(STRIP_TEXT_TAGS)
-        if tag_find != None:
-            for script_tag in tag_find:
-                script_tag.replaceWith("")
-
-    return body_tag.findAll(text=True)
-
 def article_info_as_unicode(articles):
     for article_info in articles:
         # Make any strings into unicode objects
@@ -60,7 +42,7 @@ def article_info_as_unicode(articles):
 def content_as_text(zim_obj, article_info, index):
     "Return the contents of an article at a given index from the ZIM file as text"
 
-    raw_content = zim_obj.get_article_by_index(index)[0]
+    raw_content = zim_obj.get_article_by_index(index)[0].strip()
 
     try:
         content = raw_content.decode("utf-8")
@@ -72,7 +54,8 @@ def content_as_text(zim_obj, article_info, index):
     # Only do the stripping on HTML article types
     if "html" in zim_obj.mimeTypeList[article_info['mimetype']]:
         try:
-            content = html2text(content)
+            # Strip out empty spaces once more after HTML conversion
+            content = html2text(content).strip()
         except ValueError:
             logger.error("Failed converting html to text from: %s at index: %d, skipping article" % (os.path.basename(zim_obj.filename), idx))
             content = None
@@ -198,6 +181,13 @@ def index_zim_file(zim_filename, output_dir=".", index_contents=True, mime_types
         # during this call the index will not be corrupted
         # by partially written data
         logger.info("Indexing interrupted, will try and commit")
+    except Exception as exc:
+        # Run commit then re-raise exception
+        logger.error("Encountered an unexpected exception:")
+        logger.error("%s" % exc)
+        logger.error("Will try and commit work so far.")
+        finish()
+        raise 
 
     finish() 
 
