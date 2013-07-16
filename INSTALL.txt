@@ -160,12 +160,11 @@ and mod_sendfile
 
     Debian/Ubuntu:
     apt-get install libapache2-mod-wsgi libapache2-mod-xsendfile
+    # Enable WSGI and X-SendFile modules
+    a2enmod wsgi xsendfile
 
     Fedora/OLPC:
     yum install mod_wsgi mod_xsendfile
-
-    # Enable WSGI and X-SendFile modules
-    a2enmod wsgi xsendfile
 
 
 2. Copy the iiab.wsgi script to /var/www (this assumes /var/www is your
@@ -178,28 +177,26 @@ document root)
 
 You must turn on XSendFile and add a WSGI script alias to the iiab.wsgi script.
 
-Here is an example of a minimal site configuration which could be used by
-itself by pasting it into a file in /etc/apache2/sites-enabled/ (and disabling
-your default site).
+You must set up an alias for static files from /iiabstatic to the installation
+directory of IIAB.  This path will vary depending on your configuration.
 
-    XSendFile on
-    XSendFilePath /
+You need to find the iiabstatic directory name, run:
+ipython -c 'import iiab; import os; os.path.dirname(iiab.__file__) + "/static"'
 
-    <VirtualHost *>
-        WSGIScriptAlias /iiab /var/www/iiab.wsgi
-
-        <Directory /var/www/>
-            Order deny,allow
-            Allow from all
-        </Directory>
-    </VirtualHost>
-
-Under Fedora, adding the following three lines to your
-/etc/httpd/conf/httpd.conf file will work:
+You should create a new file at /etc/httpd/conf.d/iiab.conf (Fedora/OLPC)
+or /etc/apache2/conf.d/iiab.conf (Ubuntu/Debian) containing the following:
 
 XSendFile on
 XSendFilePath /
 WSGIScriptAlias /iiab /var/www/iiab.wsgi
+Alias /iiabstatic /usr/lib/python2.7/dist-packages/iiab/static
+
+Where /usr/lib/python2.7/dist-packages/iiab/static should be replaced
+with the iiabstatic directory from above.
+
+Note, if you have an exsting Apache setup you will probably want to
+configure these aliases in the context of a VirtualHost instead of globally
+as shown.
 
 
 4. Restart Apache
