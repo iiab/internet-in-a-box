@@ -28,9 +28,6 @@ logger = logging.getLogger()
 DEFAULT_MIME_TYPES = ["text/html", "text/plain"]
 DEFAULT_MEMORY_LIMIT = 256
 
-# Strip these tags that contain text between them that should not be indexed
-STRIP_TEXT_TAGS = ["script"]
-
 def article_info_as_unicode(articles):
     for article_info in articles:
         # Make any strings into unicode objects
@@ -42,7 +39,7 @@ def article_info_as_unicode(articles):
 def content_as_text(zim_obj, article_info, index):
     "Return the contents of an article at a given index from the ZIM file as text"
 
-    raw_content = zim_obj.get_article_by_index(index)[0].strip()
+    raw_content = zim_obj.get_article_by_index(index)[0]
 
     try:
         content = raw_content.decode("utf-8")
@@ -54,10 +51,9 @@ def content_as_text(zim_obj, article_info, index):
     # Only do the stripping on HTML article types
     if "html" in zim_obj.mimeTypeList[article_info['mimetype']]:
         try:
-            # Strip out empty spaces once more after HTML conversion
-            content = html2text(content).strip()
+            content = html2text(content)
         except ValueError:
-            logger.error("Failed converting html to text from: %s at index: %d, skipping article" % (os.path.basename(zim_obj.filename), idx))
+            logger.error("Failed converting html to text from: %s at index: %d, skipping article" % (os.path.basename(zim_obj.filename), index))
             content = None
 
     return content
@@ -163,6 +159,10 @@ def index_zim_file(zim_filename, output_dir=".", index_contents=True, mime_types
 
             if index_contents:
                 content = content_as_text(zim_obj, article_info, idx)
+                # Whoosh seems to take issue with empty content
+                # and complains about it not being unicode ?!
+                if len(content.strip()) == 0:
+                    content = None
             else:
                 content = None
 
@@ -187,7 +187,7 @@ def index_zim_file(zim_filename, output_dir=".", index_contents=True, mime_types
         logger.error("%s" % exc)
         logger.error("Will try and commit work so far.")
         finish()
-        raise 
+        raise exc 
 
     finish() 
 
