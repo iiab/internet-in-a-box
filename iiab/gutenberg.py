@@ -28,6 +28,29 @@ gutenberg = Blueprint('gutenberg', __name__, url_prefix='/books')
 etext_regex = re.compile(r'^etext(\d+)$')
 
 
+flask_app = None
+is_init = False
+
+
+def set_flask_app(app):
+    global flask_app
+    flask_app = app
+
+
+def init_db():
+    global is_init
+    global flask_app
+    if not is_init:
+        if flask_app is None:
+            raise Exception("init_db called when flask app not set")
+        # set global config variables referenced by SQLAlchemy
+        flask_app.config['SQLALCHEMY_ECHO'] = config().getboolean('GUTENBERG', 'sqlalchemy_echo')
+        database_path = config().get_path('GUTENBERG', 'sqlalchemy_database_uri')
+        flask_app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.abspath(database_path)
+        db.init_app(flask_app)
+        is_init = True
+
+
 @gutenberg.route('/')
 def index():
     return render_template('gutenberg/index.html')

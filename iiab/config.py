@@ -72,6 +72,12 @@ class IiabConfig(SafeConfigParser):
         self.get_knowledge_dir()
         return self.get(section, name)
 
+    def get_default(self, section, name, default):
+        """Get a value if it exists, otherwise return default"""
+        if not self.has_option(section, name):
+            return default
+        return self.get(section, name)
+
 
 def load_config(config_files=[]):
     """First load iiab/defaults.ini, which is required.

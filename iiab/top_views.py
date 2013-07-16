@@ -16,7 +16,7 @@ def index():
         error = "Could not find knowledge directory containing Internet-in-a-Box dataset.  "
         error += "The configured knowledge_dir path is " + config().get('DEFAULT', 'knowledge_dir')
         error += " and search_for_knowledge_dir is "
-        if config().get('DEFAULT', 'search_for_knowledge_dir'):
+        if config().getboolean('DEFAULT', 'search_for_knowledge_dir'):
             error += "ON, so all mounted filesystems were checked."
         else:
             error += "OFF, so other mounted filesystems were NOT checked."

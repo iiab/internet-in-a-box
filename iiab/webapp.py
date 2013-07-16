@@ -1,8 +1,9 @@
-from flask import Flask, request
+from flask import Flask, request, url_for
 #from flask.ext.mako import MakoTemplates
 from flaskext.babel import Babel
 from flask.ext.autoindex import AutoIndex
-import os
+import sys
+import urlparse
 
 from config import config
 import top_views
@@ -13,8 +14,6 @@ import gutenberg
 import gutenberg_content_views
 import wikipedia_views
 import zim_views
-from extensions import db
-import sys
 
 
 def create_app(debug=True, enable_profiler=False, profiler_quiet=False):
@@ -49,14 +48,10 @@ def create_app(debug=True, enable_profiler=False, profiler_quiet=False):
     for blueprint, prefix in blueprints:
         app.register_blueprint(blueprint, url_prefix=prefix)
 
-    # set global config variables referenced by SQLAlchemy
-    app.config['SQLALCHEMY_ECHO'] = config().getboolean('GUTENBERG', 'sqlalchemy_echo')
-    database_path = config().get_path('GUTENBERG', 'sqlalchemy_database_uri')
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.abspath(database_path)
-    print 'SQLALCHEMY_URI', app.config['SQLALCHEMY_DATABASE_URI']
+    gutenberg.set_flask_app(app)
+    gutenberg.init_db()
 
     configure_babel(app)
-    db.init_app(app)
 
     if enable_profiler:
         from werkzeug.contrib.profiler import ProfilerMiddleware, MergeStream
@@ -77,7 +72,20 @@ def create_app(debug=True, enable_profiler=False, profiler_quiet=False):
         software_dir = config().get_path('SOFTWARE', 'software_dir')
         return autoindex.render_autoindex(path, browse_root=software_dir, endpoint='software_view')
 
-    print "URL MAP: ", app.url_map
+    #print "URL MAP: ", app.url_map
+
+    # Static handling from http://flask.pocoo.org/mailinglist/archive/2011/8/25/static-files-subdomains/#9237e5b3c217b2875c59daaac4c23487
+    app.config['STATIC_ROOT'] = config().get_default('WEBAPP', 'static_url_path', None)
+
+    def static(path):
+        root = app.config.get('STATIC_ROOT', None)
+        if root is None:  # fallback on the normal way
+            return url_for('static', filename=path)
+        return urlparse.urljoin(root, path)
+
+    @app.context_processor
+    def inject_static():
+        return dict(static=static)
 
     return app
 
