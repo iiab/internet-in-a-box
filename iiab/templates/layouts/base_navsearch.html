@@ -4,7 +4,7 @@
     {{ super() }}
     <form class="form-search" action="{{ url_for('gutenberg.search') }}" method="get">
         <input type="text" id="book_navbar_search" class="input search-query" placeholder="{{ _('Search') }}" name="q" />
-        <button type="submit" class="btn">Search</button>
+        <button type="submit" class="btn">{{ _('Search') }}</button>
     </form>
 
 {% endblock %}

@@ -12,8 +12,8 @@
                 <p>{% trans %}Project Gutenberg Free Books Browser{% endtrans %}</p>
                 <p class="span6 offset3">
                 <form class="form-search" action="{{ url_for('gutenberg.search') }}" method="get">
-                    <input type="text" id="book_search" class="input-xlarge search-query" placeholder="Search" name="q" />
-                    <button type="submit" class="btn">Search</button>
+                    <input type="text" id="book_search" class="input-xlarge search-query" placeholder="{% trans %}Search{% endtrans %}" name="q" />
+                    <button type="submit" class="btn">{% trans %}Search{% endtrans %}</button>
                 </form>
                 </p>
                 <p>
