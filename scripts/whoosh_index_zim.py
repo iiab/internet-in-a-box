@@ -161,7 +161,7 @@ def index_zim_file(zim_filename, output_dir=".", index_contents=True, mime_types
                 content = content_as_text(zim_obj, article_info, idx)
                 # Whoosh seems to take issue with empty content
                 # and complains about it not being unicode ?!
-                if len(content.strip()) == 0:
+                if content != None and len(content.strip()) == 0:
                     content = None
             else:
                 content = None
