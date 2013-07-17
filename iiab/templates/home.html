@@ -21,7 +21,7 @@
           <ul data-role="listview" data-divider-theme="b" data-inset="true">
               <li data-theme="c">
               <a href="{{ url_for('wikipedia_views.wikipedia_view') }}" data-transition="slide">
-                      Wikipedia
+                      {% trans %}Wikipedia{% endtrans %}
                       <!-- span class="ui-li-count">
                           123
                       </span -->
@@ -29,7 +29,7 @@
               </li>
               <li data-theme="c">
                   <a href="{{ url_for('gutenberg.index') }}" data-transition="slide" data-ajax="false">
-                      Books
+                      {% trans %}Books{% endtrans %}
                       <!-- span class="ui-li-count">
                           13
                       </span -->
@@ -37,7 +37,7 @@
               </li>
               <li data-theme="c">
               <a href="{{ url_for('static', filename='map.html') }}" data-transition="slide" data-ajax="false">
-                      Maps
+                      {% trans %}Maps{% endtrans %}
                       <!-- span class="ui-li-count">
                           3
                       </span -->
@@ -45,17 +45,17 @@
               </li>
               <li data-theme="c">
               <a href="{{ url_for('video_views.khan_view') }}" data-transition="slide">
-                      Video
+                      {% trans %}Video{% endtrans %}
                   </a>
               </li>
               <li data-theme="c">
                   <a href="#page7" data-transition="slide">
-                      Software
+                      {% trans %}Software{% endtrans %}
                   </a>
               </li>
               <li data-theme="d">
                   <a href="#page11" data-transition="slide">
-                      Settings
+                      {% trans %}Settings{% endtrans %}
                   </a>
               </li>
           </ul>
@@ -83,10 +83,10 @@
       <div data-theme="a" data-role="header">
           <a data-role="button" data-direction="reverse" data-rel="back" data-transition="slide"
           href="#page1" class="ui-btn-left">
-              Back
+              {% trans %}Back{% endtrans %}
           </a>
           <h3>
-              Software
+              {% trans %}Software{% endtrans %}
           </h3>
       </div>
       <div data-role="content">
@@ -94,15 +94,15 @@
               <fieldset data-role="controlgroup">
                   <label for="searchinput7">
                   </label>
-                  <input name="" id="searchinput7" placeholder="" value="" type="search">
+                  <input name="" id="searchinput7" placeholder="{% trans %}Search{% endtrans %}" value="" type="search">
               </fieldset>
           </div>
           <a data-role="button" data-theme="b" href="#page7">
-              Download Linux
+              {% trans %}Download Linux{% endtrans %}
           </a>
 
           <a data-role="button" data-theme="b" href="/iiab/software/pool" data-ajax="false">
-              Browse Open Source Software
+              {% trans %}Browse Open Source Software{% endtrans %}
           </a>
       </div>
   </div>
@@ -111,16 +111,16 @@
       <div data-theme="a" data-role="header">
           <a data-role="button" data-direction="reverse" data-rel="back" data-transition="slide"
           href="#page1" class="ui-btn-left">
-              Back
+              {% trans %}Back{% endtrans %}
           </a>
           <h3>
-              Settings
+              {% trans %}Settings{% endtrans %}
           </h3>
       </div>
       <div data-role="content">
           <div data-role="fieldcontain">
               <label for="selectmenu3">
-                  Language
+                  {% trans %}Language{% endtrans %}
               </label>
               <select name="">
                   <option value="option1">
@@ -143,34 +143,34 @@
           <div data-role="fieldcontain">
               <fieldset data-role="controlgroup">
                   <label for="toggleswitch1">
-                      Chat
+                      {% trans %}Chat{% endtrans %}
                   </label>
                   <select name="toggleswitch1" id="toggleswitch1" data-theme="" data-role="slider">
                       <option value="off">
-                          Off
+                          {% trans %}Off{% endtrans %}
                       </option>
                       <option value="on">
-                          On
+                          {% trans %}On{% endtrans %}
                       </option>
                   </select>
               </fieldset>
           </div>
           <h2>
-              About
+              {% trans %}About{% endtrans %}
           </h2>
           <h4>
-              Software Version 1.2
+              {% trans %}Software Version 1.2{% endtrans %}
           </h4>
           <h4>
-              Data Version 20130214
+              {% trans %}Data Version 20130214{% endtrans %}
           </h4>
           <h2>
-              Licenses
+              {% trans %}Licenses{% endtrans %}
           </h2>
           <div>
               <p>
                   <b>
-                      Maps copyright OpenStreetMap (C) 2013 Create Commons Licnese
+                      {% trans %}Maps{% endtrans %} - &copy; {% trans %}OpenStreetMap contributors - OpenStreetMap is open data, licensed under the Open Data Commons Open Database License (ODbL).{% endtrans %}
                   </b>
                   <br>
               </p>
@@ -178,7 +178,15 @@
           <div>
               <p>
                   <b>
-                      Internet-in-a-Box Software Copyright (C) Humane Informatics LLC BSD License
+                      {% trans %}Map cartography{% endtrans %} - {% trans %}Map cartography in OpenStreetMap map tiles are licensed under the Creative Commons Attribution-ShareAlike 2.0 license (CC-BY-SA).{% endtrans %}
+                  </b>
+                  <br>
+              </p>
+          </div>
+          <div>
+              <p>
+                  <b>
+                      {% trans %}Internet-in-a-Box{% endtrans %} {% trans %}Software{% endtrans %} - &copy; 2013 {% trans %}Humane Informatics, LLC.{% endtrans %} - {% trans %}BSD License{% endtrans %}
                       <br>
                   </b>
               </p>
