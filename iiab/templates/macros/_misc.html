@@ -26,9 +26,9 @@
     <thead>
         <tr>
             <td>#</td>
-            <td>Title</td>
-            <td>Author</td>
-            <td>Language</td>
+            <td>{% trans %}Title{% endtrans %}</td>
+            <td>{% trans %}Author{% endtrans %}</td>
+            <td>{% trans %}Language{% endtrans %}</td>
         </tr>
     </thead>
     <tbody>
@@ -38,7 +38,7 @@
             <td>
                 <a href="{{ url_for('.text', textId=result['textId']) }}">{{ list_to_html_multiline(result['title']) }}</a>
                 {% if files_exist != None and not files_exist(result['textId']) -%}
-                <em>(Not Available)</em>
+                <em>({% trans %}Not Available{% endtrans %})</em>
                 {% endif -%}
             </td>
             <td>
@@ -63,9 +63,9 @@
     <thead>
         <tr>
             <td>#</td>
-            <td>Title</td>
-            <td>Author</td>
-            <td>Language</td>
+            <td>{% trans %}Title{% endtrans %}</td>
+            <td>{% trans %}Author{% endtrans %}</td>
+            <td>{% trans %}Language{% endtrans %}</td>
         </tr>
     </thead>
     <tbody>
@@ -97,7 +97,7 @@
     <thead>
         <tr>
             <td>#</td>
-            <td>Author</td>
+            <td>{% trans %}Author{% endtrans %}</td>
         </tr>
     </thead>
     <tbody>
@@ -138,8 +138,8 @@
 {% macro render_book_files(record, fields, class='') %}
 <table class='{{ class }}'>
     <thead>
-        <th>Name</th>
-        <th>Format</th>
+        <th>{% trans %}Name{% endtrans %}</th>
+        <th>{% trans %}Format{% endtrans %}</th>
     </thead>
     <tbody>
     {% set index = 0 %}
@@ -157,12 +157,12 @@
 {% macro render_book_htmlz_or_epub(htmlz_url, epub_url) %}
     {% if htmlz_url != None %}
     <div>
-        <a href="{{ htmlz_url }}">Read</a>
+        <a href="{{ htmlz_url }}">{% trans %}Read{% endtrans %}</a>
     </div>
     {% endif %}
     {% if epub_url != None %}
     <div>
-        <a href="{{ epub_url }}">Download (EPub)</a>
+        <a href="{{ epub_url }}">{% trans %}Download (EPub){% endtrans %}</a>
     </div>
     {% endif %}
 {% endmacro %}
@@ -173,9 +173,9 @@
             <ul>
                 <li class="prev {% if not pagination.has_prev %}disabled{% endif %}">
                 {%- if query -%}
-                <a href="{{ url_for(endpoint_desc.endpoint, page=pagination.page-1, q=query, **endpoint_desc.values) }}">&larr; Previous</a>
+                <a href="{{ url_for(endpoint_desc.endpoint, page=pagination.page-1, q=query, **endpoint_desc.values) }}">&larr; {% trans %}Previous{% endtrans %}</a>
                 {%- else -%}
-                <a href="{{ url_for(endpoint_desc.endpoint, page=pagination.page-1, **endpoint_desc.values) }}">&larr; Previous</a>
+                <a href="{{ url_for(endpoint_desc.endpoint, page=pagination.page-1, **endpoint_desc.values) }}">&larr; {% trans %}Previous{% endtrans %}</a>
                 {%- endif -%}
                 </li>
                 {% for page in pagination.iter_pages() %}
@@ -195,9 +195,9 @@
                 {% endfor %}
                 <li class="next {% if not pagination.has_next %}disabled{% endif %}">
                 {%- if query -%}
-                <a href="{{ url_for(endpoint_desc.endpoint, page=pagination.page+1,q=query, **endpoint_desc.values) }}">Next &rarr;</a>
+                <a href="{{ url_for(endpoint_desc.endpoint, page=pagination.page+1,q=query, **endpoint_desc.values) }}">{% trans %}Next{% endtrans %} &rarr;</a>
                 {%- else -%}
-                <a href="{{ url_for(endpoint_desc.endpoint, page=pagination.page+1, **endpoint_desc.values) }}">Next &rarr;</a>
+                <a href="{{ url_for(endpoint_desc.endpoint, page=pagination.page+1, **endpoint_desc.values) }}">{% trans %}Next{% endtrans %} &rarr;</a>
                 {%- endif -%}
                 </li>
             </ul>
