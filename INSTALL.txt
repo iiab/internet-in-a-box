@@ -181,7 +181,7 @@ You must set up an alias for static files from /iiabstatic to the installation
 directory of IIAB.  This path will vary depending on your configuration.
 
 You need to find the iiabstatic directory name, run:
-ipython -c 'import iiab; import os; os.path.dirname(iiab.__file__) + "/static"'
+python -c 'import iiab; import os; print os.path.dirname(iiab.__file__) + "/static"'
 
 You should create a new file at /etc/httpd/conf.d/iiab.conf (Fedora/OLPC)
 or /etc/apache2/conf.d/iiab.conf (Ubuntu/Debian) containing the following:
@@ -189,7 +189,7 @@ or /etc/apache2/conf.d/iiab.conf (Ubuntu/Debian) containing the following:
 XSendFile on
 XSendFilePath /
 WSGIScriptAlias /iiab /var/www/iiab.wsgi
-Alias /iiabstatic /usr/lib/python2.7/dist-packages/iiab/static
+Alias /iiabstatic /usr/lib/python2.7/site-packages/iiab/static
 
 Where /usr/lib/python2.7/dist-packages/iiab/static should be replaced
 with the iiabstatic directory from above.
