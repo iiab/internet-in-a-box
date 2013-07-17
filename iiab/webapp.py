@@ -1,5 +1,4 @@
-from flask import Flask, request, url_for
-#from flask.ext.mako import MakoTemplates
+from flask import Flask, request, url_for, session
 from flaskext.babel import Babel
 from flask.ext.autoindex import AutoIndex
 import sys
@@ -14,7 +13,7 @@ import gutenberg
 import gutenberg_content_views
 import wikipedia_views
 import zim_views
-
+import settings_views
 
 def create_app(debug=True, enable_profiler=False, profiler_quiet=False):
     """
@@ -43,7 +42,8 @@ def create_app(debug=True, enable_profiler=False, profiler_quiet=False):
         (video_views.blueprint, base_prefix + "video"),
         (wikipedia_views.blueprint, base_prefix + "wikipedia"),
         (zim_views.blueprint, base_prefix + "zim"),
-        (gutenberg_content_views.blueprint, base_prefix + "books")
+        (gutenberg_content_views.blueprint, base_prefix + "books"),
+        (settings_views.blueprint, base_prefix + "settings"),
     ]
     for blueprint, prefix in blueprints:
         app.register_blueprint(blueprint, url_prefix=prefix)
@@ -51,7 +51,9 @@ def create_app(debug=True, enable_profiler=False, profiler_quiet=False):
     gutenberg.set_flask_app(app)
     gutenberg.init_db()
 
-    configure_babel(app)
+    babel_instance = configure_babel(app)
+
+    settings_views.set_babel(babel_instance)
 
     if enable_profiler:
         from werkzeug.contrib.profiler import ProfilerMiddleware, MergeStream
@@ -96,5 +98,11 @@ def configure_babel(app):
 
     @babel.localeselector
     def get_locale():
-        accept_languages = config().get_json('GUTENBERG', 'babel_accept_languages')
-        return request.accept_languages.best_match(accept_languages)
+        accepted_langs = [ l.language for l in babel.list_translations() ]
+        preferred_language = session.get("preferred_language", None)
+        if preferred_language != None:
+            return preferred_language
+        else:
+            return request.accept_languages.best_match(accepted_langs)
+
+    return babel
