@@ -1,6 +1,7 @@
 # Top level URL views
 from flask import (Blueprint, make_response, render_template,
                    send_file, redirect, abort)
+from flaskext.babel import gettext as _
 
 from config import config
 from utils import mdns_resolve
@@ -13,13 +14,13 @@ blueprint = Blueprint('top_views', __name__,
 def index():
     error = None
     if config().get_knowledge_dir() is None:
-        error = "Could not find knowledge directory containing Internet-in-a-Box dataset.  "
-        error += "The configured knowledge_dir path is " + config().get('DEFAULT', 'knowledge_dir')
-        error += " and search_for_knowledge_dir is "
+        error = _('Could not find knowledge directory containing Internet-in-a-Box dataset.') + "  "
+        error += _('The configured knowledge_dir path is') + " " + config().get('DEFAULT', 'knowledge_dir')
+        error += " " + _('and search_for_knowledge_dir is') + " "
         if config().getboolean('DEFAULT', 'search_for_knowledge_dir'):
-            error += "ON, so all mounted filesystems were checked."
+            error += _('ON, so all mounted filesystems were checked.')
         else:
-            error += "OFF, so other mounted filesystems were NOT checked."
+            error += _('OFF, so other mounted filesystems were NOT checked.')
     return render_template("home.html", error=error)
 
 
