@@ -191,6 +191,11 @@ XSendFilePath /
 WSGIScriptAlias /iiab /var/www/iiab.wsgi
 Alias /iiabstatic /usr/lib/python2.7/site-packages/iiab/static
 
+IF you are using Apache 2.4 or above (Fedora 18 and OLPC OS) also add:
+<Directory /usr/lib/python2.7/site-packages/iiab/static>
+    Require all granted
+</Directory>
+
 Where /usr/lib/python2.7/dist-packages/iiab/static should be replaced
 with the iiabstatic directory from above.
 

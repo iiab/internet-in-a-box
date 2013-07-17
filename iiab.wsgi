@@ -14,7 +14,7 @@ if path_to_virtualenv is not None:
 
 # Add iiab directory if we are running from the git sources
 parent_dir = os.path.dirname(__file__)
-sys.path.append(parent_dir)
+sys.path.insert(1, parent_dir)
 
 import iiab
 from iiab.webapp import create_app
