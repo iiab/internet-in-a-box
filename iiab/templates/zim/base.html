@@ -5,19 +5,19 @@
     <div data-role="header">
         <div class="ui-grid-b">
             <div class="ui-block-a">
-                 <a href="/iiab/" data-role="button" data-icon="home" data-mini="true" data-inline="true" data-iconpos="notext" data-direction="reverse">Home</a>
-                 <a href="{% if main_page %}{{ url_for('wikipedia_views.wikipedia_view') }}{% else %}{{ url_for('zim_views.iframe_main_page_view', humanReadableId=humanReadableId) }}{% endif %}" data-role="button" data-icon="arrow-u" data-mini="true" data-inline="true" data-iconpos="notext" data-direction="reverse">Wikipedia</a>
+                 <a href="/iiab/" data-role="button" data-icon="home" data-mini="true" data-inline="true" data-iconpos="notext" data-direction="reverse">{% trans %}Home{% endtrans %}</a>
+                 <a href="{% if main_page %}{{ url_for('wikipedia_views.wikipedia_view') }}{% else %}{{ url_for('zim_views.iframe_main_page_view', humanReadableId=humanReadableId) }}{% endif %}" data-role="button" data-icon="arrow-u" data-mini="true" data-inline="true" data-iconpos="notext" data-direction="reverse">{% trans %}Wikipedia{% endtrans %}</a>
             </div>
             <div class="ui-block-b">
-                <h6 class="ui-title">Wikipedia</h6>
+                <h6 class="ui-title">{% trans %}Wikipedia{% endtrans %}</h6>
             </div>
             <div class="ui-block-c">
                 <fieldset style="margin: 0px" data-role="controlgroup">
                     <label for="searchinput1">
                     </label>
                     <form class="form-search" action="{{ url_for('zim_views.search', humanReadableId=humanReadableId) }}" method="get">
-                        <input name="q" data-mini="true" id="wikisearch" placeholder="Search" value="" type="search" data-theme="b">
-                        <!-- <button type="submit" class="btn">Search</button> -->
+                        <input name="q" data-mini="true" id="wikisearch" placeholder="{% trans %}Search{% endtrans %}" value="" type="search" data-theme="b">
+                        <!-- <button type="submit" class="btn">{% trans %}Search{% endtrans %}</button> -->
                     </form>
                 </fieldset>
             </div>

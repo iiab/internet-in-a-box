@@ -3,8 +3,8 @@
 
 <div data-role="page" data-theme="b" id="wikipedia-languages">
     <div data-role="header">
-        <a href="/iiab/" data-icon="home" data-iconpos="notext" data-direction="reverse">Home</a>
-        <h1>Wikipedia</h1>
+        <a href="/iiab/" data-icon="home" data-iconpos="notext" data-direction="reverse">{% trans %}Home{% endtrans %}</a>
+        <h1>{% trans %}Wikipedia{% endtrans %}</h1>
     </div>
     <div data-role="content">
         <ul data-role="listview" data-divider-theme="b" data-inset="true">
@@ -19,7 +19,7 @@
                 {% if book.has_key('description') %}
                 <p style="white-space: normal;" class="float-left">{{ book['description'] }}</p>
                 {% endif %}
-                <p class="float-right">{{ book['articleCount'] }} Articles</p>
+                <p class="float-right">{{ book['articleCount'] }} {% trans %}Articles{% endtrans %}</p>
             </a>
             </li>
             {% endfor %}

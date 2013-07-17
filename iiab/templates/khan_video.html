@@ -3,7 +3,7 @@
 
 <div data-role="page" data-theme="b" id="khan-video">
     <div data-role="header">
-        <a href="/iiab/" data-icon="home" data-iconpos="notext" data-direction="reverse">Home</a>
+        <a href="/iiab/" data-icon="home" data-iconpos="notext" data-direction="reverse">{% trans %}Home{% endtrans %}</a>
         <h1>
             {% for level in breadcrumbs %}
             {% if not loop.first %}&gt;{% endif %} {{ level[1] }}
