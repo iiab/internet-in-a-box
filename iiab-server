@@ -74,7 +74,7 @@ def main(argv):
     host = config().get('WEBAPP', 'interface')
     port = config().getint('WEBAPP', 'port')
     if not options.profile:
-        webapp.run(debug=debug, port=port, host=host)
+        webapp.run(debug=debug, port=port, host=host, processes=6)
     else:
         # adapted from flask.Flask.run for use with middleware
         from werkzeug.serving import run_simple
