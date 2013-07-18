@@ -54,7 +54,7 @@
                   </a>
               </li>
               <li data-theme="d">
-                  <a href="#page11" data-transition="slide">
+              <a href="{{ url_for('settings.settings_view') }}" data-transition="slide">
                       {% trans %}Settings{% endtrans %}
                   </a>
               </li>
@@ -104,101 +104,6 @@
           <a data-role="button" data-theme="b" href="/iiab/software/pool" data-ajax="false">
               {% trans %}Browse Open Source Software{% endtrans %}
           </a>
-      </div>
-  </div>
-  <!-- Settings -->
-  <div data-role="page" id="page11">
-      <div data-theme="a" data-role="header">
-          <a data-role="button" data-direction="reverse" data-rel="back" data-transition="slide"
-          href="#page1" class="ui-btn-left">
-              {% trans %}Back{% endtrans %}
-          </a>
-          <h3>
-              {% trans %}Settings{% endtrans %}
-          </h3>
-      </div>
-      <div data-role="content">
-          <div data-role="fieldcontain">
-              <label for="selectmenu3">
-                  {% trans %}Language{% endtrans %}
-              </label>
-              <select name="">
-                  <option value="option1">
-                      English
-                  </option>
-                  <option value="value">
-                      French
-                  </option>
-                  <option value="value">
-                      Arabic
-                  </option>
-                  <option value="value">
-                      Swahili
-                  </option>
-                  <option value="value">
-                      Hindu
-                  </option>
-              </select>
-          </div>
-          <div data-role="fieldcontain">
-              <fieldset data-role="controlgroup">
-                  <label for="toggleswitch1">
-                      {% trans %}Chat{% endtrans %}
-                  </label>
-                  <select name="toggleswitch1" id="toggleswitch1" data-theme="" data-role="slider">
-                      <option value="off">
-                          {% trans %}Off{% endtrans %}
-                      </option>
-                      <option value="on">
-                          {% trans %}On{% endtrans %}
-                      </option>
-                  </select>
-              </fieldset>
-          </div>
-          <h2>
-              {% trans %}About{% endtrans %}
-          </h2>
-          <h4>
-              {% trans %}Software Version{% endtrans %}: 0.4.4 
-          </h4>
-          <h4>
-              {% trans %}Data Version{% endtrans %}: 20130214
-          </h4>
-          <h2>
-              {% trans %}Licenses{% endtrans %}
-          </h2>
-          <div>
-              <p>
-                  <b>
-                      {% trans %}Maps{% endtrans %} - &copy; {% trans %}OpenStreetMap contributors{% endtrans %} - <a href="http://www.openstreetmap.org/">{% trans %}OpenStreetMap{% endtrans %}</a> {% trans %}is open data, licensed under the{% endtrans %} <a href="http://opendatacommons.org/licenses/odbl/">{% trans %}Open Data Commons Open Database License (ODbL).{% endtrans %}</a> {% trans %}See their{% endtrans %} <a href="http://www.openstreetmap.org/copyright">{% trans %}Copyright and License.{% endtrans %}</a>
-                  </b>
-                  <br>
-              </p>
-          </div>
-          <div>
-              <p>
-                  <b>
-                      {% trans %}Map cartography{% endtrans %} - {% trans %}Map cartography in OpenStreetMap map tiles are licensed under the{% endtrans %} <a href="http://creativecommons.org/licenses/by-sa/2.0/">{% trans %}Creative Commons Attribution-ShareAlike 2.0 license (CC-BY-SA).{% endtrans %}</a>
-                  </b>
-                  <br>
-              </p>
-          </div>
-          <div>
-              <p>
-                  <b>
-                      {% trans %}The KHAN ACADEMY{% endtrans %}&reg; {% trans %}word mark is a trademark of Khan Academy, Inc.  NOTE: All Khan Academy content is available for free at{% endtrans %} <a href="http://www.khanacademy.org/">www.khanacademy.org</a>. <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/us/">{% trans %}Creative Commons (CC-by-NC-SA) Licensing{% endtrans %}</a>. <a href="http://khanacademy.desk.com/customer/portal/articles/730026">{% trans %}Trademark and Brand Usage Policy{% endtrans %}</a> <a href="http://www.khanacademy.org/about/tos">{% trans %}Terms of Service{% endtrans %}</a>
-                  </b>
-                  <br>
-              </p>
-          </div>
-          <div>
-              <p>
-                  <b>
-                      <a href="http://internet-in-a-box.org/">{% trans %}Internet-in-a-Box{% endtrans %}</a> {% trans %}software{% endtrans %} - &copy; 2013 <a href="http://www.humaneinfo.com/">{% trans %}Humane Informatics, LLC{% endtrans %}</a>. {% trans %}All rights reserved.{% endtrans %} {% trans %}This software is licensed with the{% endtrans %} <a href="http://opensource.org/licenses/BSD-2-Clause">{% trans %}BSD 2-clause license{% endtrans %}</a>.
-                      <br>
-                  </b>
-              </p>
-          </div>
       </div>
   </div>
   <!-- Chat -->

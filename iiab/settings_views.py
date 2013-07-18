@@ -1,4 +1,4 @@
-from flask import Blueprint, session, jsonify
+from flask import Blueprint, render_template, session, jsonify
 
 from config import config
 
@@ -19,6 +19,10 @@ def languages_json():
 
     trans_dict = { l.language: l.get_display_name() for l in available_locales() }
     return jsonify(trans_dict)
+
+@blueprint.route('/')
+def settings_view():
+    return render_template('settings.html')
 
 @blueprint.route('/language')
 def get_language():
