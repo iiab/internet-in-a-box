@@ -1,4 +1,14 @@
 {% extends "base.html" %}
+
+  
+{% block head %}
+<script>
+    languages_url = "{{ url_for('settings.languages_json') }}";
+    user_language_url = "{{ url_for('settings.user_language') }}";
+</script>
+<script src="{{ static('settings.js') }}"></script>
+{% endblock %}
+
 {% block content %}
 
 <!-- Settings -->
@@ -17,23 +27,7 @@
             <label for="selectmenu3">
                 {% trans %}Language{% endtrans %}
             </label>
-            <select name="">
-                <option value="option1">
-                    English
-                </option>
-                <option value="value">
-                    French
-                </option>
-                <option value="value">
-                    Arabic
-                </option>
-                <option value="value">
-                    Swahili
-                </option>
-                <option value="value">
-                    Hindu
-                </option>
-            </select>
+            <select id="language_select" name="language_select"></select>
         </div>
         <div data-role="fieldcontain">
             <fieldset data-role="controlgroup">
