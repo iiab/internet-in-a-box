@@ -8,7 +8,7 @@ import uuid
 import sys
 # Import lzma this way so we get the built in version for
 # Python 3.3 or the backported one otherwize. Don't just
-# do a try/catch for import lzma because the older 
+# do a try/catch for import lzma because the older
 # pyliblzma uses that package name, and we do not want
 # to use it.
 if sys.version_info[0:3] >= (3,3,0):
@@ -191,7 +191,7 @@ class ClusterData(object):
         self.file_buf.seek(self.ptr + 1)
 
         # Store uncompressed cluster data for use as uncompressed data
-        self.uncomp_buf = StringIO() 
+        self.uncomp_buf = StringIO()
 
         decomp = lzma.LZMADecompressor()
         while not decomp.eof:
@@ -204,7 +204,7 @@ class ClusterData(object):
 
     def source_buffer(self):
         """Returns the buffer to read from, either the file buffer
-        passed or the uncompressed lzma data. Will seek to the 
+        passed or the uncompressed lzma data. Will seek to the
         beginning of the cluster after the 1 byte compression flag"""
 
         if self.compressed:
@@ -221,7 +221,7 @@ class ClusterData(object):
     def read_offsets(self):
         """Reads the cluster header with the offsets of the blobs"""
 
-        src_buf = self.source_buffer() 
+        src_buf = self.source_buffer()
 
         raw = src_buf.read(4)
         offset0 = self.unpack_blob_index(raw)
@@ -243,7 +243,7 @@ class ClusterData(object):
 
         src_buf = self.source_buffer()
 
-        blob_size = self.offsets[blob_index+1] - self.offsets[blob_index] 
+        blob_size = self.offsets[blob_index+1] - self.offsets[blob_index]
 
         # For uncompressed data, seek from beginning of file
         # Otherwise seek the compressed data with just and offset
@@ -433,14 +433,15 @@ class ZimFile(object):
         main_index = self.header['mainPage']
         return self.get_article_by_index(main_index)
 
+    @timepro.profile()
     def metadata(self):
         metadata = {}
-        for i in range(self.header['articleCount'])[::-1]:
+        for i in xrange(self.header['articleCount'] - 1, -1, -1):
             entry = self.read_directory_entry_by_index(i)
             if entry['namespace'] == 'M':
-                m_name = entry['url'] 
-                # Lower case first letter to match kiwix-library names convention 
-                m_name = re.sub(r'^([A-Z])', lambda pat: pat.group(1).lower(), m_name) 
+                m_name = entry['url']
+                # Lower case first letter to match kiwix-library names convention
+                m_name = re.sub(r'^([A-Z])', lambda pat: pat.group(1).lower(), m_name)
                 metadata[m_name] = self.get_article_by_index(i)[0]
             else:
                 break

@@ -8,19 +8,21 @@ from config import config
 from zimpy import ZimFile
 from iso639 import iso6392
 from kiwix import Library
+import timepro
 
 blueprint = Blueprint('wikipedia_views', __name__,
                       template_folder='templates')
 
 logger = logging.getLogger(__name__)
 
+@timepro.profile_and_print()
 def organize_books_by_language(filenames, library_file):
     if not os.path.exists(library_file):
         logger.error("Can not find Kiwix library file: %s" % library_file)
 
     kiwix_lib = Library(library_file)
 
-    languages = {} 
+    languages = {}
 
     for zim_fn in filenames:
         zim_obj = ZimFile(zim_fn)
@@ -42,9 +44,10 @@ def organize_books_by_language(filenames, library_file):
                 book_data[k] = v.decode('utf-8')
 
         # Format article count as string with commas
-        book_data['articleCount'] = "{:,d}".format(zim_obj.header['articleCount'])
+        articleCount = zim_obj.header['articleCount']
+        book_data['articleCount'] = "{:,d}".format(articleCount)
         book_data['humanReadableId'] = os.path.splitext(os.path.basename(zim_fn))[0]
-        
+
         if not languages.has_key(book_data['language']):
             lang_data = {}
             if iso6392.has_key(book_data['language']):
@@ -53,13 +56,17 @@ def organize_books_by_language(filenames, library_file):
                 lang_data['languageEnglish'] = "Unknown: " + book_data['language']
             lang_data['languageCode'] = book_data['language']
             lang_data['books'] = []
-            languages[book_data['language']] = lang_data 
+            lang_data['articleCount'] = 0
+            languages[book_data['language']] = lang_data
         else:
             lang_data = languages[book_data['language']]
 
         lang_data['books'].append(book_data)
+        lang_data['articleCount'] = lang_data['articleCount'] + articleCount
 
-    return languages.values()
+    langs = languages.values()
+    langs.sort(key=lambda x: -x['articleCount'])
+    return langs
 
 @blueprint.route('/')
 def wikipedia_view():
