@@ -48,7 +48,7 @@
             {% trans %}About{% endtrans %}
         </h2>
         <h4>
-            {% trans %}Software Version{% endtrans %}: 0.4.4 
+            {% trans %}Software Version{% endtrans %}: {{ software_version }}
         </h4>
         <h4>
             {% trans %}Data Version{% endtrans %}: 20130214
@@ -56,6 +56,14 @@
         <h2>
             {% trans %}Licenses{% endtrans %}
         </h2>
+        <div>
+            <p>
+                <b>
+                    <a href="http://www.wikipedia.org/">{% trans %}Wikipedia{% endtrans %}</a>&reg; {% trans %}is a registered trademark of the{% endtrans %} <a href="http://www.wikimediafoundation.org/">{% trans %}Wikimedia Foundation, Inc.{% endtrans %}</a>{% trans %}, a non-profit organization. Text is available under the{% endtrans %} <a href="http://en.wikipedia.org/wiki/Wikipedia:Text_of_Creative_Commons_Attribution-ShareAlike_3.0_Unported_License">{% trans %}Creative Commons Attribution-ShareAlike License ("CC BY-SA"){% endtrans %}</a>{% trans %}; additional terms may apply. By using this site, you agree to the{% endtrans %} <a href="http://wikimediafoundation.org/wiki/Terms_of_Use">{% trans %}Terms of Use{% endtrans %}</a> {% trans %}and{% endtrans %} <a href="http://wikimediafoundation.org/wiki/Privacy_policy">{% trans %}Privacy Policy{% endtrans %}</a>. 
+                </b>
+                <br>
+            </p>
+        </div>
         <div>
             <p>
                 <b>
@@ -75,7 +83,7 @@
         <div>
             <p>
                 <b>
-                    {% trans %}The KHAN ACADEMY{% endtrans %}&reg; {% trans %}word mark is a trademark of Khan Academy, Inc.  NOTE: All Khan Academy content is available for free at{% endtrans %} <a href="http://www.khanacademy.org/">www.khanacademy.org</a>. <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/us/">{% trans %}Creative Commons (CC-by-NC-SA) Licensing{% endtrans %}</a>. <a href="http://khanacademy.desk.com/customer/portal/articles/730026">{% trans %}Trademark and Brand Usage Policy{% endtrans %}</a> <a href="http://www.khanacademy.org/about/tos">{% trans %}Terms of Service{% endtrans %}</a>
+                    {% trans %}The KHAN ACADEMY{% endtrans %}&reg; {% trans %}word mark is a trademark of Khan Academy, Inc.  NOTE: All Khan Academy content is available for free at{% endtrans %} <a href="http://www.khanacademy.org/">www.khanacademy.org</a>. {% trans %}Videos are licensed to you under the{% endtrans %} <a href="http://creativecommons.org/licenses/by-nc-sa/3.0/us/">{% trans %}Creative Commons Attribution-NonCommercial-ShareAlike (CC-by-NC-SA){% endtrans %}</a> {% trans %}license{% endtrans %}. <a href="http://khanacademy.desk.com/customer/portal/articles/730026">{% trans %}Trademark and Brand Usage Policy{% endtrans %}</a> <a href="http://www.khanacademy.org/about/tos">{% trans %}Terms of Service{% endtrans %}</a>
                 </b>
                 <br>
             </p>

@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, session, jsonify
-
 from config import config
+from iiab import __version__
 
 blueprint = Blueprint('settings', __name__,
                       template_folder='templates', static_folder='static')
@@ -15,7 +15,7 @@ def available_locales():
 
 @blueprint.route('/')
 def settings_view():
-    return render_template('settings.html')
+    return render_template('settings.html', software_version=__version__)
 
 @blueprint.route('/languages')
 def languages_json():
