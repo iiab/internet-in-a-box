@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, session, jsonify
+from flask import Blueprint, request, render_template, session, jsonify
 from config import config
 from iiab import __version__
 
@@ -6,6 +6,8 @@ blueprint = Blueprint('settings', __name__,
                       template_folder='templates', static_folder='static')
 
 def set_babel(babel_inst):
+    "Called from app initialization to set a variable containing the Babel instance"
+
     global babel_instance
     babel_instance = babel_inst
 
@@ -15,6 +17,7 @@ def available_locales():
 
 @blueprint.route('/')
 def settings_view():
+    "Render the settings page"
     return render_template('settings.html', software_version=__version__)
 
 @blueprint.route('/languages')
@@ -24,10 +27,13 @@ def languages_json():
     trans_dict = { l.language: l.get_display_name() for l in available_locales() }
     return jsonify(trans_dict)
 
-@blueprint.route('/language')
+@blueprint.route('/language', methods = ['GET', 'PUT'])
 def user_language():
-    query = None
-    if query:
+    """Returns the language code stored in the session dict on a GET,
+    sets a new language into the session on a PUT"""
+
+    if request.form.get('language', None) != None:
+        lang = request.form['language']
         trans_codes = [ l.language for l in available_locales() ]
         if lang not in trans_codes:
             return jsonify(result="not_found")
