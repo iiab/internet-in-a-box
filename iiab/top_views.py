@@ -14,9 +14,9 @@ blueprint = Blueprint('top_views', __name__,
 def index():
     error = None
     if config().get_knowledge_dir() is None:
-        error = _('Could not find knowledge directory containing Internet-in-a-Box dataset.') + "  "
-        error += _('The configured knowledge_dir path is') + " " + config().get('DEFAULT', 'knowledge_dir')
-        error += " " + _('and search_for_knowledge_dir is') + " "
+        error = _('Could not find knowledge directory containing the Internet-in-a-Box dataset.  ')
+        error += _("The configured 'knowledge_dir' path is '%(config_dir)s' ", config_dir=config().get('DEFAULT', 'knowledge_dir'))
+        error += _(" and the 'search_for_knowledge_dir' setting is ")
         if config().getboolean('DEFAULT', 'search_for_knowledge_dir'):
             error += _('ON, so all mounted filesystems were checked.')
         else:
