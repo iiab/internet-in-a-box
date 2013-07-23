@@ -51,9 +51,7 @@ def create_app(debug=True, enable_profiler=False, profiler_quiet=False):
     gutenberg.set_flask_app(app)
     gutenberg.init_db()
 
-    babel_instance = configure_babel(app)
-
-    settings_views.set_babel(babel_instance)
+    configure_babel(app)
 
     if enable_profiler:
         from werkzeug.contrib.profiler import ProfilerMiddleware, MergeStream
@@ -96,13 +94,9 @@ def configure_babel(app):
     # flask-babel
     babel = Babel(app)
 
-    @babel.localeselector
-    def get_locale():
-        accepted_langs = [ l.language for l in babel.list_translations() ]
-        preferred_language = session.get("preferred_language", None)
-        if preferred_language != None:
-            return preferred_language
-        else:
-            return request.accept_languages.best_match(accepted_langs)
+    # Wire Babel into the settings
+    # and the settings code into Babel
+    settings_views.set_babel(babel)
+    babel.localeselector(settings_views.current_locale)
 
     return babel

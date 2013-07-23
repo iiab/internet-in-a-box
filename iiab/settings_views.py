@@ -15,6 +15,14 @@ def available_locales():
     "Returns a list of locales with translations available as well as the default locale"
     return babel_instance.list_translations() + [babel_instance.default_locale]
 
+def current_locale():
+    accepted_langs = [ l.language for l in available_locales() ]
+    preferred_language = session.get("preferred_language", None)
+    if preferred_language != None:
+        return preferred_language
+    else:
+        return request.accept_languages.best_match(accepted_langs)
+
 @blueprint.route('/')
 def settings_view():
     "Render the settings page"
@@ -40,5 +48,7 @@ def user_language():
         else:
             session['preferred_language'] = lang
 
-    preferred_lang = session.get('preferred_language', '')
+    # current_locale() will return language from either
+    # request header or from session variable
+    preferred_lang = current_locale()
     return jsonify(language=preferred_lang)
