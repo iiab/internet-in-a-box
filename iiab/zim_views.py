@@ -52,7 +52,7 @@ def zim_main_page_view(humanReadableId):
     except OSError as e:
         html = "<html><body>"
         html += "<p>" + _('Error accessing article.') + "</p>"
-        html += "<p>" + _('Exception:') + " " + str(e) + "</p>\n"
+        html += "<p>" + _('Exception: %(error)s', error=str(e)) + "</p>\n"
         html += "</body></html>"
         return Response(html)
 

@@ -1,6 +1,6 @@
 # Top level URL views
 from flask import (Blueprint, make_response, render_template,
-                   send_file, redirect, abort)
+                   send_file, redirect, abort, Markup)
 from flaskext.babel import gettext as _
 
 from config import config
@@ -14,14 +14,17 @@ blueprint = Blueprint('top_views', __name__,
 def index():
     error = None
     if config().get_knowledge_dir() is None:
-        error = _('Could not find knowledge directory containing Internet-in-a-Box dataset.') + "  "
-        error += _('The configured knowledge_dir path is') + " " + config().get('DEFAULT', 'knowledge_dir')
-        error += " " + _('and search_for_knowledge_dir is') + " "
+        error = _('Could not find knowledge directory containing the Internet-in-a-Box dataset.  ')
+        error += _("The configured '<strong>knowledge_dir</strong>' path is '<strong>%(config_dir)s</strong>' ", config_dir=config().get('DEFAULT', 'knowledge_dir'))
+        error += _(" and the '<strong>search_for_knowledge_dir</strong>' setting is ")
         if config().getboolean('DEFAULT', 'search_for_knowledge_dir'):
-            error += _('ON, so all mounted filesystems were checked.')
+            error += _('<strong>ON</strong>, so all mounted filesystems were checked.')
         else:
-            error += _('OFF, so other mounted filesystems were NOT checked.')
-    return render_template("home.html", error=error)
+            error += _('<strong>OFF</strong>, so other mounted filesystems were NOT checked.')
+    if error is None:
+        return render_template("home.html")
+    else:
+        return render_template("home.html", error=Markup(error))
 
 
 @blueprint.route('detect')

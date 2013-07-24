@@ -100,15 +100,15 @@ Recommended for developers.
     tar xvzf IIAB_QuickStart_Sampler_20130618.tgz
 
 
-4. Run stand-alone server
+5. Run stand-alone server
 
     ./iiab-server
 
 
-5. Point your web browser to http://localhost:25000/iiab
+6. Point your web browser to http://localhost:25000/iiab
 
 
-6. (OPTIONAL) Install IIAB to system
+7. (OPTIONAL) Install IIAB to system
 
     cd internet-in-a-box
     python setup.py install
