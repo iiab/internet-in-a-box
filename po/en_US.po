@@ -1,0 +1,408 @@
+# Translations template for Internet in a Box.
+# Copyright (C) 2013 Humane Informatics, LLC.
+# This file is distributed under the same license as the Internet in a Box
+# project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2013.
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: internet-in-a-box@noreply.github.com\n"
+"POT-Creation-Date: 2013-07-24 11:03-0700\n"
+"PO-Revision-Date: 2013-07-24 22:48+0200\n"
+"Last-Translator: Chris <cjl@laptop.org>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Pootle 2.0.5\n"
+"Generated-By: Babel 0.9.6\n"
+
+#: gutenberg.py:68 zim_views.py:86
+msgid "Please input keyword(s)"
+msgstr "Please input keyword(s)"
+
+#: gutenberg.py:182 templates/macros/_misc.html:29
+#: templates/macros/_misc.html:66
+msgid "Title"
+msgstr "Title"
+
+#: gutenberg.py:183 templates/macros/_misc.html:30
+#: templates/macros/_misc.html:67 templates/macros/_misc.html:100
+msgid "Author"
+msgstr "Author"
+
+#: gutenberg.py:184
+msgid "Contributor"
+msgstr "Contributor"
+
+#: gutenberg.py:185
+msgid "Subject"
+msgstr "Subject"
+
+#: gutenberg.py:186
+msgid "Category"
+msgstr "Category"
+
+#: gutenberg.py:187 templates/settings.html:28 templates/macros/_misc.html:31
+#: templates/macros/_misc.html:68
+msgid "Language"
+msgstr "Language"
+
+#: top_views.py:17
+msgid ""
+"Could not find knowledge directory containing the Internet-in-a-Box "
+"dataset.  "
+msgstr ""
+"Could not find knowledge directory containing the Internet-in-a-Box dataset. "
+" "
+
+#: top_views.py:18
+#, python-format
+msgid ""
+"The configured '<strong>knowledge_dir</strong>' path is "
+"'<strong>%(config_dir)s</strong>' "
+msgstr ""
+"The configured '<strong>knowledge_dir</strong>' path is '<strong>%"
+"(config_dir)s</strong>' "
+
+#: top_views.py:19
+msgid " and the '<strong>search_for_knowledge_dir</strong>' setting is "
+msgstr " and the '<strong>search_for_knowledge_dir</strong>' setting is "
+
+#: top_views.py:21
+msgid "<strong>ON</strong>, so all mounted filesystems were checked."
+msgstr "<strong>ON</strong>, so all mounted filesystems were checked."
+
+#: top_views.py:23
+msgid "<strong>OFF</strong>, so other mounted filesystems were NOT checked."
+msgstr "<strong>OFF</strong>, so other mounted filesystems were NOT checked."
+
+#: zim_views.py:54
+msgid "Error accessing article."
+msgstr "Error accessing article."
+
+#: zim_views.py:55
+#, python-format
+msgid "Exception: %(error)s"
+msgstr "Exception: %(error)s"
+
+#: templates/base.html:9 templates/home.html:6 templates/layouts/base.html:9
+msgid "Internet-in-a-Box"
+msgstr "Internet-in-a-Box"
+
+#: templates/home.html:24 templates/wikipedia_index.html:7
+#: templates/zim/base.html:9 templates/zim/base.html:12
+msgid "Wikipedia"
+msgstr "Wikipedia"
+
+#: templates/home.html:32 templates/layouts/base.html:46
+msgid "Books"
+msgstr "Books"
+
+#: templates/home.html:40
+msgid "Maps"
+msgstr "Maps"
+
+#: templates/home.html:48
+msgid "Video"
+msgstr "Video"
+
+#: templates/home.html:53 templates/home.html:89
+msgid "Software"
+msgstr "Software"
+
+#: templates/home.html:58 templates/settings.html:22
+msgid "Settings"
+msgstr "Settings"
+
+#: templates/home.html:86 templates/settings.html:19
+msgid "Back"
+msgstr "Back"
+
+#: templates/home.html:97 templates/gutenberg/index.html:15
+#: templates/gutenberg/index.html:16 templates/layouts/base_navsearch.html:6
+#: templates/layouts/base_navsearch.html:7 templates/zim/base.html:19
+#: templates/zim/base.html:20
+msgid "Search"
+msgstr "Search"
+
+#: templates/home.html:101
+msgid "Download Linux"
+msgstr "Download Linux"
+
+#: templates/home.html:105
+msgid "Browse Open Source Software"
+msgstr "Browse Open Source Software"
+
+#: templates/khan_index.html:6 templates/khan_video.html:6
+#: templates/wikipedia_index.html:6 templates/layouts/base.html:45
+#: templates/zim/base.html:8
+msgid "Home"
+msgstr "Home"
+
+#: templates/khan_index.html:7
+msgid "Videos from Khan Academy"
+msgstr "Videos from Khan Academy"
+
+#: templates/settings.html:35
+msgid "Chat"
+msgstr "Chat"
+
+#: templates/settings.html:39
+msgid "Off"
+msgstr "Off"
+
+#: templates/settings.html:42
+msgid "On"
+msgstr "On"
+
+#: templates/settings.html:48
+msgid "About"
+msgstr "About"
+
+#: templates/settings.html:51
+msgid "Software Version"
+msgstr "Software Version"
+
+#: templates/settings.html:54
+msgid "Data Version"
+msgstr "Data Version"
+
+#: templates/settings.html:57
+msgid "Licenses"
+msgstr "Licenses"
+
+#: templates/settings.html:62
+msgid ""
+"<a href=\"http://www.wikipedia.org/\">Wikipedia</a>&reg; is a registered "
+"trademark of the <a "
+"href=\"http://www.wikimediafoundation.org/\">Wikimedia Foundation, "
+"Inc.</a>, a non-profit organization. Text is available under the <a "
+"href=\"http://en.wikipedia.org/wiki/Wikipedia"
+":Text_of_Creative_Commons_Attribution-"
+"ShareAlike_3.0_Unported_License\">Creative Commons Attribution-ShareAlike"
+" License (\"CC BY-SA\")</a>."
+msgstr ""
+"<a href=\"http://www.wikipedia.org/\">Wikipedia</a>&reg; is a registered "
+"trademark of the <a href=\"http://www.wikimediafoundation.org/\">Wikimedia "
+"Foundation, Inc.</a>, a non-profit organization. Text is available under the "
+"<a href=\"http://en.wikipedia.org/wiki/Wikipedia"
+":Text_of_Creative_Commons_Attribution-"
+"ShareAlike_3.0_Unported_License\">Creative Commons Attribution-ShareAlike "
+"License (\"CC BY-SA\")</a>."
+
+#: templates/settings.html:70
+msgid ""
+"Maps - &copy; OpenStreetMap contributors - <a "
+"href=\"http://www.openstreetmap.org/\">OpenStreetMap</a> is open data, "
+"licensed under the <a "
+"href=\"http://opendatacommons.org/licenses/odbl/\">Open Data Commons Open"
+" Database License (ODbL).</a> <a "
+"href=\"http://www.openstreetmap.org/copyright\">Copyright and "
+"License</a>."
+msgstr ""
+"Maps - &copy; OpenStreetMap contributors - <a "
+"href=\"http://www.openstreetmap.org/\">OpenStreetMap</a> is open data, "
+"licensed under the <a href=\"http://opendatacommons.org/licenses/odbl/\">Open "
+"Data Commons Open Database License (ODbL).</a> <a "
+"href=\"http://www.openstreetmap.org/copyright\">Copyright and License</a>."
+
+#: templates/settings.html:78
+msgid ""
+"Map cartography in OpenStreetMap map tiles is licensed under the <a "
+"href=\"http://creativecommons.org/licenses/by-sa/2.0/\">Creative Commons "
+"Attribution-ShareAlike 2.0 license (CC BY-SA)</a>"
+msgstr ""
+"Map cartography in OpenStreetMap map tiles is licensed under the <a "
+"href=\"http://creativecommons.org/licenses/by-sa/2.0/\">Creative Commons "
+"Attribution-ShareAlike 2.0 license (CC BY-SA)</a>"
+
+#: templates/settings.html:86
+msgid ""
+"The KHAN ACADEMY&reg; word mark is a trademark of Khan Academy, Inc.  "
+"NOTE: All Khan Academy content is available for free at <a "
+"href=\"http://www.khanacademy.org/\">www.khanacademy.org</a>. Videos are "
+"licensed under the <a href=\"http://creativecommons.org/licenses/by-nc-"
+"sa/3.0/us/\">Creative Commons Attribution-NonCommercial-ShareAlike 3.0 "
+"(CC BY-NC-SA) license</a>."
+msgstr ""
+"The KHAN ACADEMY&reg; word mark is a trademark of Khan Academy, Inc.  NOTE: "
+"All Khan Academy content is available for free at <a "
+"href=\"http://www.khanacademy.org/\">www.khanacademy.org</a>. Videos are "
+"licensed under the <a href=\"http://creativecommons.org/licenses/by-nc-"
+"sa/3.0/us/\">Creative Commons Attribution-NonCommercial-ShareAlike 3.0 (CC "
+"BY-NC-SA) license</a>."
+
+#: templates/settings.html:94
+msgid ""
+"<a href=\"http://internet-in-a-box.org/\">Internet-in-a-Box</a> software "
+"- &copy; 2013 <a href=\"http://www.humaneinfo.com/\">Humane Informatics, "
+"LLC</a>. All rights reserved. This software is licensed under the <a "
+"href=\"http://opensource.org/licenses/BSD-2-Clause\">BSD 2-clause "
+"license</a>."
+msgstr ""
+"<a href=\"http://internet-in-a-box.org/\">Internet-in-a-Box</a> software - "
+"&copy; 2013 <a href=\"http://www.humaneinfo.com/\">Humane Informatics, "
+"LLC</a>. All rights reserved. This software is licensed under the <a "
+"href=\"http://opensource.org/licenses/BSD-2-Clause\">BSD 2-clause license</a>."
+
+#: templates/wikipedia_index.html:22
+msgid "Articles"
+msgstr "Articles"
+
+#: templates/gutenberg/author-index.html:5
+#: templates/gutenberg/title-index.html:10
+msgid "Project Gutenberg Index by Book Title"
+msgstr "Project Gutenberg Index by Book Title"
+
+#: templates/gutenberg/author-index.html:9
+#: templates/gutenberg/title-index.html:14
+#, python-format
+msgid "<strong>%(total)s</strong> pages of books by title."
+msgstr "<strong>%(total)s</strong> pages of books by title."
+
+#: templates/gutenberg/author-index.html:13
+#: templates/gutenberg/title-index.html:18
+msgid "No books found. Perhaps the data needs to be updated."
+msgstr "No books found. Perhaps the data needs to be updated."
+
+#: templates/gutenberg/book_details.html:11
+msgid "Book Details"
+msgstr "Book Details"
+
+#: templates/gutenberg/index.html:3 templates/gutenberg/index.html:11
+msgid "Project Gutenberg"
+msgstr "Project Gutenberg"
+
+#: templates/gutenberg/index.html:12
+msgid "Project Gutenberg Free Books Browser"
+msgstr "Project Gutenberg Free Books Browser"
+
+#: templates/gutenberg/index.html:20
+msgid "List by Title"
+msgstr "List by Title"
+
+#: templates/gutenberg/index.html:21
+msgid "List by Author"
+msgstr "List by Author"
+
+#: templates/gutenberg/index.html:25
+msgid "Search Tips"
+msgstr "Search Tips"
+
+#: templates/gutenberg/index.html:26
+msgid "Search terms will search for matches in book titles and authors."
+msgstr "Search terms will search for matches in book titles and authors."
+
+#: templates/gutenberg/index.html:27
+msgid "Multiple terms may be combined with AND, ANDMAYBE, ANDNOT, OR"
+msgstr "Multiple terms may be combined with AND, ANDMAYBE, ANDNOT, OR"
+
+#: templates/gutenberg/index.html:28
+msgid ""
+"The search may specify the category to search using the form cat:term "
+"where categories include title, creator, contributor, subject, category "
+"and language."
+msgstr ""
+"The search may specify the category to search using the form cat:term where "
+"categories include title, creator, contributor, subject, category and "
+"language."
+
+#: templates/gutenberg/search.html:14 templates/zim/search.html:13
+#, python-format
+msgid "Search results for \"%(keywords)s\""
+msgstr "Search results for \"%(keywords)s\""
+
+#: templates/gutenberg/search.html:16 templates/zim/search.html:15
+msgid "Keywords needed!"
+msgstr "Keywords needed!"
+
+#: templates/gutenberg/search.html:21 templates/zim/search.html:20
+#, python-format
+msgid ""
+"<strong>%(total)s</strong> found for your search "
+"\"<strong>%(keywords)s</strong>\"."
+msgstr ""
+"<strong>%(total)s</strong> found for your search \"<strong>%"
+"(keywords)s</strong>\"."
+
+#: templates/gutenberg/search.html:25 templates/zim/search.html:24
+#, python-format
+msgid "Sorry, Nothing found for your search \"<strong>%(keywords)s</strong>\"."
+msgstr "Sorry, Nothing found for your search \"<strong>%(keywords)s</strong>\"."
+
+#: templates/gutenberg/search.html:27 templates/zim/search.html:26
+msgid "Did you mean?"
+msgstr "Did you mean?"
+
+#: templates/gutenberg/search.html:43 templates/zim/search.html:42
+msgid ""
+"\n"
+"    <p>Suggestions:</p>\n"
+"    <ul>\n"
+"       <li>Make sure all words are spelled correctly.</li>\n"
+"       <li>Try different keywords.</li>\n"
+"       <li>Try more general keywords.</li>\n"
+"    </ul>\n"
+"    "
+msgstr ""
+"\n"
+"    <p>Suggestions:</p>\n"
+"    <ul>\n"
+"       <li>Make sure all words are spelled correctly.</li>\n"
+"       <li>Try different keywords.</li>\n"
+"       <li>Try more general keywords.</li>\n"
+"    </ul>\n"
+"    "
+
+#: templates/macros/_ask_user_to_update_ie.html:2
+msgid ""
+"You are using an <strong>outdated</strong> browser. Please <a "
+"href=\"http://browsehappy.com/\">upgrade your browser</a> or <a "
+"href=\"http://www.google.com/chromeframe/?redirect=true\">activate Google"
+" Chrome Frame</a> to improve your experience."
+msgstr ""
+"You are using an <strong>outdated</strong> browser. Please <a "
+"href=\"http://browsehappy.com/\">upgrade your browser</a> or <a "
+"href=\"http://www.google.com/chromeframe/?redirect=true\">activate Google "
+"Chrome Frame</a> to improve your experience."
+
+#: templates/macros/_footer.html:4
+msgid "Internet in a Box"
+msgstr "Internet in a Box"
+
+#: templates/macros/_footer.html:6
+msgid "The World's Free Information at your Fingertips"
+msgstr "The World's Free Information at your Fingertips"
+
+#: templates/macros/_misc.html:41
+msgid "Not Available"
+msgstr "Not Available"
+
+#: templates/macros/_misc.html:141
+msgid "Name"
+msgstr "Name"
+
+#: templates/macros/_misc.html:142
+msgid "Format"
+msgstr "Format"
+
+#: templates/macros/_misc.html:160
+msgid "Read"
+msgstr "Read"
+
+#: templates/macros/_misc.html:165
+msgid "Download (EPub)"
+msgstr "Download (EPub)"
+
+#: templates/macros/_misc.html:176 templates/macros/_misc.html:178
+#: templates/macros/_zim_search.html:22
+msgid "Previous"
+msgstr "Previous"
+
+#: templates/macros/_misc.html:198 templates/macros/_misc.html:200
+#: templates/macros/_zim_search.html:32
+msgid "Next"
+msgstr "Next"
