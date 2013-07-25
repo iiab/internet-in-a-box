@@ -13,10 +13,24 @@ def set_babel(babel_inst):
 
 def available_locales():
     "Returns a list of locales with translations available as well as the default locale"
-    return babel_instance.list_translations() + [babel_instance.default_locale]
+
+    avail_locales =  babel_instance.list_translations()
+    lang_names = [ l.language for l in avail_locales ]
+    if babel_instance.default_locale.language not in lang_names:
+        avail_locales.append(babel_instance.default_locale)
+    return avail_locales
+
+def languages_dict():
+    langs = {}
+    for locale in available_locales():
+        lang_code = locale.language
+        if locale.territory != None:
+            lang_code += "_" + locale.territory
+        langs[lang_code] = locale.get_display_name()
+    return langs
 
 def current_locale():
-    accepted_langs = [ l.language for l in available_locales() ]
+    accepted_langs = languages_dict().keys()
     preferred_language = session.get("preferred_language", None)
     if preferred_language != None:
         return preferred_language
@@ -32,8 +46,7 @@ def settings_view():
 def languages_json():
     "Returns a JSON container with the language code and their display name"
 
-    trans_dict = { l.language: l.get_display_name() for l in available_locales() }
-    return jsonify(trans_dict)
+    return jsonify(languages_dict())
 
 @blueprint.route('/language', methods = ['GET', 'PUT'])
 def user_language():
@@ -42,8 +55,7 @@ def user_language():
 
     if request.form.get('language', None) != None:
         lang = request.form['language']
-        trans_codes = [ l.language for l in available_locales() ]
-        if lang not in trans_codes:
+        if not languages_dict().has_key(lang):
             return jsonify(result="not_found")
         else:
             session['preferred_language'] = lang
