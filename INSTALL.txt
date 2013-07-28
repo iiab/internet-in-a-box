@@ -50,7 +50,9 @@ ALTERNATIVE: Installation from yum repository on Fedora 18 or OLPC OS
 
 RPM packages are available for Fedora 18 and OLPC OS 13.1
 
-1. Configure Internet-in-a-Box repository
+1. Run as su.
+
+2. Configure Internet-in-a-Box repository
 
 cat <<EOF >/etc/yum.repos.d/iiab.repo
 [iiab]
@@ -60,12 +62,12 @@ enabled=1
 gpgcheck=0
 EOF
 
-2. Install Internet-in-a-Box from Yum
+3. Install Internet-in-a-Box from Yum
 
     yum --nogpgcheck install Internet-in-a-Box
 
-3. Follow instructions 3 - 5 from Quick Start section above, or WSGI
-configuration section below.
+4. Follow instructions 3 - 5 from Quick Start section above, or 
+start from the beginning of the WSGI configuration section below.
 
 
 ALTERNATIVE: Installation from Git Sources
