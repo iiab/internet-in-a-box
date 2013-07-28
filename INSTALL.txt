@@ -32,8 +32,8 @@ instead of 'pip')
     sudo pip install Internet-in-a-Box
 
 
-3. Download the QuickStart Sampler dataset and untar in the /knowledge directory
-(or another of your choice)
+3. Download the QuickStart Sampler dataset and untar in root filesystem (or another 
+location of your choice)
     cd /
     sudo wget http://downloads.internet-in-a-box.org/IIAB_QuickStart_Sampler_20130618.tgz
     sudo tar xvzf IIAB_QuickStart_Sampler_20130618.tgz
