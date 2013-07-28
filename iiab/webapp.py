@@ -6,7 +6,7 @@ import urlparse
 
 from config import config
 import top_views
-#import search_views
+import search_views
 import map_views
 import video_views
 import gutenberg
@@ -36,7 +36,7 @@ def create_app(debug=True, enable_profiler=False, profiler_quiet=False):
 
     blueprints = [
         (top_views.blueprint, base_prefix),
-        #(search_views.blueprint, base_prefix),
+        (search_views.blueprint, base_prefix),
         (gutenberg.gutenberg, base_prefix + "books"),
         (map_views.blueprint, base_prefix + "maps"),
         (video_views.blueprint, base_prefix + "video"),
