@@ -32,11 +32,13 @@ instead of 'pip')
     sudo pip install Internet-in-a-Box
 
 
-3. Download the QuickStart Sampler dataset and untar
+3. Download the QuickStart Sampler dataset and untar in the /knowledge directory
+(or another of your choice)
+    cd /
+    sudo wget http://downloads.internet-in-a-box.org/IIAB_QuickStart_Sampler_20130618.tgz
+    sudo tar xvzf IIAB_QuickStart_Sampler_20130618.tgz
 
-    wget http://downloads.internet-in-a-box.org/IIAB_QuickStart_Sampler_20130618.tgz
-    tar xvzf IIAB_QuickStart_Sampler_20130618.tgz
-
+*Refer to the section 'Dataset Location' on specifying another directory.
 
 4. Run the stand-alone server from the directory you untarred the QuickStart sampler.
     iiab-server
@@ -97,9 +99,9 @@ Recommended for developers.
 
 
 4. Download and untar the QuickStart Sampler dataset
-
-    wget http://downloads.internet-in-a-box.org/IIAB_QuickStart_Sampler_20130618.tgz
-    tar xvzf IIAB_QuickStart_Sampler_20130618.tgz
+    cd /
+    sudo wget http://downloads.internet-in-a-box.org/IIAB_QuickStart_Sampler_20130618.tgz
+    sudo tar xvzf IIAB_QuickStart_Sampler_20130618.tgz
 
 
 5. Run stand-alone server
@@ -158,6 +160,9 @@ launch instances of the IIAB software as needed to respond to HTTP requests.
 Running IIAB as a WSGI service requires two additional Apache modules: mod_wsgi
 and mod_sendfile
 
+Before proceeding, be sure you have already installed internet-in-a-box via pip 
+or git (Ubuntu/Fedora) or yum repository (Fedora).
+
 1. Install and activate mod_wsgi and mod_sendfile
 
     Debian/Ubuntu:
@@ -177,23 +182,24 @@ document root)
 
 3. Configure Apache for IIAB
 
-You must turn on XSendFile and add a WSGI script alias to the iiab.wsgi script.
-
-You must set up an alias for static files from /iiabstatic to the installation
-directory of IIAB.  This path will vary depending on your configuration.
-
-You need to find the iiabstatic directory name, run:
+First, find the iiabstatic directory name, so run:
 python -c 'import iiab; import os; print os.path.dirname(iiab.__file__) + "/static"'
 
-You should create a new file at /etc/httpd/conf.d/iiab.conf (Fedora/OLPC)
-or /etc/apache2/conf.d/iiab.conf (Ubuntu/Debian) containing the following:
+Create a new file at /etc/httpd/conf.d/iiab.conf (Fedora/OLPC)
+or /etc/apache2/conf.d/iiab.conf (Ubuntu/Debian) with your favorite text editor, 
+containing the following necessary information:
 
 XSendFile on
 XSendFilePath /
 WSGIScriptAlias /iiab /var/www/iiab.wsgi
 Alias /iiabstatic /usr/lib/python2.7/site-packages/iiab/static
 
+The information turns on XSendFile and adds a WSGI script alias to the iiab.wsgi script.  
+It also sets up an alias for static files from /iiabstatic to the installation directory 
+of IIAB. (You may have to change your path depending on your configuration.)
+
 IF you are using Apache 2.4 or above (Fedora 18 and OLPC OS) also add:
+
 <Directory /usr/lib/python2.7/site-packages/iiab/static>
     Require all granted
 </Directory>
@@ -201,7 +207,7 @@ IF you are using Apache 2.4 or above (Fedora 18 and OLPC OS) also add:
 Where /usr/lib/python2.7/dist-packages/iiab/static should be replaced
 with the iiabstatic directory from above.
 
-Note, if you have an exsting Apache setup you will probably want to
+Note, if you have an existing Apache setup you will probably want to
 configure these aliases in the context of a VirtualHost instead of globally
 as shown.
 
@@ -216,12 +222,15 @@ Fedora/OLPC:
 
 5. Point your browser at:
     http://localhost/iiab
+    
+* If you haven't already, please store the Quickstart Sampler contents in /knowledge
+    
 
 
 Dataset Location
 ----------------
 
-The IIAB dataset is stored in a directory named 'knowledge'.  
+The IIAB dataset is stored in a directory named 'knowledge'.
 
 By default, the IIAB software searches for its dataset 'knowledge' directory in
 the root filesystem, and then in the root of every mounted disk.  It then
