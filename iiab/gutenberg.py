@@ -167,7 +167,7 @@ def text(textId):
 
     pgid = textId2number(textId)
     if find_htmlz(pgid) is not None:
-        htmlz_url = url_for('gutenberg_content_views.htmlz_index', pgid=pgid)
+        htmlz_url = url_for('gutenberg_content_views.htmlz', pgid=pgid, path='index.html')
     else:
         htmlz_url = None
     if find_epub(pgid) is not None:

@@ -138,8 +138,10 @@
 {% macro render_book_files(record, fields, class='') %}
 <table class='{{ class }}'>
     <thead>
+        {% if record['gutenberg_files']|length > 0 %}
         <th>{% trans %}Name{% endtrans %}</th>
         <th>{% trans %}Format{% endtrans %}</th>
+        {% endif %}
     </thead>
     <tbody>
     {% set index = 0 %}

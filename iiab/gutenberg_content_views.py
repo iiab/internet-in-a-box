@@ -22,9 +22,10 @@ def htmlz(pgid, path):
     return data
 
 
-@blueprint.route('/htmlz/<int:pgid>')
-def htmlz_index(pgid):
-    return htmlz(pgid, 'index.html')
+# This doesn't work because the relative paths are wrong
+#@blueprint.route('/htmlz/<int:pgid>')
+#def htmlz_index(pgid):
+#    return htmlz(pgid, 'index.html')
 
 
 @blueprint.route('/epub/<int:pgid>')
