@@ -1,5 +1,6 @@
 recursive-include iiab/templates *
 recursive-include iiab/static *
+recursive-include iiab/translations *
 include README.md
 include iiab/defaults.ini
 include iiab/wsgi.ini
