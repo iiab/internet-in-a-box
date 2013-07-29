@@ -34,7 +34,9 @@ L.Control.GeoSearch = L.Control.extend({
             'searchLabel': options.searchLabel || 'search for address...',
             'notFoundMessage' : options.notFoundMessage || 'Sorry, that address could not be found.',
             'messageHideDelay': options.messageHideDelay || 3000,
-            'zoomLevel': options.zoomLevel || 18
+            'zoomLevel': options.zoomLevel || 18,
+
+            'maxMarkers': options.maxMarkers || 1
         };
     },
 
@@ -109,17 +111,26 @@ L.Control.GeoSearch = L.Control.extend({
             throw this._config.notFoundMessage;
 
         this._map.fireEvent('geosearch_foundlocations', {Locations: results});
-        this._showLocation(results[0]);
+        this._showLocations(results);
     },
 
-    _showLocation: function (location) {
-        if (typeof this._positionMarker === 'undefined')
-            this._positionMarker = L.marker([location.Y, location.X]).addTo(this._map);
-        else
-            this._positionMarker.setLatLng([location.Y, location.X]);
+    _showLocations: function (results) {
+        if (typeof this._layer != 'undefined') {
+            this._map.removeLayer(this._layer);
+            this._layer = null;
+        }
 
-        this._map.setView([location.Y, location.X], this._config.zoomLevel, false);
-        this._map.fireEvent('geosearch_showlocation', {Location: location});
+        this._markerList = []
+        for (var ii=0; ii < results.length && ii < this._config.maxMarkers; ii++) {
+            var location = results[ii];
+            var marker = L.marker([location.Y, location.X]).bindPopup(location.Label);
+            this._markerList.push(marker);
+        }
+        this._layer = L.layerGroup(this._markerList).addTo(this._map);
+
+        var firstLocation = results[0];
+        this._map.setView([firstLocation.Y, firstLocation.X], this._config.zoomLevel, false);
+        this._map.fireEvent('geosearch_showlocation', {Location: firstLocation});
     },
 
     _printError: function(message) {
