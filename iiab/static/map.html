@@ -4,6 +4,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <link rel="stylesheet" href="lib/leaflet/leaflet.css" />
         <link rel="stylesheet" href="lib/leaflet/leaflet-search.css" />
+        <link rel="stylesheet" href="lib/leaflet/geosearch/l.geosearch.css" />
 
         <style type="text/css">
             body {
@@ -17,7 +18,9 @@
 
         <script src="lib/leaflet/leaflet.js"></script>
         <script src="lib/leaflet/leaflet-search.js"></script>
-        <script src="lib/jquery-1.9.0.min.js"></script>
+        <script src="lib/jquery-1.9.0.js"></script>
+        <script src="lib/leaflet/geosearch/l.control.geosearch.js"></script>
+        <script src="lib/leaflet/geosearch/l.geosearch.provider.iiab.js"></script>
 
         <script type="text/javascript">
             $(function () {
@@ -36,11 +39,15 @@
                     var json = {},
                         propName = this.options.propertyName,
                         propLoc = this.options.propertyLoc;
-                    console.log(rawJson);
                     for (var r in rawJson) {
-                        console.debug(r);
-                        json[rawJson[r][propName]] = L.latLng(rawJson[r][propLoc[0] ], rawJson[r][propLoc[1]] );
+                        var id = rawJson[r]['geonameid'],
+                            lat = rawJson[r][propLoc[0]],
+                            lng = rawJson[r][propLoc[1]];
+
+                        json[id] = {'rec': rawJson[r], 
+                            'latLng': L.latLng(lat, lng)};
                     }
+                    console.log(json);
                     return json;
                 }
 
@@ -57,7 +64,7 @@
                     //jsonpParam: 'json_callback',
                     layer: searchLayer,
                     markerLocation: true,
-                    minLength: 2,
+                    minLength: 3, // input length to start autocompleting
                     position: 'topright',
                     propertyLoc: ['latitude', 'longitude'],
                     propertyName: 'name',
@@ -66,7 +73,12 @@
                     textCancel: 'Cancel',       // title in cancel button
                     textErr: 'Location not found',
                     tipAutoSubmit: true,
+                    // TODO: note this value should be passed to search service pager to get x results.
+                    toolTipLimit: 40, // max number of autocomplete suggestions
                 };
+
+                // monkey patch function so we can show multiple results
+                //L.Control.Search.prototype._getLocation = function(key) { console.log("custom " + key + ' ' + Object.keys(this._recordsCache).length); return Object.keys(this._recordsCache).length > 0; };
 
                 searchControl = new L.Control.Search(searchOpts);
                 searchControl.on('search_locationfound',function(e) {  
@@ -74,7 +86,15 @@
                         marker = this._markerLoc;       
                     marker.bindPopup(popup).openPopup();
                 });
-                map.addControl(searchControl);
+                //map.addControl(searchControl);
+
+                var geoOptions = {
+                    provider: new L.GeoSearch.Provider.iiab(),
+                    searchLabel: "Search...",
+                    notFoundMessage: "No matches found",
+                    zoomLevel: 8,
+                };
+                new L.Control.GeoSearch(geoOptions).addTo(map);
 
                 map.fitWorld().setZoom(3);  // default world view
                 //map.locate({setView: true, maxZoom: 15});
