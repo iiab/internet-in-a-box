@@ -3,9 +3,7 @@
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
         <link rel="stylesheet" href="lib/leaflet/leaflet.css" />
-
-        <script src="lib/leaflet/leaflet.js"></script>
-        <script src="lib/jquery-1.9.0.min.js"></script>
+        <link rel="stylesheet" href="lib/leaflet/leaflet-search.css" />
 
         <style type="text/css">
             body {
@@ -17,6 +15,10 @@
             }
         </style>
 
+        <script src="lib/leaflet/leaflet.js"></script>
+        <script src="lib/leaflet/leaflet-search.js"></script>
+        <script src="lib/jquery-1.9.0.min.js"></script>
+
         <script type="text/javascript">
             $(function () {
                 var map = L.map('map'); /*.setView([51.505, -0.09], 14);*/
@@ -24,8 +26,58 @@
                     attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
                     maxZoom: 15
                 }).addTo(map);
+
+
+                // Create a layer for the search results
+                var searchLayer = new L.LayerGroup();
+                map.addLayer(searchLayer);
+
+                function filterMapJSON(rawJson) {
+                    var json = {},
+                        propName = this.options.propertyName,
+                        propLoc = this.options.propertyLoc;
+                    console.log(rawJson);
+                    for (var r in rawJson) {
+                        console.debug(r);
+                        json[rawJson[r][propName]] = L.latLng(rawJson[r][propLoc[0] ], rawJson[r][propLoc[1]] );
+                    }
+                    return json;
+                }
+
+                // Leaflet-Search options adapted from vendor demo of mobile tailored search
+                var searchOpts = {
+                    url: '/iiab/search_maps?q={s}',
+                    autoType: false,
+                    // Beware that autoCollapse false and markerLocation true might fail
+                    autoCollapse: false,
+                    autoCollapseTime: 6000,
+                    animateLocation: true,
+                    delayType: 800,  // lengthen delay before autocomplete. On mobile devices typing is slower
+                    filterJSON: filterMapJSON,
+                    //jsonpParam: 'json_callback',
+                    layer: searchLayer,
+                    markerLocation: true,
+                    minLength: 2,
+                    position: 'topright',
+                    propertyLoc: ['latitude', 'longitude'],
+                    propertyName: 'name',
+                    // TODO: Localize the following
+                    text: 'Search...',
+                    textCancel: 'Cancel',       // title in cancel button
+                    textErr: 'Location not found',
+                    tipAutoSubmit: true,
+                };
+
+                searchControl = new L.Control.Search(searchOpts);
+                searchControl.on('search_locationfound',function(e) {  
+                    var popup = e.text,
+                        marker = this._markerLoc;       
+                    marker.bindPopup(popup).openPopup();
+                });
+                map.addControl(searchControl);
+
                 map.fitWorld().setZoom(3);  // default world view
-                map.locate({setView: true, maxZoom: 15});
+                //map.locate({setView: true, maxZoom: 15});
             });
         </script>
     </head>
