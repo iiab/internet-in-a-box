@@ -23,12 +23,11 @@ L.AutoComplete = L.Class.extend({
     },
 
     setConfig: function (options) {
-        var _this = this;
         this._config = {
             'maxSuggestions': options.maxSuggestions || 10,
             'onMakeSuggestionHTML': options.onMakeSuggestionHTML || function (geosearchResult) {
-                return _this._htmlEscape(geosearchResult.Label);
-            },
+                return this._htmlEscape(geosearchResult.Label);
+            }.bind(this),
         };
     },
 
@@ -95,13 +94,12 @@ L.AutoComplete = L.Class.extend({
         tip.innerHTML = this._config.onMakeSuggestionHTML(result);
         tip._text = result.Label;
         L.DomUtil.addClass(tip, 'leaflet-geosearch-suggestion'); //for styling
-        var _this = this;
         L.DomEvent
             .disableClickPropagation(tip)
             .on(tip, 'click', L.DomEvent.stop, this) // from search plugin. why necessary? why separate?
             .on(tip, 'click', function(e) {
-                _this._onSelection(tip._text);
-            }, this);
+                this._onSelection(tip._text);
+            }.bind(this), this);
         return tip;
     },
     _onSelectedUpdate: function () {
@@ -191,10 +189,9 @@ L.Control.GeoSearch = L.Control.extend({
         this._searchbox = searchbox;
         this._lastUserInput = '';
 
-        var _this = this;
         this._autocomplete = new L.AutoComplete({}).addTo(this._container, function (suggestionText) {
-            _this._searchbox.value = suggestionText;
-        });
+            this._searchbox.value = suggestionText;
+        }.bind(this));
 
         var msgbox = document.createElement('div');
         msgbox.id = 'leaflet-control-geosearch-msg';
@@ -218,13 +215,12 @@ L.Control.GeoSearch = L.Control.extend({
     },
     
     geosearch: function (qry) {
-        var _this = this;
         var onSuccess = function(results) {
-            _this._processResults(results);
-        };
+            this._processResults(results);
+        }.bind(this);
         var onFailure = function(error) {
-            _this._printError(error);
-        };
+            this._printError(error);
+        }.bind(this);
         this.geosearch_ext(qry, onSuccess, onFailure);
     },
 
@@ -259,21 +255,19 @@ L.Control.GeoSearch = L.Control.extend({
     geosearch_autocomplete: function (qry, request_delay_ms) {
         clearTimeout(this._autocomplete_request_timer);
 
-        var _this = this;
-
         // local func rather than passing show func directly so correct context gets passed to show.
         var onSuccess = function(results) {
-            _this._autocomplete.show(results);
-        }
+            this._autocomplete.show(results);
+        }.bind(this);
 
         var onFailure = function(error) {
             console.debug(error); 
-            _this._autocomplete.hide();
-        };
+            this._autocomplete.hide();
+        }.bind(this);
 
         this._autocomplete_request_timer = setTimeout(function () {
-            _this.geosearch_ext(qry, onSuccess, onFailure);
-        }, request_delay_ms);
+            this.geosearch_ext(qry, onSuccess, onFailure);
+        }.bind(this), request_delay_ms);
     },
 
     _processResults: function(results) {
