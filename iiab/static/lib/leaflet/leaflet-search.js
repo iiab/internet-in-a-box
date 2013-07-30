@@ -644,12 +644,21 @@ L.Control.Search = L.Control.extend({
 				this.collapse();
 			else
 			{
+                if (Object.keys(this._recordsCache).length > 0) {
+                    for (var id in this._recordsCache) {
+                        this.showLocation(this._recordsCache[id].latLng, this._recordsCache[id].rec.name);
+                    }
+                } else {
+                    this.showAlert();
+                }
+                /*
 				var loc = this._getLocation(this._input.value);
 				
 				if(loc)
 					this.showLocation(loc, this._input.value);
 				else
 					this.showAlert();
+                */
 				//this.collapse();
 				//FIXME if collapse in _handleSubmit hide _markerLoc!
 			}

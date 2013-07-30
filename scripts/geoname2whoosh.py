@@ -2,6 +2,7 @@
 
 import sys
 import os
+from whoosh import analysis
 from whoosh.index import create_in
 import whoosh.fields as wf
 from whoosh.fields import ID, TEXT, KEYWORD, STORED, NUMERIC
@@ -28,8 +29,11 @@ def get_schema():
     # the side effect seems to be that it polutes the match streams so that
     # spelling suggestions are meaningless.
 
+    MIN_LEN = 3
+    ngram_analyzer = analysis.NgramWordAnalyzer(MIN_LEN)
     return wf.Schema(geonameid=ID(unique=True, stored=True),
         name=TEXT(stored=True, spelling=True), 
+        ngram_name=TEXT(analyzer=ngram_analyzer, phrase=False),
         latitude=STORED, 
         longitude=STORED,
         country_code=TEXT(stored=True),
@@ -63,7 +67,7 @@ def passes_whitelist(record, feature_code_whitelist):
 class WhooshGenerator:
     def setup(self, index_dir, schema):
         self.whoosh_index = create_in(index_dir, schema)
-        self.writer = whoosh_index.writer()
+        self.writer = self.whoosh_index.writer()
 
     def write(self, record):
         self.writer.add_document(**record)
@@ -146,6 +150,14 @@ def parse_geo(geo, index_dir, whitelist_filename):
 
             # Note that whitelist filter should be applied before filtering out non-schema fields
             if passes_whitelist(record, feature_code_whitelist):
+                # manipulate record to include special duplicated field for ngram parsing
+                # beware hardcoded field names must be kept in sync with data and whoosh schemas
+                NGRAM_FIELDNAME = 'ngram_name'
+                NGRAM_SRC_FIELD = 'name'
+                assert NGRAM_FIELDNAME in schema
+                assert NGRAM_SRC_FIELD in record
+                record[NGRAM_FIELDNAME] = record[NGRAM_SRC_FIELD]
+
                 # remove fields not stored in the schema
                 pruned_record = { k: v for k,v in record.items() if k in schema }
                 generator.write(pruned_record)
