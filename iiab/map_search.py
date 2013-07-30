@@ -21,7 +21,7 @@ class MapSearch(object):
         query = unicode(query)  # Must be unicode
         ix = open_dir(self.index_dir)
         with ix.searcher() as searcher:
-            query = QueryParser("name", ix.schema).parse(query)
+            query = QueryParser("ngram_name", ix.schema).parse(query)
             if pagelen is not None and pagelen != 0:
                 try:
                     results = searcher.search_page(query, page, pagelen=pagelen,

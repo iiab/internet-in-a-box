@@ -36,3 +36,39 @@
 	border-radius: 4px;
 	border: none;
 }
+.leaflet-geosearch-autocomplete {
+    position:absolute;
+    top:100%;
+    left:0;
+    float:left;
+    /*min-width:80px;
+    max-height:106px;/*(.search-tip height * 5)*/
+    width:100%;
+    box-shadow: 0 0 8px rgba(0,0,0,0.4);
+    -webkit-border-radius: 5px;
+    -webkit-border-top-left-radius: 0;
+    -moz-border-radius: 5px;
+    -moz-border-radius-topleft: 0;
+    border-radius: 5px;
+    border-top-left-radius: 0;
+    background-color: rgba(0, 0, 0, 0.25);
+    z-index:1010;
+    overflow-y:auto;
+    overflow-x:hidden;
+}
+.leaflet-geosearch-suggestion {
+    font-size:.85em;
+    margin:2px;
+    padding:2px;
+    display:block;
+    color:black;
+    background: #ddd;
+    border-radius:.25em;
+    text-decoration:none;
+    white-space:nowrap;
+    font-size:.85em;
+    vertical-align:center;
+}
+.leaflet-geosearch-suggestion:hover .leaflet-geosearch-suggestion-selected {
+    background-color: #fff;
+}
