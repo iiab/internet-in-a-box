@@ -69,6 +69,6 @@
     font-size:.85em;
     vertical-align:center;
 }
-.leaflet-geosearch-suggestion:hover .leaflet-geosearch-suggestion-selected {
+.leaflet-geosearch-suggestion:hover, .leaflet-geosearch-suggestion-selected {
     background-color: #fff;
 }
