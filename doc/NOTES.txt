@@ -1061,3 +1061,8 @@ Module Sizes
 92G ubuntu
 73G khanacademy
 
+-----
+Generating module digests - 7/21/13
+for name in *; do date; echo $name; (cd $name; md5deep -l -r . >MANIFEST); done
+
+
