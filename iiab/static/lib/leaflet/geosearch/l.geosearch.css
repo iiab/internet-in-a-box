@@ -41,8 +41,6 @@
     top:100%;
     left:0;
     float:left;
-    /*min-width:80px;
-    max-height:106px;/*(.search-tip height * 5)*/
     width:100%;
     box-shadow: 0 0 8px rgba(0,0,0,0.4);
     -webkit-border-radius: 5px;
