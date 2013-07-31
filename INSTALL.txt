@@ -219,6 +219,9 @@ Debian/Ubuntu:
 Fedora/OLPC:
     systemctl restart httpd
 
+* You'll have to run this command every time you exit the current user session
+and log back in.
+
 
 5. Point your browser at:
     http://localhost/iiab
