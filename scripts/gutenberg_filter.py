@@ -1,6 +1,8 @@
 import os
 import re
 
+# Support library for processing Gutenberg records. Modify filepaths and remove unsupported file 
+# types that occur in the gutenberg.org RDF records for use in the IIAB project.
 class GutenbergIndexFilter(object):
     # Extensions excluded from rsync of both ftp and cached/generated content
     EXCLUDED_EXT = ['.zip', '.wav', '.mp3', '.ogg', '.iso', '.ISO', '.rar', '.mpeg', '.m4b']

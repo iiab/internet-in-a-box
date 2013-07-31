@@ -164,7 +164,9 @@ if __name__ == '__main__':
 
     if (len(sys.argv) != 2 or sys.argv[1] == '-h' or sys.argv[1] == '--help'):
         print """
-        Prints books parsed into python records. This module also provides a service for other scripts.
+        Parsed Gutenberg RDF index file into python records. Standalone prints
+        records to STDOUT. This module also provides a service for other scripts.
+
         Usage: %s catalog.rdf.bz2
         """ % sys.argv[0]
         exit()

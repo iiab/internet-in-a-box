@@ -315,7 +315,7 @@ class GutenbergDbCreator:
             raise
 
 def main():
-    parser = OptionParser()
+    parser = OptionParser(description="Parse Gutenberg RDF index file and produce SQLite database.")
     parser.add_option("--dbname", dest="db_filename", action="store",
                       default="gutenberg.db",
                       help="The gutenberg.db SQLite database")

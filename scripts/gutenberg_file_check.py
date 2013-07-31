@@ -18,7 +18,7 @@ def check_exists(root, fname):
         print fname
 
 def main():
-    parser = ArgumentParser()
+    parser = ArgumentParser(description="Crawl an existing Gutenberg index database and verify existence of each file in the index. Print non-existing file paths to STDOUT.")
     parser.add_argument("dbname", 
                       default="gutenberg.db",
                       help="The gutenberg.db SQLite database")

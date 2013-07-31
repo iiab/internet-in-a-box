@@ -110,7 +110,7 @@ def create_gutenberg_index_db(dbname, indexdir):
     print "DONE"
 
 if __name__ == '__main__':
-    parser = ArgumentParser()
+    parser = ArgumentParser(description="Create whoosh search index from the Gutenberg index. Source index can be either the RDF or database index. Using the database index is recommended since the RDF and database contents may differ.")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--rdf", dest="bz2_rdf_filename", action="store",
                       help="The Project Gutenberg RDF/XML index.")
