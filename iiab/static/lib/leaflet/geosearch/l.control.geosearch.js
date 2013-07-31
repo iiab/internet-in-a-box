@@ -92,9 +92,12 @@ L.Control.GeoSearch = L.Control.extend({
             $(this._container).append(this._autocomplete);
         }
 
+        // TODO This will result in duplicate processing of events. Options?
         L.DomEvent
           .addListener(this._container, 'click', L.DomEvent.stop)
-          .addListener(this._container, 'keypress', this._onKeyUp, this);
+          .addListener(this._container, 'keyup', this._onKeyUp, this)
+          .addListener(this._container, 'change', this._onInputUpdate, this)
+          .addListener(this._container, 'paste', this._onPasteToInput, this);
 
         L.DomEvent.disableClickPropagation(this._container);
 
@@ -212,6 +215,34 @@ L.Control.GeoSearch = L.Control.extend({
         $('.leaflet-geosearch-cancel-button').hide();
     },
     
+    _onPasteToInput: function () {
+        // onpaste requires callback to allow for input update do this by default.
+        setTimeout(this._onInputUpdate.bind(this), 0);
+    },
+
+    _onInputUpdate: function () {
+        // define function for requery of user input after delay
+        function getQuery() {
+            return $('#leaflet-control-geosearch-qry').val();
+        }
+        var qry = getQuery();
+
+        if (this._config.enableAutocomplete) {
+            this._autocomplete.recordLastUserInput(qry);
+            if (qry.length >= this._config.autocompleteMinQueryLen) {
+                this.geosearch_autocomplete(getQuery, this._config.autocompleteQueryDelay_ms);
+            } else {
+                this._autocomplete.hide();
+            }
+        }
+
+        if (qry.length > 0) {
+            $('.leaflet-geosearch-cancel-button').show();
+        } else {
+            $('.leaflet-geosearch-cancel-button').hide();
+        }
+    },
+
     _onKeyUp: function (e) {
         var REQ_DELAY_MS = 800;
         var MIN_AUTOCOMPLETE_LEN = 3;
@@ -250,24 +281,7 @@ L.Control.GeoSearch = L.Control.extend({
             case ctrl:
                 break;
             default:
-                if (this._config.enableAutocomplete) {
-                    function getQuery() {
-                        return $('#leaflet-control-geosearch-qry').val();
-                    }
-                    var qry = getQuery();
-                    this._autocomplete.recordLastUserInput(qry);
-                    if (qry.length >= this._config.autocompleteMinQueryLen) {
-                        this.geosearch_autocomplete(getQuery, this._config.autocompleteQueryDelay_ms);
-                    } else {
-                        this._autocomplete.hide();
-                    }
-                }
-                if ($('#leaflet-control-geosearch-qry').val.length > 0) {
-                    $('.leaflet-geosearch-cancel-button').show();
-                } else {
-                    $('.leaflet-geosearch-cancel-button').hide();
-                }
-                break;
+                this._onInputUpdate();
         }
     }
 });
