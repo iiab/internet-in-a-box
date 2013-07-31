@@ -15,8 +15,8 @@
             }
         </style>
 
-        <script src="lib/leaflet/leaflet.js"></script>
         <script src="lib/jquery-1.9.0.js"></script>
+        <script src="lib/leaflet/leaflet.js"></script>
         <script src="lib/leaflet/geosearch/l.control.geosearch.js"></script>
         <script src="lib/leaflet/geosearch/l.geosearch.provider.iiab.js"></script>
 
@@ -28,71 +28,14 @@
                     maxZoom: 15
                 }).addTo(map);
 
-
-                // Create a layer for the search results
-                var searchLayer = new L.LayerGroup();
-                map.addLayer(searchLayer);
-
-                function filterMapJSON(rawJson) {
-                    var json = {},
-                        propName = this.options.propertyName,
-                        propLoc = this.options.propertyLoc;
-                    for (var r in rawJson) {
-                        var id = rawJson[r]['geonameid'],
-                            lat = rawJson[r][propLoc[0]],
-                            lng = rawJson[r][propLoc[1]];
-
-                        json[id] = {'rec': rawJson[r], 
-                            'latLng': L.latLng(lat, lng)};
-                    }
-                    console.log(json);
-                    return json;
-                }
-
-                // Leaflet-Search options adapted from vendor demo of mobile tailored search
-                var searchOpts = {
-                    url: '/iiab/search_maps?q={s}',
-                    autoType: false,
-                    // Beware that autoCollapse false and markerLocation true might fail
-                    autoCollapse: false,
-                    autoCollapseTime: 6000,
-                    animateLocation: true,
-                    delayType: 800,  // lengthen delay before autocomplete. On mobile devices typing is slower
-                    filterJSON: filterMapJSON,
-                    //jsonpParam: 'json_callback',
-                    layer: searchLayer,
-                    markerLocation: true,
-                    minLength: 3, // input length to start autocompleting
-                    position: 'topright',
-                    propertyLoc: ['latitude', 'longitude'],
-                    propertyName: 'name',
-                    // TODO: Localize the following
-                    text: 'Search...',
-                    textCancel: 'Cancel',       // title in cancel button
-                    textErr: 'Location not found',
-                    tipAutoSubmit: true,
-                    // TODO: note this value should be passed to search service pager to get x results.
-                    toolTipLimit: 40, // max number of autocomplete suggestions
-                };
-
-                // monkey patch function so we can show multiple results
-                //L.Control.Search.prototype._getLocation = function(key) { console.log("custom " + key + ' ' + Object.keys(this._recordsCache).length); return Object.keys(this._recordsCache).length > 0; };
-
-                searchControl = new L.Control.Search(searchOpts);
-                searchControl.on('search_locationfound',function(e) {  
-                    var popup = e.text,
-                        marker = this._markerLoc;       
-                    marker.bindPopup(popup).openPopup();
-                });
-                //map.addControl(searchControl);
-
                 var geoOptions = {
                     provider: new L.GeoSearch.Provider.iiab(),
                     searchLabel: "Search...",
                     notFoundMessage: "No matches found",
                     zoomLevel: 8,
                     maxMarkers: 10,
-                    enableAutocomplete: true
+                    enableAutocomplete: true,
+                    enableButtons: true
                 };
                 new L.Control.GeoSearch(geoOptions).addTo(map);
 

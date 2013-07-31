@@ -37,6 +37,7 @@ L.Control.GeoSearch = L.Control.extend({
             'zoomLevel': options.zoomLevel || 18,
 
             'maxMarkers': options.maxMarkers || 1,
+            'enableButtons': options.enableButtons || false,
 
             'enableAutocomplete': options.enableAutocomplete || false,
             'autocompleteMinQueryLen': options.autocompleteMinQueryLen || 3, // query length request threshold
@@ -60,7 +61,17 @@ L.Control.GeoSearch = L.Control.extend({
         searchbox.type = 'text';
         searchbox.placeholder = this._config.searchLabel;
         this._searchbox = searchbox;
-        this._lastUserInput = '';
+        if (this._autocomplete) {
+            this._autocomplete.recordLastUserInput('');
+        }
+
+        if (this._config.enableButtons) {
+            var submitContainer = L.DomUtil.create('div', 'leaflet-control-geosearch-button-submit-container', this._container);
+            L.DomUtil.create('span', 'leaflet-geosearch-submit-button', submitContainer);
+            var cancelButton = L.DomUtil.create('span', 'leaflet-geosearch-cancel-button', this._container);
+            L.DomEvent.on(submitContainer, 'click', this._submitRequest, this);
+            L.DomEvent.on(cancelButton, 'click', this._clearUserSearchInput, this);
+        }
 
         var msgbox = document.createElement('div');
         msgbox.id = 'leaflet-control-geosearch-msg';
@@ -122,6 +133,7 @@ L.Control.GeoSearch = L.Control.extend({
         }
     },
 
+    // qry may be a String or a function
     geosearch_autocomplete: function (qry, requestDelay_ms) {
         if (!this._config.enableAutocomplete) {
             return;
@@ -130,7 +142,15 @@ L.Control.GeoSearch = L.Control.extend({
         clearTimeout(this._autocompleteRequestTimer);
 
         this._autocompleteRequestTimer = setTimeout(function () {
-            this.geosearch_ext(qry, this._autocomplete.show.bind(this._autocomplete), this._autocomplete.hide.bind(this._autocomplete));
+            var q = qry;
+            if (typeof qry === 'function') {
+                q = qry();
+            }
+            if (q.length >= this._config.autocompleteMinQueryLen) {
+                this.geosearch_ext(q, this._autocomplete.show.bind(this._autocomplete), this._autocomplete.hide.bind(this._autocomplete));
+            } else {
+                this._autocomplete.hide();
+            }
         }.bind(this), requestDelay_ms);
     },
 
@@ -168,6 +188,29 @@ L.Control.GeoSearch = L.Control.extend({
             .fadeIn('slow').delay(this._config.messageHideDelay).fadeOut('slow',
                     function () { $(this).html(''); });
     },
+
+    _submitRequest: function () {
+        var q = $('#leaflet-control-geosearch-qry').val();
+        if (q.length > 0) {
+            this._hideAutocomplete();
+            this.geosearch(q);
+        }
+    },
+
+    _hideAutocomplete: function () {
+        clearTimeout(this._autocompleteRequestTimer);
+        if (this._config.enableAutocomplete && this._autocomplete.isVisible()) {
+            this._autocomplete.hide();
+            return true;
+        }
+        return false;
+    },
+
+    _clearUserSearchInput: function () {
+        this._hideAutocomplete();
+        $('#leaflet-control-geosearch-qry').val('');
+        $('.leaflet-geosearch-cancel-button').hide();
+    },
     
     _onKeyUp: function (e) {
         var REQ_DELAY_MS = 800;
@@ -183,20 +226,13 @@ L.Control.GeoSearch = L.Control.extend({
 
         switch (e.keyCode) {
             case escapeKey:
-                if (this._config.enableAutocomplete && this._autocomplete.isVisible()) {
-                    clearTimeout(this._autocompleteRequestTimer);
-                    this._autocomplete.hide();
-                } else {
-                    $('#leaflet-control-geosearch-qry').val('');
-                    $(this._map._container).focus();
+                // ESC first closes autocomplete if open. If closed then clears input.
+                if (!this._hideAutocomplete()) {
+                    this._clearUserSearchInput();
                 }
                 break;
             case enterKey:
-                if (this._config.enableAutocomplete) {
-                    clearTimeout(this._autocompleteRequestTimer);
-                    this._autocomplete.hide();
-                }
-                this.geosearch($('#leaflet-control-geosearch-qry').val());
+                this._submitRequest();
                 break;
             case upArrow:
                 if (this._config.enableAutocomplete && this._autocomplete.isVisible()) {
@@ -215,16 +251,23 @@ L.Control.GeoSearch = L.Control.extend({
                 break;
             default:
                 if (this._config.enableAutocomplete) {
-                    var qry = $('#leaflet-control-geosearch-qry').val();
-                    if (typeof qry === 'String') {
-                        this._lastUserInput = qry;
+                    function getQuery() {
+                        return $('#leaflet-control-geosearch-qry').val();
                     }
+                    var qry = getQuery();
+                    this._autocomplete.recordLastUserInput(qry);
                     if (qry.length >= this._config.autocompleteMinQueryLen) {
-                        this.geosearch_autocomplete(qry, this._config.autocompleteQueryDelay_ms);
+                        this.geosearch_autocomplete(getQuery, this._config.autocompleteQueryDelay_ms);
                     } else {
                         this._autocomplete.hide();
                     }
                 }
+                if ($('#leaflet-control-geosearch-qry').val.length > 0) {
+                    $('.leaflet-geosearch-cancel-button').show();
+                } else {
+                    $('.leaflet-geosearch-cancel-button').hide();
+                }
+                break;
         }
     }
 });
@@ -232,7 +275,6 @@ L.Control.GeoSearch = L.Control.extend({
 L.AutoComplete = L.Class.extend({
     initialize: function (options) {
         this._config = {};
-        L.Util.extend(this.options, options);
         this.setConfig(options);
     },
 
@@ -251,6 +293,10 @@ L.AutoComplete = L.Class.extend({
         return this._createUI(container, 'leaflet-geosearch-autocomplete');
     },
 
+    recordLastUserInput: function (str) {
+        this._lastUserInput = str;
+    },
+
     _createUI: function (container, className) {
         this._tool = L.DomUtil.create('div', className, container);
         this._tool.style.display = 'none';
@@ -260,7 +306,6 @@ L.AutoComplete = L.Class.extend({
             // If so, consider canceling timer on mousewheel and mouseover.
             .on(this._tool, 'blur', this.hide, this) 
             .on(this._tool, 'mousewheel', function(e) {
-                // TODO need to translate wheel motion to arrow up/down?
                 L.DomEvent.stopPropagation(e); // to prevent map zoom
                 if (e.axis === e.VERTICAL_AXIS) {
                     if (e.detail > 0) {
@@ -311,12 +356,10 @@ L.AutoComplete = L.Class.extend({
 
     _newSuggestion: function (result) {
         var tip = L.DomUtil.create('li', 'leaflet-geosearch-suggestion');
-        //tip.href = '#';
         tip.innerHTML = this._config.onMakeSuggestionHTML(result);
         tip._text = result.Label;
         L.DomEvent
             .disableClickPropagation(tip)
-            //.on(tip, 'click', L.DomEvent.stop, this) // from search plugin. why necessary? why separate?
             .on(tip, 'click', function(e) {
                 this._onSelection(tip._text);
             }.bind(this), this);
