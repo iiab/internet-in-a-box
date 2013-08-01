@@ -40,7 +40,7 @@ location of your choice)
 
 *Refer to the section 'Dataset Location' on specifying another directory.
 
-4. Run the stand-alone server from the directory you untarred the QuickStart sampler.
+4. Run the stand-alone server from /usr/local/bin, where iiab-server is installed.
     iiab-server
 
 
