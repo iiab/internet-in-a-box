@@ -99,7 +99,6 @@ Recommended for developers.
 
 
 4. Download and untar the QuickStart Sampler dataset
-    cd /
     sudo wget http://downloads.internet-in-a-box.org/IIAB_QuickStart_Sampler_20130618.tgz
     sudo tar xvzf IIAB_QuickStart_Sampler_20130618.tgz
 
