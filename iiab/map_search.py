@@ -2,6 +2,7 @@
 # By Braddock Gaskill, 16 Feb 2013
 from whoosh.index import open_dir
 from whoosh.qparser import QueryParser
+from whoosh import sorting
 
 from utils import whoosh2dict
 
@@ -19,17 +20,18 @@ class MapSearch(object):
         Set pagelen = None or 0 to retrieve all results.
         """
         query = unicode(query)  # Must be unicode
+        population_sort_facet = sorting.FieldFacet("population", reverse=True)
         ix = open_dir(self.index_dir)
         with ix.searcher() as searcher:
             query = QueryParser("ngram_name", ix.schema).parse(query)
             if pagelen is not None and pagelen != 0:
                 try:
                     results = searcher.search_page(query, page, pagelen=pagelen,
-                                                reverse=True)
+                                                sortedby=population_sort_facet)
                 except ValueError, e:  # Invalid page number
                     results = []
             else:
-                results = searcher.search(query, limit=None, reverse=True)
+                results = searcher.search(query, limit=None, sortedby=population_sort_facet)
             #r = [x.items() for x in results]
             r = whoosh2dict(results)
         ix.close()
