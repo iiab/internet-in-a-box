@@ -32,6 +32,9 @@ $(function() {
             type: "PUT",
             dataType: "json",
             data: { language: $(this).val() },
+            success: function(json) {
+                location.reload();
+            },
 	});
     });
 });
