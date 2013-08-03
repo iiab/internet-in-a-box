@@ -31,12 +31,17 @@ def main(argv):
                       help="Path to knowledge directory")
     parser.add_option("--profile", action="store_true", default=False,
                       help="Enable profiler")
+    parser.add_option("--version", action="store_true", default=False,
+                      help="Print version and quit")
     parser.add_option("--profiler_quiet", action="store_true", default=False,
                       help="Disable profiler echo to stdout")
     parser.add_option("--timepro", action="store_true", default=False,
                       help="Enable timepro performance profiler")
     (options, args) = parser.parse_args()
 
+    if options.version:
+        print "Internet-in-a-Box Version " + iiab.__version__
+        return 0
     # Set up logging
     FORMAT = "%(name)s -- %(message)s"
     logging.basicConfig(format=FORMAT, level=logging.DEBUG, stream=sys.stdout)
