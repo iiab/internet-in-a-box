@@ -8,53 +8,54 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: internet-in-a-box@noreply.github.com\n"
 "POT-Creation-Date: 2013-07-24 11:03-0700\n"
-"PO-Revision-Date: 2013-07-31 05:05+0200\n"
-"Last-Translator: Chris <cjl@laptop.org>\n"
+"PO-Revision-Date: 2013-07-31 08:03+0200\n"
+"Last-Translator: samy boutayeb <s.boutayeb@free.fr>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: zh_CN\n"
+"Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Pootle 2.0.5\n"
 "Generated-By: Babel 0.9.6\n"
 
 #: gutenberg.py:68 zim_views.py:86
 msgid "Please input keyword(s)"
-msgstr "请输入关键词"
+msgstr "Entrer le ou les mot(s)-clés"
 
 #: gutenberg.py:182 templates/macros/_misc.html:29
 #: templates/macros/_misc.html:66
 msgid "Title"
-msgstr "标题"
+msgstr "Titre"
 
 #: gutenberg.py:183 templates/macros/_misc.html:30
 #: templates/macros/_misc.html:67 templates/macros/_misc.html:100
 msgid "Author"
-msgstr "作者"
+msgstr "Auteur"
 
 #: gutenberg.py:184
 msgid "Contributor"
-msgstr "贡献者"
+msgstr "Contributeur"
 
 #: gutenberg.py:185
 msgid "Subject"
-msgstr "主题"
+msgstr "Matière"
 
 #: gutenberg.py:186
 msgid "Category"
-msgstr "类别"
+msgstr "Catégorie"
 
 #: gutenberg.py:187 templates/settings.html:28 templates/macros/_misc.html:31
 #: templates/macros/_misc.html:68
 msgid "Language"
-msgstr "语言"
+msgstr "Langue"
 
 #: top_views.py:17
 msgid ""
 "Could not find knowledge directory containing the Internet-in-a-Box "
 "dataset.  "
-msgstr "无法找到包含 Internet-in-a-Box 数据集的知识目录。 "
+msgstr ""
+"Dossier de connaissances avec les données Internet-in-a-Box introuvable.  "
 
 #: top_views.py:18
 #, python-format
@@ -62,28 +63,33 @@ msgid ""
 "The configured '<strong>knowledge_dir</strong>' path is "
 "'<strong>%(config_dir)s</strong>' "
 msgstr ""
-"配置中 '<strong>knowledge_dir</strong>' 目录是 '<strong>%(config_dir)s</strong>' "
+"Le chemin '<strong>knowledge_dir</strong>' configuré '<strong>%(config_dir)s "
+"</strong>' "
 
 #: top_views.py:19
 msgid " and the '<strong>search_for_knowledge_dir</strong>' setting is "
-msgstr " 并且 '<strong>search_for_knowledge_dir</strong>' 设置是 "
+msgstr " et le paramètre '<strong>search_for_knowledge_dir</strong>' est "
 
 #: top_views.py:21
 msgid "<strong>ON</strong>, so all mounted filesystems were checked."
-msgstr "<strong>ON</strong>, 所有已加载的文件系统都被检测。"
+msgstr ""
+"<strong>Activé</strong>, de sorte que tous les systèmes de fichiers ont été "
+"vérifiés."
 
 #: top_views.py:23
 msgid "<strong>OFF</strong>, so other mounted filesystems were NOT checked."
-msgstr "<strong>OFF</strong>, 其余已加载的文件系统都不被检测。"
+msgstr ""
+"<strong>Désactivé</strong>, de sorte que les autres systèmes de fichiers "
+"n'ont PAS été vérifiés."
 
 #: zim_views.py:54
 msgid "Error accessing article."
-msgstr "访问文章出错。"
+msgstr "Erreur lors de l'accès à un article."
 
 #: zim_views.py:55
 #, python-format
 msgid "Exception: %(error)s"
-msgstr "异常: %(error)s"
+msgstr "Exception : %(error)s"
 
 #: templates/base.html:9 templates/home.html:6 templates/layouts/base.html:9
 msgid "Internet-in-a-Box"
@@ -92,84 +98,84 @@ msgstr "Internet-in-a-Box"
 #: templates/home.html:24 templates/wikipedia_index.html:7
 #: templates/zim/base.html:9 templates/zim/base.html:12
 msgid "Wikipedia"
-msgstr "维基百科"
+msgstr "Wikipédia"
 
 #: templates/home.html:32 templates/layouts/base.html:46
 msgid "Books"
-msgstr "书籍"
+msgstr "Livres"
 
 #: templates/home.html:40
 msgid "Maps"
-msgstr "地图"
+msgstr "Cartes géographiques"
 
 #: templates/home.html:48
 msgid "Video"
-msgstr "视频"
+msgstr "Vidéo"
 
 #: templates/home.html:53 templates/home.html:89
 msgid "Software"
-msgstr "软件"
+msgstr "Logiciels"
 
 #: templates/home.html:58 templates/settings.html:22
 msgid "Settings"
-msgstr "设置"
+msgstr "Réglages"
 
 #: templates/home.html:86 templates/settings.html:19
 msgid "Back"
-msgstr "后退"
+msgstr "Retour"
 
 #: templates/home.html:97 templates/gutenberg/index.html:15
 #: templates/gutenberg/index.html:16 templates/layouts/base_navsearch.html:6
 #: templates/layouts/base_navsearch.html:7 templates/zim/base.html:19
 #: templates/zim/base.html:20
 msgid "Search"
-msgstr "搜索"
+msgstr "Recherche"
 
 #: templates/home.html:101
 msgid "Download Linux"
-msgstr "下载 Linux"
+msgstr "Télécharger Linux"
 
 #: templates/home.html:105
 msgid "Browse Open Source Software"
-msgstr "浏览开源软件"
+msgstr "Parcourir la liste des logiciels libres et ouverts"
 
 #: templates/khan_index.html:6 templates/khan_video.html:6
 #: templates/wikipedia_index.html:6 templates/layouts/base.html:45
 #: templates/zim/base.html:8
 msgid "Home"
-msgstr "主页"
+msgstr "Accueil"
 
 #: templates/khan_index.html:7
 msgid "Videos from Khan Academy"
-msgstr "可汗学院的视频"
+msgstr "Vidéos de l'Académie Khan"
 
 #: templates/settings.html:35
 msgid "Chat"
-msgstr "聊天"
+msgstr "Dialogue en ligne"
 
 #: templates/settings.html:39
 msgid "Off"
-msgstr "关"
+msgstr "Désactivé"
 
 #: templates/settings.html:42
 msgid "On"
-msgstr "开"
+msgstr "Activé"
 
 #: templates/settings.html:48
 msgid "About"
-msgstr "关于"
+msgstr "À propos de"
 
 #: templates/settings.html:51
 msgid "Software Version"
-msgstr "软件版本"
+msgstr "Version du logiciel"
 
 #: templates/settings.html:54
 msgid "Data Version"
-msgstr "数据版本"
+msgstr "Version des données"
 
 #: templates/settings.html:57
 msgid "Licenses"
-msgstr "许可证"
+msgstr "Licences"
 
 #: templates/settings.html:62
 msgid ""
@@ -182,11 +188,13 @@ msgid ""
 "ShareAlike_3.0_Unported_License\">Creative Commons Attribution-ShareAlike"
 " License (\"CC BY-SA\")</a>."
 msgstr ""
-"<a href=\"http://www.wikipedia.org/\">维基百科</a>&reg; 是一个非营利组织<a "
-"href=\"http://www.wikimediafoundation.org/\">Wikimedia 基金会</a>的注册商标. 文字版权使用<a "
-"href=\"http://en.wikipedia.org/wiki/Wikipedia"
-":Text_of_Creative_Commons_Attribution-ShareAlike_3.0_Unported_License\">共创署名- "
-"相同方式共享许可(\"CC BY-SA\")</a>."
+"<a href=\"http://www.wikipedia.org/\">Wikipedia</a>&reg; est une marque "
+"déposée de <a href=\"http://www.wikimediafoundation.org/\">Wikimedia "
+"Foundation, Inc.</a>, organisation a but non lucratif. Le texte est "
+"disponible sous la licence <a href=\"http://en.wikipedia.org/wiki/Wikipedia"
+":Text_of_Creative_Commons_Attribution-"
+"ShareAlike_3.0_Unported_License\">Creative Commons Attribution-ShareAlike "
+"(\"CC BY-SA\")</a>."
 
 #: templates/settings.html:70
 msgid ""
@@ -198,10 +206,13 @@ msgid ""
 "href=\"http://www.openstreetmap.org/copyright\">Copyright and "
 "License</a>."
 msgstr ""
-"地图 - &copy; OpenStreetMap 贡献者 - <a "
-"href=\"http://www.openstreetmap.org/\">OpenStreetMap</a> 为开放数据, 使用 <a "
-"href=\"http://opendatacommons.org/licenses/odbl/\">开放数据共享开放式数据库许可 (ODbL).</a> "
-"<a href=\"http://www.openstreetmap.org/copyright\">版权</a>."
+"Cartes - &copy; Contributions OpenStreetMap - <a "
+"href=\"http://www.openstreetmap.org/\">OpenStreetMap</a>banque de données "
+"libre accès, sous licence <a "
+"href=\"http://opendatacommons.org/licenses/odbl/\">Open Data Commons Open "
+"Database License (ODbL).</a> <a "
+"href=\"http://www.openstreetmap.org/copyright\">Droits d'auteurs et "
+"licences</a>."
 
 #: templates/settings.html:78
 msgid ""
@@ -209,8 +220,9 @@ msgid ""
 "href=\"http://creativecommons.org/licenses/by-sa/2.0/\">Creative Commons "
 "Attribution-ShareAlike 2.0 license (CC BY-SA)</a>"
 msgstr ""
-"OpenStreetMap 地图块的地图制图使用 <a href=\"http://creativecommons.org/licenses/by-"
-"sa/2.0/\">共创署名- 相同方式共享许可2.0 (\"CC BY-SA\")</a>"
+"La cartographie des cartes dans les tuiles des cartes OpenStreetMap est "
+"disponible sous la licence <a href=\"http://creativecommons.org/licenses/by-"
+"sa/2.0/\">Creative Commons Attribution-ShareAlike 2.0 (CC BY-SA)</a>"
 
 #: templates/settings.html:86
 msgid ""
@@ -221,10 +233,12 @@ msgid ""
 "sa/3.0/us/\">Creative Commons Attribution-NonCommercial-ShareAlike 3.0 "
 "(CC BY-NC-SA) license</a>."
 msgstr ""
-"可汗学院 &reg; 文字标记是可汗学院的注册商标. 注意: 所有可汗学院的内容可以在 <a "
-"href=\"http://www.khanacademy.org/\">www.khanacademy.org</a>免费使用. 视频使用 <a "
-"href=\"http://creativecommons.org/licenses/by-nc-sa/3.0/us/\">共创署名- 非商业共享许可3.0 "
-" (CC BY-NC-SA)</a>版权."
+"L'Académie KHAN® est une marque deposée de Khan Academy, Inc.  NOTE : Tous "
+"les contenus de l'Académie KHAN sont disponibles gratuitement à l'adresse <a "
+"href=\"http://www.khanacademy.org/\"> www.khanacademy.org </a>. Les vidéos "
+"sont sous licence <a href=\"http://creativecommons.org/licenses/by-nc-"
+"sa/3.0/us/\"> 3.0 licence Creative Commons Paternité-Pas d'Utilisation "
+"Commerciale-Partage des Conditions Initiales (CC BY-NC-SA) </a>."
 
 #: templates/settings.html:94
 msgid ""
@@ -234,93 +248,105 @@ msgid ""
 "href=\"http://opensource.org/licenses/BSD-2-Clause\">BSD 2-clause "
 "license</a>."
 msgstr ""
-"<a href=\"http://internet-in-a-box.org/\">Internet-in-a-Box</a> 软件 - &copy; "
-"2013 <a href=\"http://www.humaneinfo.com/\">Humane 信息有限责任公司</a>. 保留所有版权. "
-"该软件使用<a href=\"http://opensource.org/licenses/BSD-2-Clause\">BSD 2-许可证条款</a>."
+"Logiciel <a href=\"http://internet-in-a-box.org/\">Internet-in-a-Box</a> "
+"&copy; 2013 <a href=\"http://www.humaneinfo.com/\">Humane Informatics, "
+"LLC</a>. Tous droits réservés. Ce logiciel est disponible sous la licence <a "
+"href=\"http://opensource.org/licenses/BSD-2-Clause\">clause BSD 2</a>."
 
 #: templates/wikipedia_index.html:22
 msgid "Articles"
-msgstr "文章"
+msgstr "Articles"
 
 #: templates/gutenberg/author-index.html:5
 #: templates/gutenberg/title-index.html:10
 msgid "Project Gutenberg Index by Book Title"
-msgstr "古登堡项目书名索引"
+msgstr "Index du projet Gutenberg par titre de livre"
 
 #: templates/gutenberg/author-index.html:9
 #: templates/gutenberg/title-index.html:14
 #, python-format
 msgid "<strong>%(total)s</strong> pages of books by title."
-msgstr "书籍按标题共<strong>%(total)s</strong> 页 。"
+msgstr "<strong>%(total)s</strong> pages des livres par titre."
 
 #: templates/gutenberg/author-index.html:13
 #: templates/gutenberg/title-index.html:18
 msgid "No books found. Perhaps the data needs to be updated."
-msgstr "没有找到书籍，也许需要更新数据。"
+msgstr ""
+"Acun livres trouvé. Une mise à jour des données est peut-être nécessaire."
 
 #: templates/gutenberg/book_details.html:11
 msgid "Book Details"
-msgstr "书籍详情"
+msgstr "Détails du livre"
 
 #: templates/gutenberg/index.html:3 templates/gutenberg/index.html:11
 msgid "Project Gutenberg"
-msgstr "古登堡项目"
+msgstr "Projet Gutenberg"
 
 #: templates/gutenberg/index.html:12
 msgid "Project Gutenberg Free Books Browser"
-msgstr "古登堡项目免费书籍浏览"
+msgstr "Navigateur pour les livres en libre accès du Projet Gutenberg"
 
 #: templates/gutenberg/index.html:20
 msgid "List by Title"
-msgstr "标题列表"
+msgstr "Liste par titre"
 
 #: templates/gutenberg/index.html:21
 msgid "List by Author"
-msgstr "作者列表"
+msgstr "Liste par auteur"
 
 #: templates/gutenberg/index.html:25
 msgid "Search Tips"
-msgstr "搜索提示"
+msgstr "Conseils en vue de la recherche"
 
 #: templates/gutenberg/index.html:26
 msgid "Search terms will search for matches in book titles and authors."
-msgstr "搜索条件将搜索匹配的书名和作者。"
+msgstr ""
+"Les critères de recherche permettent de retrouver des correspondances avec "
+"les titres de livre et les auteurs."
 
 #: templates/gutenberg/index.html:27
 msgid "Multiple terms may be combined with AND, ANDMAYBE, ANDNOT, OR"
-msgstr "多个条件可以用 AND, ANDMAYBE, ANDNOT, OR组合"
+msgstr ""
+"Plusieurs critères peuvent être combinés avec AND (et), ANDMAYBE (et "
+"peut-être), ANDNOT (mais pas), OR (ou)"
 
 #: templates/gutenberg/index.html:28
 msgid ""
 "The search may specify the category to search using the form cat:term "
 "where categories include title, creator, contributor, subject, category "
 "and language."
-msgstr "使用表单 cat:term 可以指定搜索的类别，类别包括标题，创造者，贡献者，主题，类别和语言。"
+msgstr ""
+"La recherche peut spécifier la catégorie à rechercher, en utilisant le "
+"format cat:term précisant le titre, le créateur, le contributeur, la "
+"matière, la catégorie et la langue."
 
 #: templates/gutenberg/search.html:14 templates/zim/search.html:13
 #, python-format
 msgid "Search results for \"%(keywords)s\""
-msgstr "\"%(keywords)s\" 的搜素结果"
+msgstr "Résultats de la recherche sur \"%(keywords)s\""
 
 #: templates/gutenberg/search.html:16 templates/zim/search.html:15
 msgid "Keywords needed!"
-msgstr "需要关键词！"
+msgstr "Mots-clés requis !"
 
 #: templates/gutenberg/search.html:21 templates/zim/search.html:20
 #, python-format
 msgid ""
 "<strong>%(total)s</strong> found for your search "
 "\"<strong>%(keywords)s</strong>\"."
-msgstr "<strong>%(total)s</strong> 结果符合你的搜索关键字 \"<strong>%(keywords)s</strong>\"。"
+msgstr ""
+"<strong>%(total)s</strong> trouvé(s) pour votre recherche sur \"<strong>%"
+"(keywords)s</strong>\"."
 
 #: templates/gutenberg/search.html:25 templates/zim/search.html:24
 #, python-format
 msgid "Sorry, Nothing found for your search \"<strong>%(keywords)s</strong>\"."
-msgstr "抱歉，没有找到你的搜索 \"<strong>%(keywords)s</strong>\"。"
+msgstr ""
+"Aucun résultat pour votre recherche sur \"<strong>%(keywords)s</strong>\"."
 
 #: templates/gutenberg/search.html:27 templates/zim/search.html:26
 msgid "Did you mean?"
-msgstr "请问你的意思是？"
+msgstr "Voulez-vous plutôt faire une recherche sur :"
 
 #: templates/gutenberg/search.html:43 templates/zim/search.html:42
 msgid ""
@@ -334,11 +360,11 @@ msgid ""
 "    "
 msgstr ""
 "\n"
-"    <p>建议:</p>\n"
+"    <p>Suggestions :</p> \n"
 "    <ul>\n"
-"        <li>确认所有的次都拼写正确.</li>\n"
-"        <li>试试更难的关键字.</li>\n"
-"        <li>试试更多的普通关键字.</li>\n"
+"       <li>Vérifiez l'orthographe des mots.</li>\n"
+"       <li>Essayez différents mots-clés.</li>\n"
+"       <li>Essayez des mots-clés plus génériques.</li>\n"
 "    </ul>\n"
 "    "
 
@@ -349,45 +375,45 @@ msgid ""
 "href=\"http://www.google.com/chromeframe/?redirect=true\">activate Google"
 " Chrome Frame</a> to improve your experience."
 msgstr ""
-"您正在使用一个 <strong>过时的</strong>浏览器。请 <a "
-"href=\"http://browsehappy.com/\">升级你的浏览器</a> 或 <a "
-"href=\"http://www.google.com/chromeframe/?redirect=true\">激活 Google Chrome "
-"Frame</a>来改善您的体验。"
+"Votre navigateur <strong>n'est pas à jour</strong>. Veuillez <a "
+"href=\"http://browsehappy.com/\"> le mettre à jour</a> ou <a "
+"href=\"http://www.google.com/chromeframe/?redirect=true\">activer Google "
+"Chrome</a> pour une utilisation optimale."
 
 #: templates/macros/_footer.html:4
 msgid "Internet in a Box"
-msgstr "盒子里的互联网"
+msgstr "Internet in a Box"
 
 #: templates/macros/_footer.html:6
 msgid "The World's Free Information at your Fingertips"
-msgstr "全球免费信息就在您的指尖"
+msgstr "Les informations du monde entier librement disponibles"
 
 #: templates/macros/_misc.html:41
 msgid "Not Available"
-msgstr "不可用"
+msgstr "Pas disponible"
 
 #: templates/macros/_misc.html:141
 msgid "Name"
-msgstr "名称"
+msgstr "Nom"
 
 #: templates/macros/_misc.html:142
 msgid "Format"
-msgstr "格式"
+msgstr "Format"
 
 #: templates/macros/_misc.html:160
 msgid "Read"
-msgstr "阅读"
+msgstr "Lire"
 
 #: templates/macros/_misc.html:165
 msgid "Download (EPub)"
-msgstr "下载(EPub)"
+msgstr "Télécharger (EPub)"
 
 #: templates/macros/_misc.html:176 templates/macros/_misc.html:178
 #: templates/macros/_zim_search.html:22
 msgid "Previous"
-msgstr "上一个"
+msgstr "Précédent"
 
 #: templates/macros/_misc.html:198 templates/macros/_misc.html:200
 #: templates/macros/_zim_search.html:32
 msgid "Next"
-msgstr "下一个"
+msgstr "Suivant"
