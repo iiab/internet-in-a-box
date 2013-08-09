@@ -4,3 +4,4 @@ recursive-include iiab/translations *
 include README.md
 include iiab/defaults.ini
 include iiab/wsgi.ini
+include iiab/cpf.dat

@@ -14,6 +14,8 @@ import gutenberg_content_views
 import wikipedia_views
 import zim_views
 import settings_views
+from babel_patch import babel_patched_load
+
 
 def create_app(debug=True, enable_profiler=False, profiler_quiet=False):
     """
@@ -91,6 +93,11 @@ def create_app(debug=True, enable_profiler=False, profiler_quiet=False):
 
 
 def configure_babel(app):
+    # Load additional languages into the babel
+    # cache.  We do this so we can add Haitian Creole
+    # using french as a model.
+    babel_patched_load('cpf')
+
     # flask-babel
     babel = Babel(app)
 
