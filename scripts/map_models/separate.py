@@ -33,6 +33,8 @@ class PlaceInfo(Base):
     id = Column(Integer, primary_key=True) # geoid
     name = Column(String)
     asciiname = Column(String)
+    admin4_id = Column(Integer)
+    admin3_id = Column(Integer)
     admin2_id = Column(Integer)
     admin1_id = Column(Integer)
     country_id = Column(Integer)
