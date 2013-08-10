@@ -16,7 +16,7 @@ setup(
     zip_safe=False,
     install_requires=[
         'Flask',
-        'Flask-Babel',
+        'Flask-Babel==0.8',
         'Flask-AutoIndex',
         'Flask-SQLAlchemy',
         'whoosh',
