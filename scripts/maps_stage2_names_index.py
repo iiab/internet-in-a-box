@@ -4,7 +4,6 @@ from optparse import OptionParser
 import map_models.separate as separate
 import map_models.unified as unified
 from unicodedata2 import script_cat # helper script from local directory
-import operator
 
 """
 Read geoname.org data that has been placed into a SQLite database and create
@@ -22,7 +21,6 @@ def lookup_extranames_from_info(session, a2, a1, country):
 
     nameset = (admin2rec.name, admin1rec.name, countryrec.name)
     ascii_nameset = (admin2rec.ascii_name, admin1rec.ascii_name, countryrec.ascii_name)
-    print nameset, ascii_nameset
     return (nameset, ascii_nameset)
 
 def add(lookup, key, value):
@@ -50,21 +48,23 @@ def get_namesets(session, geoid, geo2id, geo1id, countryid):
     lookup = {}
     links = []  # links (just for geoid)
     for v in session.query(separate.PlaceNames).filter(separate.PlaceNames.geonameid.in_(idlist)).yield_per(1):
-        value_tup = v
         if v.isolanguage == u'link':
-            links.append(v.alternate)
+            if v.geonameid == geoid:
+                links.append(v.alternate)
             continue
 
+        value_tup = v
         # key tuples selected to make fallback matches easy
         add(lookup, v.geonameid, value_tup)   # key:int
         add(lookup, (v.geonameid, v.isolanguage), value_tup) # key:int,str
         add(lookup, (v.geonameid, v.isPreferredName), value_tup) # key:int,bool
         add(lookup, (v.geonameid, v.isolanguage, v.isPreferredName, v.isShortName, v.isColloquial, v.isHistoric), value_tup) # key:int,str,bool,bool,bool,bool
         add(lookup, (v.geonameid, v.isolanguage, v.isPreferredName, v.isHistoric), value_tup) # key:int,str,bool,bool
-        add(lookup, (v.geonameid, v.isolanguage, v.isHistoric), value_tup) # key:int,str,bool
+        add(lookup, (v.geonameid, v.isolanguage, v.isPreferredName), value_tup) # key:int,str,bool
 
-    for v in session.query(separate.PlaceInfo).filter(separate.PlaceInfo.id.in_(idlist)).yield_per(1):
-        add(lookup, (v.id, "__infoname__"), v)
+    # TODO:PENDING DB REBUILD
+    #for v in session.query(separate.PlaceInfo).filter(separate.PlaceInfo.id.in_(idlist)).yield_per(1):
+    #    add(lookup, (v.id, "__infoname__"), v)
 
     return (lookup, links)
 
@@ -84,30 +84,41 @@ def build_script_tally(name):
     return scripts
 
 def match_script(refname, candidatematches):
+    """
+    Return tuple consisting of (single name record with best match, int number of records that matched, bool true if some script in common, bool true if matched predominant script)
+    :param refname: name record we are matching
+    :param candidatematches: list of name records to search
+    """
     # look through each charaacter in the name and build a frequency table of unicode script types.
     refscripts = build_script_tally(refname)
     # now do the same thing for each candidate name
     candidatescripts = {} # key: script name, value: list of geographic names
-    for name in candidatematches:
-        tally = build_script_tally(name.alternate)
-        ordered_tally = sorted(tally.iteritems(), key=operator.itemgetter(1), reverse=True)
+    for namerec in candidatematches:
+        try: # Might be best to profile compared to test for attribute. Primary case is a name record.
+            name = namerec.alternate
+        except AttributeError:
+            name = namerec.name
+        tally = build_script_tally(name)
+        ordered_tally = sorted(tally.iteritems(), key=lambda t: t[1], reverse=True)
         # only list the name under its most prevelant script type -- not currently checking for ties
         (script_type, _) = ordered_tally[0]
-        add(candidatescripts, script_type, name)
+        add(candidatescripts, script_type, namerec)
 
-    ordered_reftally = sorted(refscripts.iteritems(), key=operator.itemgetter(1), reverse=True)
+    ordered_reftally = sorted(refscripts.iteritems(), key=lambda t: t[1], reverse=True)
     best_match = True
     for (script_type, _) in ordered_reftally:
         if script_type in candidatescripts:
             number_of_matches = len(candidatescripts[script_type])
             perfect_match = True
-            return (candidatescripts[script_type][0], number_of_matches, perfect_match, best_match)
+            namerec = candidatescripts[script_type][0] # arbitrarily select first name record in list
+            return (namerec, number_of_matches, perfect_match, best_match)
         best_match = False
 
     number_of_matches = 1
     perfect_match = False
     best_match = False
-    return (candidatematches[0], number_of_matches, perfect_match, best_match) 
+    name = candidatematches[0] # just take first entry
+    return (name, number_of_matches, perfect_match, best_match) 
 
 def get_closest_match(records, rec, gid):
     """
@@ -117,19 +128,22 @@ def get_closest_match(records, rec, gid):
     :param gid: the place id of the containing geography whose name we seek
     :return: unicode string of best match found
     """
+    # key tuples must match tuple keys in lookup table
+    # order in priority rank
     prioritized_keys = [
         (gid, rec.isolanguage, rec.isPreferredName, rec.isShortName, rec.isColloquial, rec.isHistoric),
         (gid, rec.isolanguage, rec.isPreferredName, rec.isHistoric),
-        (gid, rec.isolanguage, rec.isHistoric),
+        (gid, rec.isolanguage, rec.isPreferredName),
+        (gid, rec.isolanguage, 1),
         (gid, rec.isolanguage),
         (gid, 1),  # just pick a preferred name from any language -- best we can do really?
         (gid, "__infoname__") # okay no alternate name match -- fallback to PlaceTable names
         ]
 
     for key in prioritized_keys:
-        for key in records:
+        if key in records:
             # try to pic a record that uses the same unicode script
-            (index, number_of_matches, perfectmatch, best_match) = match_script(rec.alternate, records[key])
+            (matched, number_of_matches, perfectmatch, best_match) = match_script(rec.alternate, records[key])
             if number_of_matches != 1:
                 print key, ": warning multiple matches", number_of_matches
             if not best_match:
@@ -139,9 +153,10 @@ def get_closest_match(records, rec, gid):
 
             if key[1] == '__infoname__':
                 print "matching infotable"
-                return records[key][0].name
+                return matched.name
             else:
-                return records[key][0].alternate
+                #print "matched record", key
+                return matched.alternate
 
 
 def get_expanded_name(records, rec, admin2, admin1, country):
@@ -157,7 +172,7 @@ def get_expanded_name(records, rec, admin2, admin1, country):
     append_if_not_empty(name, get_closest_match(records, rec, admin2))
     append_if_not_empty(name, get_closest_match(records, rec, admin1))
     append_if_not_empty(name, get_closest_match(records, rec, country))
-    print name
+    #print name
     return u', '.join(name)
 
 def get_expanded_info_name(records, gid, admin2, admin1, country):
@@ -193,38 +208,46 @@ def get_expanded_info_asciiname(records, gid, admin2, admin1, country):
     return u', '.join(name)
 
 def work(insession, outsession):
-    count = 0
     # for each place, inspect all of the different names.
-    for v in insession.query(separate.PlaceInfo).yield_per(1):
+    for count, v in enumerate(insession.query(separate.PlaceInfo).yield_per(1)):
         #nameset, ascii_nameset = lookup_extranames_from_info(session, v.admin2_id, v.admin1_id, v.country_id)
         (name_records, links) = get_namesets(insession, v.id, v.admin2_id, v.admin1_id, v.country_id)
+
+        info = unified.GeoInfo(id=v.id, latitude=v.latitude, longitude=v.longitude, population=v.population,
+                feature_code=v.feature_code, feature_name=v.feature_name)
+        outsession.add(info)
+
+        # insert into geolinks
+        for l in links:
+            outsession.add(unified.GeoLinks(geonameid=v.id, link=l))
+
         # Not all places have alternate name records -- use them if we do, otherwise fallback to name in the placeinfo table
         if v.id in name_records:
             for record in name_records[v.id]:
                 expanded_name = get_expanded_name(name_records, record, v.admin2_id, v.admin1_id, v.country_id)
 
-                # insert into geoinfo
-                print (v.id, v.latitude, v.longitude, v.population, v.feature_code, v.feature_name)
+                place = unified.GeoNames(geonameid=v.id, isolanguage=record.isolanguage, name=expanded_name, importance=v.population)
+                outsession.add(place)
 
-                # insert into geonames
-                print (v.id, record.isolanguage, expanded_name, v.population)
+                print v.id, record.isolanguage, expanded_name, v.feature_name, v.population
 
-        # insert into geolinks
-        print (v.id, links)
-
+        ### TODO: PENDING DB REBUILD
         # now expand name found in the placeinfo table.
 #        expanded_name = get_expanded_info_name(name_records, v.id, v.admin2_id, v.admin1_id, v.country_id)
 #        print expanded_name
 
+        ### TODO: PENDING DB REBUILD
         # now expand asciiname found in the placeinfo table.
 #        expanded_name = get_expanded_info_asciiname(name_records, v.id, v.admin2_id, v.admin1_id, v.country_id)
 #        print expanded_name
 
+        if count & 0xffff == 0:
+            outsession.commit()
 
-        count += 1
-        if count > 25:
-            break;
+        if count > 1000:
+            break
 
+    outsession.commit()
 def main():
     parser = OptionParser(description="Parse geonames.org geo data into a SQLite DB.")
     parser.add_option("--dbname", dest="db_filename", action="store",
@@ -241,8 +264,10 @@ def main():
     sepDb = separate.Database(options.db_filename)
 
     uniDb = unified.Database("maptest.db")
-    #uniDb.clear_table(unified.GeoNames)
-    #uniDb.clear_table(unified.GeoInfo)
+    uniDb.clear_table(unified.GeoNames)
+    uniDb.clear_table(unified.GeoInfo)
+    uniDb.clear_table(unified.GeoLinks)
+
     uniDb.create()
 
     work(sepDb.get_session(), uniDb.get_session())
