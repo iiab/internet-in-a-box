@@ -1,63 +1,17 @@
 #!/usr/bin/env python
 
-import os
-import string
-import sys
-import sqlite3
 from optparse import OptionParser
-from pluralize import pluralize # locally provided function
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, String, Integer, create_engine, inspect
 from sqlalchemy.orm import sessionmaker
 import codecs
-
-Base = declarative_base()
-
-# geonameid is used as primary key id
-country_fields = ('iso', 'iso3', 'iso_numeric', 'fips', 'country', 'capital', 
-                  'area_km', 'population', 'continent', 'tld', 'currencycode', 
-                  'currencyname', 'phone', 'postal_code_format', 'postal_code_regex', 
-                  'languages', 'id', 'neighbours', 'fips_equiv')
-place_fields = ('id', 'name', 'asciiname', 'altnames',
-                'latitude', 'longitude', 'feature_class', 'feature_code',
-                'country_code', 'cc2', 'admin1_code', 'admin2_code',
-                'admin3_code', 'admin4_code', 'population', 'elevation',
-                'gtopo30', 'timezone', 'modification_date')
-# alternateNameId is used as primary key id
-altname_fields = ('id', 'geonameid', 'isolanguage', 'alternate', 'isPreferredName', 
-                  'isShortName', 'isColloquial', 'isHistoric')
-admin1_fields = ('code', 'name', 'ascii_name', 'id')
-admin2_fields = ('code', 'name', 'ascii_name', 'id')
-feature_fields = ('code', 'name', 'description')
-
-class PlaceInfo(Base):
-    __tablename__ = "placeinfo"
-
-    id = Column(Integer, primary_key=True) # geoid
-    name = Column(String)
-    asciiname = Column(String)
-    admin2_id = Column(Integer)
-    admin1_id = Column(Integer)
-    country_id = Column(Integer)
-    latitude = Column(String)
-    longitude = Column(String)
-    population = Column(String)
-    feature_code = Column(String)
-    feature_name = Column(String)
-
-class PlaceNames(Base):
-    __tablename__ = "placenames"
-    id = Column(Integer, primary_key=True) # generated row id's
-    geonameid = Column(Integer)
-    isolanguage = Column(String)
-    alternate = Column(String)
-    isPreferredName = Column(String)
-    isShortName = Column(String)
-    isColloquial = Column(String)
-    isHistoric = Column(String)
-
+import geoname_org_model as dbmodel
 
 def record_iterator(filename, field_names):
+    """
+    Parse tab delimited files, skipping lines starting with #, yielding on each record in the file.
+    Return a dict of values tagged with keys provided in field_names list.
+    """
     with codecs.open(filename, encoding='utf-8') as f:
         for line in f:
             if line.lstrip().startswith('#'):
@@ -66,7 +20,7 @@ def record_iterator(filename, field_names):
 
 
 def build_dictionary(filename, fields, key):
-    """Return a dictionary of records keyed on the id"""
+    """Return a dictionary of records hashed using the record field named in parameter key (typically the record id)"""
     assert key in fields
 
     results = {}
@@ -155,7 +109,7 @@ def try_for_improved_population_estimate(aux_data, data):
 def make_place_info(aux_data, rec):
     data = {}
 
-    direct_copy_fields = ('id', 'latitude', 'longitude', 'population', 'feature_code', 'name', 'asciiname')
+    direct_copy_fields = ('id', 'latitude', 'longitude', 'population', 'feature_code', 'name', 'asciiname', 'admin3_id', 'admin4_id')
     for f in direct_copy_fields:
         data[f] = rec[f]
 
@@ -164,31 +118,39 @@ def make_place_info(aux_data, rec):
     data['country_id'] = place_country_id(aux_data, rec)
     data['feature_name'] = place_feature_name(aux_data, rec)
     try_for_improved_population_estimate(aux_data, data)
-    return PlaceInfo(**data)
+    return dbmodel.PlaceInfo(**data)
 
 def augment_record(aux_data, record):
+    for auxkey in ('cities', 'countries'):
+        geoid = record['id']
+        if geoid in aux_data[auxkey]:
+            population = aux_data[auxkey][geoid]['population']
+            if population > record['population']:
+                record['population'] = population
     return record
 
 def parse_alt_names_to_db(dbSession):
     # create names data
-    for count, record in enumerate(record_iterator('alternateNames.txt', altname_fields)):
-        pn = PlaceNames(**record)
+    for count, record in enumerate(record_iterator('alternateNames.txt', dbmodel.altname_fields)):
+        pn = dbmodel.PlaceNames(**record)
         dbSession.add(pn)
-        if (count % 500000) == 0:
+        # without an occasional commit we were running out of memory
+        if (count & 0x7ffff) == 0:
             dbSession.commit()
             print '.',
     dbSession.commit()
 
 def parse_place_info_to_db(dbSession):
-    dbSession.query(PlaceInfo).delete()
+    dbSession.query(dbmodel.PlaceInfo).delete()
 
     # create names data
-    for count, record in enumerate(record_iterator('allCountries.txt', place_fields)):
+    for count, record in enumerate(record_iterator('allCountries.txt', dbmodel.place_fields)):
         #augment record
         record = augment_record(aux_data, record)
         pi = make_place_info(aux_data, record)
         dbSession.add(pi)
-        if (count % 500000) == 0:
+        # without an occasional commit we were running out of memory
+        if (count & 0x7ffff) == 0:
             dbSession.commit()
             print '.',
     dbSession.commit()
@@ -196,14 +158,35 @@ def parse_place_info_to_db(dbSession):
 
 def load_lookup_tables():
     aux_data = {}
-    aux_data['admin1'] = build_dictionary('admin1CodesASCII.txt', admin1_fields, 'code');
-    aux_data['admin2'] = build_dictionary('admin2Codes.txt', admin2_fields, 'code');
-    aux_data['features'] = build_dictionary('featureCodes_en.txt', feature_fields, 'code');
-    aux_data['countries'] = build_dictionary('countryInfo.txt', country_fields, 'iso');
-    aux_data['cities'] = build_dictionary('cities1000.txt', place_fields, 'id');
+    aux_data['admin1'] = build_dictionary('admin1CodesASCII.txt', dbmodel.admin1_fields, 'code');
+    aux_data['admin2'] = build_dictionary('admin2Codes.txt', dbmodel.admin2_fields, 'code');
+    aux_data['features'] = build_dictionary('featureCodes_en.txt', dbmodel.feature_fields, 'code');
+    aux_data['countries'] = build_dictionary('countryInfo.txt', dbmodel.country_fields, 'iso');
+    aux_data['cities'] = build_dictionary('cities1000.txt', dbmodel.place_fields, 'id');
     return aux_data
 
-def main():
+def main(dbfilename, build_info, build_names):
+    """
+    :param dbfilename: SQLite database filename to create
+    :param build_info: bool flag to indicate whether to populate place info table
+    :param build_names: bool flag to indicate whether to populate place names table
+    """
+    aux_data = load_lookup_tables()
+
+    database = dbmodel.Database(dbfilename)
+    database.create()
+    session = database.get_session()
+
+    if build_names:
+        print 'parse names...'
+        parse_alt_names_to_db(session)
+
+    if build_info:
+        print 'parse places...'
+        parse_place_info_to_db(session)
+
+    
+if __name__ == '__main__':
     parser = OptionParser(description="Parse geonames.org geo data into a SQLite DB.")
     parser.add_option("--dbname", dest="db_filename", action="store",
                       default="geodata2.db",
@@ -216,23 +199,6 @@ def main():
 
     (options, args) = parser.parse_args()
 
-    aux_data = load_lookup_tables()
-
-    engine = create_engine('sqlite:///' + options.db_filename)
-    Base.metadata.create_all(engine)
-    Session = sessionmaker(bind=engine)
-    dbSession = Session()
-
-    if parser.build_names:
-        print 'parse names...'
-        parse_alt_names_to_db(dbSession)
-
-    if parser.build_info:
-        print 'parse places...'
-        parse_place_info_to_db(dbSession)
-
-    
-if __name__ == '__main__':
-    main()
+    main(options.db_filename, options.build_info, options.build_names)
 
 
