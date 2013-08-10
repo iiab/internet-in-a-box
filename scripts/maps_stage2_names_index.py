@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 from optparse import OptionParser
-import map_models.separate as separate
-import map_models.unified as unified
+import map_models.geoname_org_model as gndata
+import map_models.iiab_model as ibdata
 from unicodedata2 import script_cat # helper script from local directory
 
 """
@@ -15,9 +15,9 @@ def lookup_extranames_from_info(session, a2, a1, country):
     """
     
     """
-    admin2rec = session.query(separate.PlaceInfo).filter(separate.PlaceInfo.id == a2).first()
-    admin1rec = session.query(separate.PlaceInfo).filter(separate.PlaceInfo.id == a1).first()
-    countryrec = session.query(separate.PlaceInfo).filter(separate.PlaceInfo.id == country).first()
+    admin2rec = session.query(gndata.PlaceInfo).filter(gndata.PlaceInfo.id == a2).first()
+    admin1rec = session.query(gndata.PlaceInfo).filter(gndata.PlaceInfo.id == a1).first()
+    countryrec = session.query(gndata.PlaceInfo).filter(gndata.PlaceInfo.id == country).first()
 
     nameset = (admin2rec.name, admin1rec.name, countryrec.name)
     ascii_nameset = (admin2rec.ascii_name, admin1rec.ascii_name, countryrec.ascii_name)
@@ -47,7 +47,7 @@ def get_namesets(session, geoid, geo2id, geo1id, countryid):
     idlist = (geoid, geo2id, geo1id, countryid)
     lookup = {}
     links = []  # links (just for geoid)
-    for v in session.query(separate.PlaceNames).filter(separate.PlaceNames.geonameid.in_(idlist)).yield_per(1):
+    for v in session.query(gndata.PlaceNames).filter(gndata.PlaceNames.geonameid.in_(idlist)).yield_per(1):
         if v.isolanguage == u'link':
             if v.geonameid == geoid:
                 links.append(v.alternate)
@@ -63,7 +63,7 @@ def get_namesets(session, geoid, geo2id, geo1id, countryid):
         add(lookup, (v.geonameid, v.isolanguage, v.isPreferredName), value_tup) # key:int,str,bool
 
     # TODO:PENDING DB REBUILD
-    #for v in session.query(separate.PlaceInfo).filter(separate.PlaceInfo.id.in_(idlist)).yield_per(1):
+    #for v in session.query(gndata.PlaceInfo).filter(gndata.PlaceInfo.id.in_(idlist)).yield_per(1):
     #    add(lookup, (v.id, "__infoname__"), v)
 
     return (lookup, links)
@@ -209,24 +209,24 @@ def get_expanded_info_asciiname(records, gid, admin2, admin1, country):
 
 def work(insession, outsession):
     # for each place, inspect all of the different names.
-    for count, v in enumerate(insession.query(separate.PlaceInfo).yield_per(1)):
+    for count, v in enumerate(insession.query(gndata.PlaceInfo).yield_per(1)):
         #nameset, ascii_nameset = lookup_extranames_from_info(session, v.admin2_id, v.admin1_id, v.country_id)
         (name_records, links) = get_namesets(insession, v.id, v.admin2_id, v.admin1_id, v.country_id)
 
-        info = unified.GeoInfo(id=v.id, latitude=v.latitude, longitude=v.longitude, population=v.population,
+        info = ibdata.GeoInfo(id=v.id, latitude=v.latitude, longitude=v.longitude, population=v.population,
                 feature_code=v.feature_code, feature_name=v.feature_name)
         outsession.add(info)
 
         # insert into geolinks
         for l in links:
-            outsession.add(unified.GeoLinks(geonameid=v.id, link=l))
+            outsession.add(ibdata.GeoLinks(geonameid=v.id, link=l))
 
         # Not all places have alternate name records -- use them if we do, otherwise fallback to name in the placeinfo table
         if v.id in name_records:
             for record in name_records[v.id]:
                 expanded_name = get_expanded_name(name_records, record, v.admin2_id, v.admin1_id, v.country_id)
 
-                place = unified.GeoNames(geonameid=v.id, isolanguage=record.isolanguage, name=expanded_name, importance=v.population)
+                place = ibdata.GeoNames(geonameid=v.id, isolanguage=record.isolanguage, name=expanded_name, importance=v.population)
                 outsession.add(place)
 
                 print v.id, record.isolanguage, expanded_name, v.feature_name, v.population
@@ -261,12 +261,12 @@ def main():
 
     (options, args) = parser.parse_args()
 
-    sepDb = separate.Database(options.db_filename)
+    sepDb = gndata.Database(options.db_filename)
 
-    uniDb = unified.Database("maptest.db")
-    uniDb.clear_table(unified.GeoNames)
-    uniDb.clear_table(unified.GeoInfo)
-    uniDb.clear_table(unified.GeoLinks)
+    uniDb = ibdata.Database("maptest.db")
+    uniDb.clear_table(ibdata.GeoNames)
+    uniDb.clear_table(ibdata.GeoInfo)
+    uniDb.clear_table(ibdata.GeoLinks)
 
     uniDb.create()
 
