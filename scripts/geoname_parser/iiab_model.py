@@ -24,6 +24,7 @@ class GeoNames(Base):
     geonameid = Column(Integer, index=True)
     isolanguage = Column(String)
     name = Column(String)
+    fullname = Column(String)
     importance = Column(Integer, index=True)
 
 class GeoLinks(Base):

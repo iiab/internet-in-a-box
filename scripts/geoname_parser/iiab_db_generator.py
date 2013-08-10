@@ -163,10 +163,11 @@ def get_expanded_info_name(records, id_list):
     :param records: dictionary of namesets obtained from get_nameset
     :param id_list: list of geographic ID codes ordered smallest to largest.
     """
-    name = [records[(id_list[0], "__infoname__")].name]
+    name = records[(id_list[0], "__infoname__")].name
+    fullname_parts = [name]
     for idcode in id_list[1:]:  # skip primary place ID which is first element
-        append_if_not_empty(name, records[(idcode, "__infoname__")].name)
-    return u', '.join(name)
+        append_if_not_empty(fullname_parts, records[(idcode, "__infoname__")].name)
+    return (name, u', '.join(fullname_parts)
 
 def get_expanded_info_asciiname(records, id_list):
     """
@@ -174,10 +175,11 @@ def get_expanded_info_asciiname(records, id_list):
     :param records: dictionary of namesets obtained from get_nameset
     :param id_list: list of geographic ID codes ordered smallest to largest.
     """
-    name = [records[(id_list[0], "__infoname__")].asciiname]
+    name = records[(id_list[0], "__infoname__")].asciiname
+    fullname_parts = [name]
     for idcode in id_list[1:]:  # skip primary place ID which is first element
-        append_if_not_empty(name, records[(idcode, "__infoname__")].asciiname)
-    return u', '.join(name)
+        append_if_not_empty(fullname_parts, records[(idcode, "__infoname__")].asciiname)
+    return (name, u', '.join(fullname_parts)
 
 def work(insession, outsession):
     # for each place, inspect all of the different names.
@@ -199,25 +201,28 @@ def work(insession, outsession):
             for record in name_records[v.id]:
                 expanded_name = get_expanded_name(name_records, record, id_list)
 
-                place = ibdata.GeoNames(geonameid=v.id, isolanguage=record.isolanguage, name=expanded_name, importance=v.population)
+                place = ibdata.GeoNames(geonameid=v.id, isolanguage=record.isolanguage, name=record.alternate, fullname=expanded_name, importance=v.population)
                 outsession.add(place)
 
                 print v.id, record.isolanguage, expanded_name, v.feature_name, v.population
 
         # now expand name found in the placeinfo table.
-        expanded_name = get_expanded_info_name(name_records, id_list)
+        (name, expanded_name) = get_expanded_info_name(name_records, id_list)
+        place = ibdata.GeoNames(geonameid=v.id, isolanguage='en', name=name, fullname=expanded_name, importance=v.population)
+        outsession.add(place)
 
         # now expand asciiname found in the placeinfo table.
-        expanded_name = get_expanded_info_asciiname(name_records, id_list)
+        (name, expanded_name) = get_expanded_info_asciiname(name_records, id_list)
+        place = ibdata.GeoNames(geonameid=v.id, isolanguage='en', name=name, fullname=expanded_name, importance=v.population)
+        outsession.add(place)
 #        print expanded_name
 
         if count & 0xffff == 0:
             outsession.commit()
 
-        if count > 1000:
-            break
-
     outsession.commit()
+
+
 def main(geoname_db_filename, iiab_db_filename):
     sepDb = gndata.Database(geoname_db_filename)
 
