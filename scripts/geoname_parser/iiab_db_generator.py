@@ -167,7 +167,7 @@ def get_expanded_info_name(records, id_list):
     fullname_parts = [name]
     for idcode in id_list[1:]:  # skip primary place ID which is first element
         append_if_not_empty(fullname_parts, records[(idcode, "__infoname__")].name)
-    return (name, u', '.join(fullname_parts)
+    return (name, u', '.join(fullname_parts))
 
 def get_expanded_info_asciiname(records, id_list):
     """
@@ -179,7 +179,7 @@ def get_expanded_info_asciiname(records, id_list):
     fullname_parts = [name]
     for idcode in id_list[1:]:  # skip primary place ID which is first element
         append_if_not_empty(fullname_parts, records[(idcode, "__infoname__")].asciiname)
-    return (name, u', '.join(fullname_parts)
+    return (name, u', '.join(fullname_parts))
 
 def work(insession, outsession):
     # for each place, inspect all of the different names.
