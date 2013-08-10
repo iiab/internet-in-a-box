@@ -1,27 +1,15 @@
 #!/usr/bin/env python
 
 from optparse import OptionParser
-import map_models.geoname_org_model as gndata
-import map_models.iiab_model as ibdata
-from unicodedata2 import script_cat # helper script from local directory
+import .geoname_org_model as gndata
+import .iiab_model as ibdata
+from .unicodedata2 import script_cat # helper script from local directory
 
 """
 Read geoname.org data that has been placed into a SQLite database and create
 a new database consisting of full name records structured for efficient autocomplete
 and geolookup.
 """
-
-def lookup_extranames_from_info(session, a2, a1, country):
-    """
-    
-    """
-    admin2rec = session.query(gndata.PlaceInfo).filter(gndata.PlaceInfo.id == a2).first()
-    admin1rec = session.query(gndata.PlaceInfo).filter(gndata.PlaceInfo.id == a1).first()
-    countryrec = session.query(gndata.PlaceInfo).filter(gndata.PlaceInfo.id == country).first()
-
-    nameset = (admin2rec.name, admin1rec.name, countryrec.name)
-    ascii_nameset = (admin2rec.ascii_name, admin1rec.ascii_name, countryrec.ascii_name)
-    return (nameset, ascii_nameset)
 
 def add(lookup, key, value):
     """
@@ -35,16 +23,13 @@ def add(lookup, key, value):
     else:
         lookup[key] = [value]
 
-def get_namesets(session, geoid, geo2id, geo1id, countryid):
+def get_namesets(session, idlist):
     """
     Return a dictionary of all the names that will be used to construct the fully expanded place name
     :param session: database session for querying the allCountries and alternatenames content
-    :param geoid: The place geographic id code
-    :param geo2id: the admin2code for geoid
-    :param geo1id: the admin1code for geoid
-    :param countryid: the country level place id for geoid
+    :param idlist: ordered list of geographic IDs, administrative area ID codes, and country ID code.
     """
-    idlist = (geoid, geo2id, geo1id, countryid)
+    geoid = idlist[0] # first list element is the specific place we are describing
     lookup = {}
     links = []  # links (just for geoid)
     for v in session.query(gndata.PlaceNames).filter(gndata.PlaceNames.geonameid.in_(idlist)).yield_per(1):
@@ -159,60 +144,48 @@ def get_closest_match(records, rec, gid):
                 return matched.alternate
 
 
-def get_expanded_name(records, rec, admin2, admin1, country):
+def get_expanded_name(records, rec, id_list):
     """
     Return a unicode string with fully expanded name for place described by PlaceName record rec
     :param records: dictionary of namesets obtained from get_nameset
     :param rec: specific PlaceNames record whose containing place name we are searching for
-    :param admin2: admin2code for rec
-    :param admin1: admin1code for rec
-    :param country: country geo id for rec
+    :param id_list: list of geographic ID codes ordered smallest to largest.
     """
     name = [rec.alternate]
-    append_if_not_empty(name, get_closest_match(records, rec, admin2))
-    append_if_not_empty(name, get_closest_match(records, rec, admin1))
-    append_if_not_empty(name, get_closest_match(records, rec, country))
-    #print name
+    # id_list is ordered smallest to largest geographic area
+    for idcode in id_list[1:]:  # skip rec ID which is first element in id_list
+        append_if_not_empty(name, get_closest_match(records, rec, idcode))
     return u', '.join(name)
 
-def get_expanded_info_name(records, gid, admin2, admin1, country):
+def get_expanded_info_name(records, id_list):
     """
     Return a unicode string with fully expanded name for place using PlaceInfo.name values
     :param records: dictionary of namesets obtained from get_nameset
-    :param gid: specific geographic id for the place we are naming
-    :param admin2: admin2code for gid
-    :param admin1: admin1code for gid
-    :param country: country geo id for gid
+    :param id_list: list of geographic ID codes ordered smallest to largest.
     """
-    name = [records[(gid, "__infoname__")].name]
-    append_if_not_empty(name, records[(admin2, "__infoname__")].name)
-    append_if_not_empty(name, records[(admin1, "__infoname__")].name)
-    append_if_not_empty(name, records[(country, "__infoname__")].name)
-    print name
+    name = [records[(id_list[0], "__infoname__")].name]
+    for idcode in id_list[1:]:  # skip primary place ID which is first element
+        append_if_not_empty(name, records[(idcode, "__infoname__")].name)
     return u', '.join(name)
 
-def get_expanded_info_asciiname(records, gid, admin2, admin1, country):
+def get_expanded_info_asciiname(records, id_list):
     """
     Return a unicode string with fully expanded name for place using PlaceInfo.asciiname values
     :param records: dictionary of namesets obtained from get_nameset
-    :param gid: specific geographic id for the place we are naming
-    :param admin2: admin2code for gid
-    :param admin1: admin1code for gid
-    :param country: country geo id for gid
+    :param id_list: list of geographic ID codes ordered smallest to largest.
     """
-    name = [records[(gid, "__infoname__")].asciiname]
-    append_if_not_empty(name, records[(admin2, "__infoname__")].asciiname)
-    append_if_not_empty(name, records[(admin1, "__infoname__")].asciiname)
-    append_if_not_empty(name, records[(country, "__infoname__")].asciiname)
-    print name
+    name = [records[(id_list[0], "__infoname__")].asciiname]
+    for idcode in id_list[1:]:  # skip primary place ID which is first element
+        append_if_not_empty(name, records[(idcode, "__infoname__")].asciiname)
     return u', '.join(name)
 
 def work(insession, outsession):
     # for each place, inspect all of the different names.
     for count, v in enumerate(insession.query(gndata.PlaceInfo).yield_per(1)):
-        #nameset, ascii_nameset = lookup_extranames_from_info(session, v.admin2_id, v.admin1_id, v.country_id)
-        (name_records, links) = get_namesets(insession, v.id, v.admin2_id, v.admin1_id, v.country_id)
+        id_list = (v.id, v.admin4_id, v.admin3_id, v.admin2_id, v.admin1_id, v.country_id)
+        (name_records, links) = get_namesets(insession, id_list)
 
+        # insert geoinfo record
         info = ibdata.GeoInfo(id=v.id, latitude=v.latitude, longitude=v.longitude, population=v.population,
                 feature_code=v.feature_code, feature_name=v.feature_name)
         outsession.add(info)
@@ -224,21 +197,18 @@ def work(insession, outsession):
         # Not all places have alternate name records -- use them if we do, otherwise fallback to name in the placeinfo table
         if v.id in name_records:
             for record in name_records[v.id]:
-                expanded_name = get_expanded_name(name_records, record, v.admin2_id, v.admin1_id, v.country_id)
+                expanded_name = get_expanded_name(name_records, record, id_list)
 
                 place = ibdata.GeoNames(geonameid=v.id, isolanguage=record.isolanguage, name=expanded_name, importance=v.population)
                 outsession.add(place)
 
                 print v.id, record.isolanguage, expanded_name, v.feature_name, v.population
 
-        ### TODO: PENDING DB REBUILD
         # now expand name found in the placeinfo table.
-#        expanded_name = get_expanded_info_name(name_records, v.id, v.admin2_id, v.admin1_id, v.country_id)
-#        print expanded_name
+        expanded_name = get_expanded_info_name(name_records, id_list)
 
-        ### TODO: PENDING DB REBUILD
         # now expand asciiname found in the placeinfo table.
-#        expanded_name = get_expanded_info_asciiname(name_records, v.id, v.admin2_id, v.admin1_id, v.country_id)
+        expanded_name = get_expanded_info_asciiname(name_records, id_list)
 #        print expanded_name
 
         if count & 0xffff == 0:
@@ -248,22 +218,10 @@ def work(insession, outsession):
             break
 
     outsession.commit()
-def main():
-    parser = OptionParser(description="Parse geonames.org geo data into a SQLite DB.")
-    parser.add_option("--dbname", dest="db_filename", action="store",
-                      default="geodata2.db",
-                      help="The geodata.db SQLite database")
-    parser.add_option("--srcdir", dest="data_dir", action="store",
-                      default="",
-                      help="Specify directory in which data files can be found")
-    parser.add_option("--disable-info", action="store_false", dest="build_info", default=True)
-    parser.add_option("--disable-names", action="store_false", dest="build_names", default=True)
+def main(geoname_db_filename, iiab_db_filename):
+    sepDb = gndata.Database(geoname_db_filename)
 
-    (options, args) = parser.parse_args()
-
-    sepDb = gndata.Database(options.db_filename)
-
-    uniDb = ibdata.Database("maptest.db")
+    uniDb = ibdata.Database(iiab_db_filename)
     uniDb.clear_table(ibdata.GeoNames)
     uniDb.clear_table(ibdata.GeoInfo)
     uniDb.clear_table(ibdata.GeoLinks)
@@ -274,6 +232,16 @@ def main():
 
     
 if __name__ == '__main__':
-    main()
+    parser = OptionParser(description="Parse geonames.org geo data database to create the geodata db IIAB will use.")
+    parser.add_option("--in", dest="db_filename", action="store",
+                      default="geoname_geodata.db",
+                      help="The geonamegeodata.db SQLite database to be used as input")
+    parser.add_option("--out", dest="out_db_filename", action="store",
+                      default="iiab_geodata.db",
+                      help="The iiabgeodata.db SQLite database to create")
+
+    (options, args) = parser.parse_args()
+
+    main(options.db_filename, options.out_db_filename)
 
 
