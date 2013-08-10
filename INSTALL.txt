@@ -35,8 +35,8 @@ instead of 'pip')
 3. Download the QuickStart Sampler dataset and untar in root filesystem (or another 
 location of your choice)
     cd /
-    sudo wget http://downloads.internet-in-a-box.org/IIAB_QuickStart_Sampler_20130618.tgz
-    sudo tar xvzf IIAB_QuickStart_Sampler_20130618.tgz
+    sudo wget http://downloads.internet-in-a-box.org/IIAB_QuickStart_Sampler_20130809.tgz
+    sudo tar xvzf IIAB_QuickStart_Sampler_20130809.tgz
 
 *Refer to the section 'Dataset Location' on specifying another directory.
 
@@ -99,8 +99,8 @@ Recommended for developers.
 
 
 4. Download and untar the QuickStart Sampler dataset
-    sudo wget http://downloads.internet-in-a-box.org/IIAB_QuickStart_Sampler_20130618.tgz
-    sudo tar xvzf IIAB_QuickStart_Sampler_20130618.tgz
+    sudo wget http://downloads.internet-in-a-box.org/IIAB_QuickStart_Sampler_20130809.tgz
+    sudo tar xvzf IIAB_QuickStart_Sampler_20130809.tgz
 
 
 5. Run stand-alone server
