@@ -16,6 +16,19 @@ find modules/INFO.json modules/*/INFO.json >>$TEMP
 
 # Moby Dick
 find modules/gutenberg-mirror/data/2/7/0/2701 >>$TEMP
+find modules/gutenberg-htmlz/01/pg2701.htmlz >>$TEMP
+find modules/gutenberg-epub/01/pg2701.epub >>$TEMP
+
+# Alice in Wonderland Illustrated
+find modules/gutenberg-htmlz-images/33/pg19033.htmlz >>$TEMP
+find modules/gutenberg-epub-images/33/pg19033.epub >>$TEMP
+
+# Wikipedia title search index
+find modules/wikipedia-index >>$TEMP
+find modules/wikipedia-index.titles_only/wikipedia_gn_all_01_2013 >>$TEMP
+
+# Map city name search
+find modules/geonames_index >>$TEMP
 
 # Bash software
 find modules/ubuntu/12.04/mirror/archive.ubuntu.com/ubuntu/pool/main/b/bash >>$TEMP
