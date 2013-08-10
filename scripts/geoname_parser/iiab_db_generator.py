@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 from optparse import OptionParser
-import .geoname_org_model as gndata
-import .iiab_model as ibdata
-from .unicodedata2 import script_cat # helper script from local directory
+import geoname_org_model as gndata
+import iiab_model as ibdata
+from unicodedata2 import script_cat # helper script from local directory
 
 """
 Read geoname.org data that has been placed into a SQLite database and create
