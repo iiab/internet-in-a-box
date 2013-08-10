@@ -14,68 +14,40 @@ import codecs
 Base = declarative_base()
 
 # geonameid is used as primary key id
-country_fields = ['iso', 'iso3', 'iso_numeric', 'fips', 'country', 'capital', 'area_km', 'population', 'continent', 'tld', 'currencycode', 'currencyname', 'phone', 'postal_code_format', 'postal_code_regex', 'languages', 'id', 'neighbours', 'fips_equiv']
-
-class Country(Base):
-    __tablename__ = 'country'
-
-    id = Column(Integer, primary_key=True)
-    #iso = Column(String)
-    #iso3 = Column(String)
-    #iso_numeric = Column(String)
-    #fips = Column(String)
-    country = Column(String)
-    capital = Column(String)
-    area_km = Column(String)
-    population = Column(Integer)
-    continent = Column(String)
-    #tld = Column(String)
-    #currencycode = Column(String)
-    currencyname = Column(String)
-    #phone = Column(String)
-    #postal_code_format = Column(String)
-    #postal_code_regex = Column(String)
-    languages = Column(String)   # comma delimited multivalue field - new table if useful
-    #neighbours = Column(String)  # comma delimited multivalue field - new table if useful
-    #fips_equiv = Column(String) 
-
+country_fields = ('iso', 'iso3', 'iso_numeric', 'fips', 'country', 'capital', 
+                  'area_km', 'population', 'continent', 'tld', 'currencycode', 
+                  'currencyname', 'phone', 'postal_code_format', 'postal_code_regex', 
+                  'languages', 'id', 'neighbours', 'fips_equiv')
 place_fields = ('id', 'name', 'asciiname', 'altnames',
                 'latitude', 'longitude', 'feature_class', 'feature_code',
                 'country_code', 'cc2', 'admin1_code', 'admin2_code',
                 'admin3_code', 'admin4_code', 'population', 'elevation',
                 'gtopo30', 'timezone', 'modification_date')
+# alternateNameId is used as primary key id
+altname_fields = ('id', 'geonameid', 'isolanguage', 'alternate', 'isPreferredName', 
+                  'isShortName', 'isColloquial', 'isHistoric')
+admin1_fields = ('code', 'name', 'ascii_name', 'id')
+admin2_fields = ('code', 'name', 'ascii_name', 'id')
+feature_fields = ('code', 'name', 'description')
 
-class Place(Base):
-    __tablename__ = 'place'
+class PlaceInfo(Base):
+    __tablename__ = "placeinfo"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True) # geoid
     name = Column(String)
     asciiname = Column(String)
-    #altnames = Column(String)
+    admin2_id = Column(Integer)
+    admin1_id = Column(Integer)
+    country_id = Column(Integer)
     latitude = Column(String)
     longitude = Column(String)
-    feature_class = Column(String)
-    feature_code = Column(String)
-    country_code = Column(String)
-    cc2 = Column(String)
-    admin1_code = Column(String)
-    admin2_code = Column(String)
-    admin3_code = Column(String)
-    admin4_code = Column(String)
     population = Column(String)
-    #elevation = Column(String)
-    #gtopo30 = Column(String)
-    #timezone = Column(String)
-    #modification_date = Column(String)
+    feature_code = Column(String)
+    feature_name = Column(String)
 
-
-# alternateNameId is used as primary key id
-altname_fields = ('id', 'geonameid', 'isolanguage', 'alternate', 
-                  'isPreferredName', 'isShortName', 'isColloquial', 'isHistoric')
-
-class AltName(Base):
-    __tablename__ = 'altnames'
-    id = Column(Integer, primary_key=True)
+class PlaceNames(Base):
+    __tablename__ = "placenames"
+    id = Column(Integer, primary_key=True) # generated row id's
     geonameid = Column(Integer)
     isolanguage = Column(String)
     alternate = Column(String)
@@ -85,24 +57,26 @@ class AltName(Base):
     isHistoric = Column(String)
 
 
-admin1_fields = ('code', 'name', 'ascii_name', 'id')
-admin2_fields = ('code', 'name', 'ascii_name', 'id')
-class AdminDescriptor(Base):
-    __tablename__ = 'admincodes'
-    id = Column(Integer, primary_key=True)
-    code = Column(String)
-    name = Column(String)
-    ascii_name = Column(String)
-
-feature_fields = ('code', 'name', 'description')
-
 def record_iterator(filename, field_names):
     with codecs.open(filename, encoding='utf-8') as f:
         for line in f:
             if line.lstrip().startswith('#'):
                 continue
-            yield dict(zip(field_names, line.split('\t')))
+            yield dict(zip(field_names, map(unicode.strip, line.split('\t'))))
 
+
+def build_dictionary(filename, fields, key):
+    """Return a dictionary of records keyed on the id"""
+    assert key in fields
+
+    results = {}
+    for r in record_iterator(filename, fields):
+        if r[key] != '':
+            results[r[key]] = r
+        else:
+            print "Skipping record with missing " + key + ": " + r
+
+    return results
 
 def builddb(db, insp, descriptor):
     filename, fields, cls = descriptor
@@ -126,36 +100,136 @@ def builddb(db, insp, descriptor):
             db.commit()
     db.commit()
 
+def place_admin1_id(aux_data, rec):
+    if rec['admin1_code'] == '':
+        return '';
+    admin1code = "%s.%s" % (rec['country_code'], rec['admin1_code'])
+    try:
+        return aux_data['admin1'][admin1code]['id']
+    except KeyError:
+        print u''.join((u"Failed to find admin1 code for ", admin1code, u" on ", rec['id'])).encode('utf-8')
+        return ''
+
+def place_admin2_id(aux_data, rec):
+    if rec['admin1_code'] == '' or rec['admin2_code'] == '':
+        return '';
+    admin2code = "%s.%s.%s" % (rec['country_code'], rec['admin1_code'], rec['admin2_code'])
+    try:
+        return aux_data['admin2'][admin2code]['id']
+    except KeyError:
+        print u''.join((u"Failed to find admin2 code for ", admin2code, u" on ", rec['id'])).encode('utf-8')
+        return ''
+
+def place_country_id(aux_data, rec):
+    countrycode = rec['country_code']
+    try:
+        return aux_data['countries'][countrycode]['id']
+    except KeyError:
+        print u''.join((u"Failed to find country code for ", countrycode, u" on ", rec['id'])).encode('utf-8')
+        return ''
+
+def place_feature_name(aux_data, rec):
+    feature = "%s.%s" % (rec['feature_class'], rec['feature_code'])
+    try:
+        return aux_data['features'][feature]['name']
+    except KeyError:
+        print u''.join((u"Failed to find feature code for ", feature, u" on ", rec['id'])).encode('utf-8')
+        return ''
+
+def try_for_improved_population_estimate(aux_data, data):
+    if data['id'] in aux_data['cities']:
+        citypop = aux_data['cities'][data['id']]['population']
+        if data['population'] != citypop:
+            if data['population'] != 0:
+                print "city population mismatch on %d: %d %d" % (
+                        data['id'], data['population'], citypop)
+            data['population'] = citypop
+    elif data['id'] in aux_data['countries']:
+        countrypop = aux_data['countries']['population']
+        if data['population'] != countrypop:
+            if data['population'] != 0:
+                print "country population mismatch on %d: %d %d" % (
+                        data['id'], data['population'], countrypop)
+            data['population'] = citypop
+
+def make_place_info(aux_data, rec):
+    data = {}
+
+    direct_copy_fields = ('id', 'latitude', 'longitude', 'population', 'feature_code', 'name', 'asciiname')
+    for f in direct_copy_fields:
+        data[f] = rec[f]
+
+    data['admin2_id'] = place_admin2_id(aux_data, rec)
+    data['admin1_id'] = place_admin1_id(aux_data, rec)
+    data['country_id'] = place_country_id(aux_data, rec)
+    data['feature_name'] = place_feature_name(aux_data, rec)
+    try_for_improved_population_estimate(aux_data, data)
+    return PlaceInfo(**data)
+
+def augment_record(aux_data, record):
+    return record
+
+def parse_alt_names_to_db(dbSession):
+    # create names data
+    for count, record in enumerate(record_iterator('alternateNames.txt', altname_fields)):
+        pn = PlaceNames(**record)
+        dbSession.add(pn)
+        if (count % 500000) == 0:
+            dbSession.commit()
+            print '.',
+    dbSession.commit()
+
+def parse_place_info_to_db(dbSession):
+    dbSession.query(PlaceInfo).delete()
+
+    # create names data
+    for count, record in enumerate(record_iterator('allCountries.txt', place_fields)):
+        #augment record
+        record = augment_record(aux_data, record)
+        pi = make_place_info(aux_data, record)
+        dbSession.add(pi)
+        if (count % 500000) == 0:
+            dbSession.commit()
+            print '.',
+    dbSession.commit()
+
+
+def load_lookup_tables():
+    aux_data = {}
+    aux_data['admin1'] = build_dictionary('admin1CodesASCII.txt', admin1_fields, 'code');
+    aux_data['admin2'] = build_dictionary('admin2Codes.txt', admin2_fields, 'code');
+    aux_data['features'] = build_dictionary('featureCodes_en.txt', feature_fields, 'code');
+    aux_data['countries'] = build_dictionary('countryInfo.txt', country_fields, 'iso');
+    aux_data['cities'] = build_dictionary('cities1000.txt', place_fields, 'id');
+    return aux_data
+
 def main():
     parser = OptionParser(description="Parse geonames.org geo data into a SQLite DB.")
     parser.add_option("--dbname", dest="db_filename", action="store",
-                      default="geodata.db",
+                      default="geodata2.db",
                       help="The geodata.db SQLite database")
     parser.add_option("--srcdir", dest="data_dir", action="store",
                       default="",
                       help="Specify directory in which data files can be found")
+    parser.add_option("--disable-info", action="store_false", dest="build_info", default=True)
+    parser.add_option("--disable-names", action="store_false", dest="build_names", default=True)
+
     (options, args) = parser.parse_args()
 
-    recordsets = [
-            ('allCountries.txt', place_fields, Place),
-            ('countryInfo.txt', country_fields, Country),
-            ('admin1CodesASCII.txt', admin1_fields, AdminDescriptor),
-            ('admin2Codes.txt', admin2_fields, AdminDescriptor),
-            ('alternateNames.txt', altname_fields, AltName),
-            ('cities1000.txt', place_fields, None),
-            ('featureCodes_en.txt', feature_fields, None),
-            #('country_catagories.txt',)
-            #('iso-languagecodes.txt',
-            ]
+    aux_data = load_lookup_tables()
 
     engine = create_engine('sqlite:///' + options.db_filename)
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     dbSession = Session()
-    insp = inspect(engine)
 
-    for descriptor in recordsets:
-        builddb(dbSession, insp, descriptor)
+    if parser.build_names:
+        print 'parse names...'
+        parse_alt_names_to_db(dbSession)
+
+    if parser.build_info:
+        print 'parse places...'
+        parse_place_info_to_db(dbSession)
 
     
 if __name__ == '__main__':
