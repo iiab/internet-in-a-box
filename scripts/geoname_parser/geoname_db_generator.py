@@ -104,7 +104,7 @@ def try_for_improved_population_estimate(aux_data, data):
             if data['population'] != 0:
                 print "country population mismatch on %d: %d %d" % (
                         data['id'], data['population'], countrypop)
-            data['population'] = citypop
+            data['population'] = countrypop
 
 def make_place_info(aux_data, rec):
     data = {}
@@ -121,8 +121,8 @@ def make_place_info(aux_data, rec):
     return dbmodel.PlaceInfo(**data)
 
 def augment_record(aux_data, record):
+    geoid = record['id']
     for auxkey in ('cities', 'countries'):
-        geoid = record['id']
         if geoid in aux_data[auxkey]:
             population = aux_data[auxkey][geoid]['population']
             if population > record['population']:
@@ -140,7 +140,7 @@ def parse_alt_names_to_db(dbSession):
             print '.',
     dbSession.commit()
 
-def parse_place_info_to_db(dbSession):
+def parse_place_info_to_db(dbSession, aux_data):
     dbSession.query(dbmodel.PlaceInfo).delete()
 
     # create names data
@@ -183,7 +183,7 @@ def main(dbfilename, build_info, build_names):
 
     if build_info:
         print 'parse places...'
-        parse_place_info_to_db(session)
+        parse_place_info_to_db(session, aux_data)
 
     
 if __name__ == '__main__':
