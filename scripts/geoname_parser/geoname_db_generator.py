@@ -109,10 +109,13 @@ def try_for_improved_population_estimate(aux_data, data):
 def make_place_info(aux_data, rec):
     data = {}
 
-    direct_copy_fields = ('id', 'latitude', 'longitude', 'population', 'feature_code', 'name', 'asciiname', 'admin3_id', 'admin4_id')
+    direct_copy_fields = ('id', 'latitude', 'longitude', 'population', 'feature_code', 'name', 'asciiname')
     for f in direct_copy_fields:
         data[f] = rec[f]
 
+    # Probably need lookup table for admin4/admin3 codes conversion to geoid.
+    data['admin4_id'] = rec['admin4_code']
+    data['admin3_id'] = rec['admin3_code']
     data['admin2_id'] = place_admin2_id(aux_data, rec)
     data['admin1_id'] = place_admin1_id(aux_data, rec)
     data['country_id'] = place_country_id(aux_data, rec)
@@ -121,8 +124,8 @@ def make_place_info(aux_data, rec):
     return dbmodel.PlaceInfo(**data)
 
 def augment_record(aux_data, record):
-    geoid = record['id']
     for auxkey in ('cities', 'countries'):
+        geoid = record['id']
         if geoid in aux_data[auxkey]:
             population = aux_data[auxkey][geoid]['population']
             if population > record['population']:

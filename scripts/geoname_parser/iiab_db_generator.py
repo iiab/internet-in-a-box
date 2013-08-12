@@ -11,6 +11,9 @@ a new database consisting of full name records structured for efficient autocomp
 and geolookup.
 """
 
+# storage for stats collection since not organized as a class...
+_stats = {}
+
 def add(lookup, key, value):
     """
     Helper function for creating/adding values to a dict of lists
@@ -26,13 +29,23 @@ def add(lookup, key, value):
 def get_namesets(session, idlist):
     """
     Return a dictionary of all the names that will be used to construct the fully expanded place name
+    Indexes names in a variety of ways. Note carefully that two different value types are stored.
+    The value type is a PlaceNames record except when the key is (id, '__infoname__') when the value is
+    a PlaceInfo record.
     :param session: database session for querying the allCountries and alternatenames content
     :param idlist: ordered list of geographic IDs, administrative area ID codes, and country ID code.
     """
     geoid = idlist[0] # first list element is the specific place we are describing
     lookup = {}
     links = []  # links (just for geoid)
+
+    # store PlaceNames records
     for v in session.query(gndata.PlaceNames).filter(gndata.PlaceNames.geonameid.in_(idlist)).yield_per(1):
+        if not v.isolanguage:
+            if v.geonameid == geoid:
+                stats('isolanguage empty')
+            continue
+
         if v.isolanguage == u'link':
             if v.geonameid == geoid:
                 links.append(v.alternate)
@@ -47,9 +60,9 @@ def get_namesets(session, idlist):
         add(lookup, (v.geonameid, v.isolanguage, v.isPreferredName, v.isHistoric), value_tup) # key:int,str,bool,bool
         add(lookup, (v.geonameid, v.isolanguage, v.isPreferredName), value_tup) # key:int,str,bool
 
-    # TODO:PENDING DB REBUILD
-    #for v in session.query(gndata.PlaceInfo).filter(gndata.PlaceInfo.id.in_(idlist)).yield_per(1):
-    #    add(lookup, (v.id, "__infoname__"), v)
+    # store PlaceInfo records
+    for v in session.query(gndata.PlaceInfo).filter(gndata.PlaceInfo.id.in_(idlist)).yield_per(1):
+        add(lookup, (v.id, "__infoname__"), v)
 
     return (lookup, links)
 
@@ -74,25 +87,26 @@ def match_script(refname, candidatematches):
     :param refname: name record we are matching
     :param candidatematches: list of name records to search
     """
-    # look through each charaacter in the name and build a frequency table of unicode script types.
-    refscripts = build_script_tally(refname)
-    # now do the same thing for each candidate name
+    # find the predominent script used in each candidate name. then create a dict with script name as
+    # as the key and the list of places as the value 
     candidatescripts = {} # key: script name, value: list of geographic names
     for namerec in candidatematches:
         try: # Might be best to profile compared to test for attribute. Primary case is a name record.
             name = namerec.alternate
         except AttributeError:
             name = namerec.name
-        tally = build_script_tally(name)
-        ordered_tally = sorted(tally.iteritems(), key=lambda t: t[1], reverse=True)
-        # only list the name under its most prevelant script type -- not currently checking for ties
-        (script_type, _) = ordered_tally[0]
-        add(candidatescripts, script_type, namerec)
+        tally = build_script_tally(name)  # build the script frequency table
+        ordered_tally = sorted(tally.iteritems(), key=lambda t: t[1], reverse=True) # order most to least
+        (script_type, _) = ordered_tally[0]    # pick the most prevalent script type (ties ignored)
+        add(candidatescripts, script_type, namerec)  # index based on most prevalent script
 
-    ordered_reftally = sorted(refscripts.iteritems(), key=lambda t: t[1], reverse=True)
+    # build a frequency table of script types used in the name
+    refscripts = build_script_tally(refname)
+    ordered_reftally = sorted(refscripts.iteritems(), key=lambda t: t[1], reverse=True) # ordered most to least
     best_match = True
+    # step through featured place name scripts looking for a candidate with a predominantly matching script
     for (script_type, _) in ordered_reftally:
-        if script_type in candidatescripts:
+        if script_type in candidatescripts:  # we found a match!
             number_of_matches = len(candidatescripts[script_type])
             perfect_match = True
             namerec = candidatescripts[script_type][0] # arbitrarily select first name record in list
@@ -130,14 +144,14 @@ def get_closest_match(records, rec, gid):
             # try to pic a record that uses the same unicode script
             (matched, number_of_matches, perfectmatch, best_match) = match_script(rec.alternate, records[key])
             if number_of_matches != 1:
-                print key, ": warning multiple matches", number_of_matches
+                stats('multiple name types match', extra=(key, number_of_matches))
             if not best_match:
-                print key, ": chose a partially matching script"
+                stats('chose partially matched script', extra=key)
             if not perfectmatch:
-                print key, ": unable to find the same script"
+                stats('fallback; no matching script', extra=key)
 
             if key[1] == '__infoname__':
-                print "matching infotable"
+                stats('fallback to matching infotable')
                 return matched.name
             else:
                 #print "matched record", key
@@ -163,11 +177,13 @@ def get_expanded_info_name(records, id_list):
     :param records: dictionary of namesets obtained from get_nameset
     :param id_list: list of geographic ID codes ordered smallest to largest.
     """
-    name = records[(id_list[0], "__infoname__")].name
-    fullname_parts = [name]
-    for idcode in id_list[1:]:  # skip primary place ID which is first element
-        append_if_not_empty(fullname_parts, records[(idcode, "__infoname__")].name)
-    return (name, u', '.join(fullname_parts))
+    fullname_parts = []
+    for idcode in id_list:
+        key = (idcode, "__infoname__")
+        if key in records:
+            info_rec = records[key][0]  # there should only be one geoid since primary key of GeoInfo
+            append_if_not_empty(fullname_parts, info_rec.name)
+    return (fullname_parts[0], u', '.join(fullname_parts))
 
 def get_expanded_info_asciiname(records, id_list):
     """
@@ -175,11 +191,13 @@ def get_expanded_info_asciiname(records, id_list):
     :param records: dictionary of namesets obtained from get_nameset
     :param id_list: list of geographic ID codes ordered smallest to largest.
     """
-    name = records[(id_list[0], "__infoname__")].asciiname
-    fullname_parts = [name]
-    for idcode in id_list[1:]:  # skip primary place ID which is first element
-        append_if_not_empty(fullname_parts, records[(idcode, "__infoname__")].asciiname)
-    return (name, u', '.join(fullname_parts))
+    fullname_parts = []
+    for idcode in id_list:  # skip primary place ID which is first element
+        key = (idcode, "__infoname__")
+        if key in records:
+            info_rec = records[key][0]  # there should only be one geoid since primary key of GeoInfo
+            append_if_not_empty(fullname_parts, info_rec.asciiname)
+    return (fullname_parts[0], u', '.join(fullname_parts))
 
 def work(insession, outsession):
     # for each place, inspect all of the different names.
@@ -204,7 +222,7 @@ def work(insession, outsession):
                 place = ibdata.GeoNames(geonameid=v.id, isolanguage=record.isolanguage, name=record.alternate, fullname=expanded_name, importance=v.population)
                 outsession.add(place)
 
-                print v.id, record.isolanguage, expanded_name, v.feature_name, v.population
+                #print v.id, record.isolanguage, expanded_name, v.feature_name, v.population
 
         # now expand name found in the placeinfo table.
         (name, expanded_name) = get_expanded_info_name(name_records, id_list)
@@ -217,11 +235,23 @@ def work(insession, outsession):
         outsession.add(place)
 #        print expanded_name
 
-        if count & 0xffff == 0:
+        if (count & 0xffff) == 0:
+            print '.',
             outsession.commit()
 
     outsession.commit()
 
+def stats(tag, extra=''):
+    global _stats
+    if tag not in _stats:
+        _stats[tag] = {}
+    if extra in _stats[tag]:
+        _stats[tag][extra] += 1
+    else:
+        _stats[tag][extra] = 1
+
+def show_stats():
+    print _stats
 
 def main(geoname_db_filename, iiab_db_filename):
     sepDb = gndata.Database(geoname_db_filename)
@@ -234,6 +264,8 @@ def main(geoname_db_filename, iiab_db_filename):
     uniDb.create()
 
     work(sepDb.get_session(), uniDb.get_session())
+
+    show_stats()
 
     
 if __name__ == '__main__':

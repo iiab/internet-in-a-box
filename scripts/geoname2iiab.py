@@ -9,7 +9,7 @@ def main(geodb_filename, iiabdb_filename):
     print "Parsing geoname text records to create a geoname db..."
     gn.main(geodb_filename, True, True)
 
-    print "Converting geoname db to IIAB dbi..."
+    print "Converting geoname db to IIAB db..."
     iiab.main(geodb_filename, iiabdb_filename)
 
 

@@ -43,7 +43,8 @@ class Database:
         Base.metadata.create_all(self.engine)
 
     def clear_table(self, table):
-        self.session.query(table).delete()
+        if self.engine.has_table(table.__tablename__):
+            self.session.query(table).delete()
 
     def get_session(self):
         return self.session
