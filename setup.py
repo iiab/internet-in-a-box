@@ -15,12 +15,13 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=[
-        'Flask',
-        'Flask-Babel==0.8',
+        'Flask >= 0.10',
+        'Flask-Babel >= 0.8',
         'Flask-AutoIndex',
         'Flask-SQLAlchemy',
-        'whoosh',
-        'backports.lzma'
+        'SQLAlchemy >= 0.8.2',
+        'whoosh >= 2.4.1',
+        'backports.lzma >= 0.0.2'
     ]
     #data_files=[("", ["LICENSE.txt", "README.md", "INSTALL.txt"])]
 )
