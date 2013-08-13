@@ -1,5 +1,5 @@
 from flask import Flask, request, url_for, session
-from flaskext.babel import Babel
+from flask.ext.babel import Babel
 from flask.ext.autoindex import AutoIndex
 import sys
 import urlparse

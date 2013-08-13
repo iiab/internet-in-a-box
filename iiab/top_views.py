@@ -1,7 +1,7 @@
 # Top level URL views
 from flask import (Blueprint, make_response, render_template,
                    send_file, redirect, abort, Markup)
-from flaskext.babel import gettext as _
+from flask.ext.babel import gettext as _
 
 from config import config
 from utils import mdns_resolve

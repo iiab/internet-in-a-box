@@ -6,7 +6,7 @@ import re
 from flask import (Blueprint, render_template, request, Response,
                    flash, url_for, redirect, safe_join, make_response,
                    send_file, send_from_directory)
-from flaskext.babel import gettext as _
+from flask.ext.babel import gettext as _
 import json
 
 from contextlib import closing

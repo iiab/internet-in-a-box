@@ -3,7 +3,7 @@ import os
 import re
 
 from flask import Blueprint, Response, render_template, request, flash, url_for
-from flaskext.babel import gettext as _
+from flask.ext.babel import gettext as _
 
 from zimpy import ZimFile
 from config import config
@@ -48,7 +48,7 @@ def zim_main_page_view(humanReadableId):
     try:
         article, mimetype, ns = zimfile.get_main_page()
         html = mangle_article(article, mimetype, humanReadableId)
-        return Response(html, mimetype=mimetype) 
+        return Response(html, mimetype=mimetype)
     except OSError as e:
         html = "<html><body>"
         html += "<p>" + _('Error accessing article.') + "</p>"
