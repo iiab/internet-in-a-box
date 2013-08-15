@@ -47,9 +47,12 @@ if __name__ == '__main__':
 
     (options, args) = parser.parse_args()
 
-    if options.mkdb:
-        main(options.geodb_filename, options.iiabdb_filename, not options.skip_gn_info, not options.skip_gn_names, not options.skip_iiab_db)
+    if not options.mkdb and not options.mkwhoosh:
+        print "Nothing to do. Specify options to make something happen."
+    else:
+        if options.mkdb:
+            main(options.geodb_filename, options.iiabdb_filename, not options.skip_gn_info, not options.skip_gn_names, not options.skip_iiab_db)
 
-    if options.mkwhoosh:
-        whooshgen.parse_geo(options.iiabdb_filename, options.indexdir, options.whitelist_filename)
+        if options.mkwhoosh:
+            whooshgen.parse_geo(options.iiabdb_filename, options.indexdir, options.whitelist_filename)
 
