@@ -14,7 +14,7 @@ import iiab_model as model
 def test_query(indexdir, terms):
     from whoosh.index import open_dir
     from whoosh.qparser import QueryParser
-    SEARCH_FIELD = "name"
+    SEARCH_FIELD = "ngram_name"
     whoosh_index = open_dir(indexdir)
     with whoosh_index.searcher() as searcher:
         query = QueryParser(SEARCH_FIELD, whoosh_index.schema).parse(terms)
