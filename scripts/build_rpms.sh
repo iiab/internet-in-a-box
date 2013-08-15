@@ -11,8 +11,13 @@ if [ ! -d internet-in-a-box/.git ]; then
     exit -1
 fi
 
+if [ ! -e iiab_id_rsa ]; then
+    echo "iiab_id_rsa private key must be in current directory"
+    exit -2
+fi
+
 echo "rsyncing from braddock.com - enter password"
-rsync -avrP --delete iiab@braddock.com:public_html/downloads.internet-in-a-box.org/fedora .
+rsync -avrP --delete -e 'ssh -i iiab_id_rsa' iiab@braddock.com:public_html/downloads.internet-in-a-box.org/fedora .
 
 if [ ! -e backports.lzma-0.0.2.tar.gz ]; then
     echo "Downloading LZMA..."
@@ -50,4 +55,4 @@ cp -v */dist/*.rpm fedora/18/
 createrepo --verbose fedora/18/
 
 echo "rsyncing to braddock.com - enter password"
-rsync -avrP --delete fedora iiab@braddock.com:public_html/downloads.internet-in-a-box.org/
+rsync -avrP --delete -e 'ssh -i iiab_id_rsa' fedora iiab@braddock.com:public_html/downloads.internet-in-a-box.org/
