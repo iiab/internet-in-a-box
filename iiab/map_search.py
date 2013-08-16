@@ -5,6 +5,7 @@ from whoosh.qparser import QueryParser
 from whoosh import sorting
 
 from utils import whoosh2dict
+import timepro
 
 
 class MapSearch(object):
@@ -13,6 +14,7 @@ class MapSearch(object):
         index_dir is the Whoosh index directory to use."""
         self.index_dir = index_dir
 
+    @timepro.profile()
     def search(self, query, page=1, pagelen=20):
         """Return a sorted list of results.
         pagelen specifies the number of hits per page.
@@ -20,18 +22,18 @@ class MapSearch(object):
         Set pagelen = None or 0 to retrieve all results.
         """
         query = unicode(query)  # Must be unicode
-        population_sort_facet = sorting.FieldFacet("population", reverse=True)
+        importance_sort_facet = sorting.FieldFacet("importance", reverse=True)
         ix = whoosh_open_dir_32_or_64(self.index_dir)
         with ix.searcher() as searcher:
             query = QueryParser("ngram_name", ix.schema).parse(query)
             if pagelen is not None and pagelen != 0:
                 try:
                     results = searcher.search_page(query, page, pagelen=pagelen,
-                                                sortedby=population_sort_facet)
+                                                sortedby=importance_sort_facet)
                 except ValueError, e:  # Invalid page number
                     results = []
             else:
-                results = searcher.search(query, limit=None, sortedby=population_sort_facet)
+                results = searcher.search(query, limit=None, sortedby=importance_sort_facet)
             #r = [x.items() for x in results]
             r = whoosh2dict(results)
         ix.close()

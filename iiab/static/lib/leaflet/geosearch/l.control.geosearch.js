@@ -9,10 +9,13 @@ L.GeoSearch.Provider = {};
 // MSIE needs cors support
 jQuery.support.cors = true;
 
-L.GeoSearch.Result = function (x, y, label) {
+L.GeoSearch.Result = function (x, y, label, geoid, nameid, language) {
     this.X = x;
     this.Y = y;
     this.Label = label;
+    this.geoid = geoid;
+    this.nameid = nameid;
+    this.language = language;
 };
 
 L.Control.GeoSearch = L.Control.extend({

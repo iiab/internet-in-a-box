@@ -32,7 +32,10 @@ L.GeoSearch.Provider.iiab = L.Class.extend({
             results.push(new L.GeoSearch.Result(
                 data[i].longitude, 
                 data[i].latitude, 
-                data[i].name
+                data[i].fullname,
+                data[i].geoid,
+                data[i].nameid,
+                data[i].isolanguage
             ));
         
         return results;
