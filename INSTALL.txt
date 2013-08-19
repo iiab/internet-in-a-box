@@ -22,7 +22,7 @@ Quick Start
     Ubuntu/Debian:
     sudo apt-get install python-pip gcc python-dev liblzma-dev
 
-    Fedora:
+    Fedora/CentOS:
     sudo yum install python-pip gcc python-devel xz-devel
 
 
@@ -82,7 +82,7 @@ Recommended for developers.
     Ubuntu/Debian:
     sudo apt-get install python-pip gcc python-dev liblzma-dev git
 
-    Fedora:
+    Fedora/CentOS:
     sudo yum install python-pip python-devel gcc git xz-devel
 
 
@@ -131,7 +131,7 @@ additional dependencies.
     Ubuntu/Debian:
     sudo apt-get install python-virtualenv
 
-    Fedora:
+    Fedora/CentOS:
     sudo yum install python-virtualenv xz-devel
 
 
