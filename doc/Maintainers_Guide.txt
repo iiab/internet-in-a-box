@@ -1,7 +1,20 @@
-﻿Internet In A Box
-=================
+﻿Internet-in-a-Box Maintainer's Guide
+====================================
 
-2013
+
+Overview
+--------
+
+This document is a guide for the maintainers of the Internet-in-a-Box project.
+It is not intended for end users.  It documents the various steps of information
+processing required to build the Internet-in-a-Box dataset for distribution.
+
+All data processing steps should be documented here.  The procedures documented
+here should be relatively clean and tested - if you want to record rough notes
+do so in the doc/NOTES.txt file.
+
+Note that creating the Internet-in-a-Box dataset requires WEEKS of dedicated
+download and data processing time even on a fast computer.
 
 
 OpenStreetMap
@@ -91,6 +104,7 @@ http://wiki.openstreetmap.org/wiki/Osm2pgsql/benchmarks
 
 Note you can get statistics on number of nodes, ways, and relations at:
 http://www.openstreetmap.org/stats/data_stats.html
+
 
 Wikipedia
 ---------
