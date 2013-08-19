@@ -4,3 +4,4 @@ Flask-SQLAlchemy>=0.16
 Flask-AutoIndex
 Whoosh>=2.4.1
 backports.lzma>=0.0.2
+SQLAlchemy>=0.8.2

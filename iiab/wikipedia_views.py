@@ -9,6 +9,7 @@ from zimpy import ZimFile
 from iso639 import iso6392
 from kiwix import Library
 import timepro
+import babel.numbers
 
 blueprint = Blueprint('wikipedia_views', __name__,
                       template_folder='templates')
@@ -45,7 +46,8 @@ def organize_books_by_language(filenames, library_file):
 
         # Format article count as string with commas
         articleCount = zim_obj.header['articleCount']
-        book_data['articleCount'] = "{:,d}".format(articleCount)
+        #book_data['articleCount'] = "{:,d}".format(articleCount)
+        book_data['articleCount'] = babel.numbers.format_number(articleCount)
         book_data['humanReadableId'] = os.path.splitext(os.path.basename(zim_fn))[0]
 
         if not languages.has_key(book_data['language']):
