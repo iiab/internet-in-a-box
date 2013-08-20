@@ -2,7 +2,8 @@
 
 from optparse import OptionParser
 import geoname_org_model as gndata
-import iiab_model as ibdata
+import iiab_maps_model as ibdata
+import dbhelper
 from unicodedata2 import script_cat # helper script from local directory
 
 """
@@ -219,7 +220,7 @@ def work(insession, outsession):
             for record in name_records[v.id]:
                 expanded_name = get_expanded_name(name_records, record, id_list)
 
-                place = ibdata.GeoNames(geonameid=v.id, isolanguage=record.isolanguage, name=record.alternate, fullname=expanded_name, importance=v.population)
+                place = ibdata.GeoNames(geoid=v.id, lang=record.isolanguage, name=record.alternate, fullname=expanded_name, importance=v.population)
                 outsession.add(place)
 
                 #print v.id, record.isolanguage, expanded_name, v.feature_name, v.population
@@ -254,9 +255,9 @@ def show_stats():
     print _stats
 
 def main(geoname_db_filename, iiab_db_filename):
-    sepDb = gndata.Database(geoname_db_filename)
+    sepDb = dbhelper.Database(gndata.Base, geoname_db_filename)
 
-    uniDb = ibdata.Database(iiab_db_filename)
+    uniDb = dbhelper.Database(ibdata.Base, iiab_db_filename)
     uniDb.clear_table(ibdata.GeoNames)
     uniDb.clear_table(ibdata.GeoInfo)
     uniDb.clear_table(ibdata.GeoLinks)

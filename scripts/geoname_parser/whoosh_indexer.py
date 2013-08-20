@@ -7,7 +7,8 @@ from whoosh.index import create_in
 import whoosh.fields as wf
 from whoosh.fields import ID, TEXT, KEYWORD, STORED, NUMERIC, NGRAMWORDS
 from argparse import ArgumentParser
-import iiab_model as model
+import iiab_maps_model as model
+import dbhelper
 
 
 
@@ -36,8 +37,10 @@ def get_schema():
     return wf.Schema(nameid=ID(unique=True, stored=True),
         geoid=ID(stored=True),
         fullname=TEXT(stored=True), 
-        ngram_fullname=NGRAMWORDS(minsize=MIN_LEN, maxsize=MAX_LEN, at=FIXED_PREFIX, queryor=True),
-        ngram_name=NGRAMWORDS(minsize=MIN_LEN, maxsize=MAX_LEN, at=FIXED_PREFIX, queryor=True),
+        name=TEXT,
+        lang=KEYWORD(stored=True),
+        #ngram_fullname=NGRAMWORDS(minsize=MIN_LEN, maxsize=MAX_LEN, at=FIXED_PREFIX, queryor=True),
+        #ngram_name=NGRAMWORDS(minsize=MIN_LEN, maxsize=MAX_LEN, at=FIXED_PREFIX, queryor=True),
         importance=NUMERIC(int, bits=64, sortable=True) 
         )
 
@@ -134,10 +137,12 @@ class NullGenerator:
 RECORD_MAPPING = {
     # from, to
     ('id', 'nameid'),
-    ('geonameid', 'geoid'),
+    ('geoid', 'geoid'),
     ('fullname', 'fullname'),
-    ('fullname', 'ngram_fullname'),
-    ('name', 'ngram_name'),
+    ('name', 'name'),
+    ('lang', 'lang'),
+    #('fullname', 'ngram_fullname'),
+    #('name', 'ngram_name'),
     ('importance', 'importance')
     }
 
@@ -167,14 +172,14 @@ def parse_geo(dbfilename, index_dir, whitelist_filename):
 
     omitted_count = 0
     geoid = None
-    db = model.Database(dbfilename)
+    db = dbhelper.Database(model.Base, dbfilename)
 
-    for count, record in enumerate(db.session.query(model.GeoNames).order_by(model.GeoNames.geonameid).yield_per(1)):
-        feature_code = db.session.query(model.GeoInfo).filter_by(id=record.geonameid).first().feature_code
+    for count, record in enumerate(db.session.query(model.GeoNames).order_by(model.GeoNames.geoid).yield_per(1)):
+        feature_code = db.session.query(model.GeoInfo).filter_by(id=record.geoid).first().feature_code
         if passes_whitelist(feature_code, feature_code_whitelist):
             # our format does not seem to conform to the classic parent-child group so holding of on grouping for now
-            #if geoid != record.geonameid:
-            #    geoid = record.geonameid
+            #if geoid != record.geoid:
+            #    geoid = record.geoid
             #    generator.start_group()
             schema_record = make_record(record)
             generator.write(schema_record)

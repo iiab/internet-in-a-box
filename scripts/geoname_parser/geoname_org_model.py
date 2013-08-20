@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 
 __all__ = ["country_fields", "place_fields", "altname_fields",
         "admin1_fields", "admin2_fields", "feature_fields",
-        "PlaceInfo", "PlaceNames", "Database"]
+        "PlaceInfo", "PlaceNames"]
 
 Base = declarative_base()
 
@@ -54,17 +54,4 @@ class PlaceNames(Base):
     isShortName = Column(String)
     isColloquial = Column(String)
     isHistoric = Column(String)
-
-class Database:
-    def __init__(self, filename):
-        self.engine = create_engine('sqlite:///' + filename)
-        self.Session = sessionmaker(bind=self.engine)
-        self.session = self.Session()
-
-    def create(self):
-        Base.metadata.create_all(self.engine)
-
-    def get_session(self):
-        return self.session
-
 

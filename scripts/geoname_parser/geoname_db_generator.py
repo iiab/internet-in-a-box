@@ -6,6 +6,7 @@ from sqlalchemy import Column, String, Integer, create_engine, inspect
 from sqlalchemy.orm import sessionmaker
 import codecs
 import geoname_org_model as dbmodel
+import dbhelper
 
 def record_iterator(filename, field_names):
     """
@@ -176,7 +177,7 @@ def main(dbfilename, build_info, build_names):
     """
     aux_data = load_lookup_tables()
 
-    database = dbmodel.Database(dbfilename)
+    database = dbhelper.Database(dbmodel.Base, dbfilename)
     database.create()
     session = database.get_session()
 
