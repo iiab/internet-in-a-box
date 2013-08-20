@@ -2,53 +2,105 @@
 # By Braddock Gaskill, 16 Feb 2013
 from utils import whoosh_open_dir_32_or_64
 from whoosh.qparser import QueryParser
+from whoosh.sorting import ScoreFacet, FunctionFacet
 from whoosh import sorting
+from flask.ext.sqlalchemy import SQLAlchemy
+import os
+
+import map_model
+from extensions import db_map
+from config import config
 
 from utils import whoosh2dict
 import timepro
 
+def init_db(app):
+    # setup database access
+    if app.config['SQLALCHEMY_BINDS'] is None:
+        app.config['SQLALCHEMY_BINDS'] = {}
+    database_path = config().get_path('OSM', 'sqlalchemy_database_uri')
+    db_uri = 'sqlite:///' + os.path.abspath(database_path)
+    app.config['SQLALCHEMY_BINDS'].update({ 'maps' : db_uri })
+    db_map.init_app(app)
+    print app.config['SQLALCHEMY_BINDS']
 
 class MapSearch(object):
-    def __init__(self, index_dir):
-        """Initialize a search object.
-        index_dir is the Whoosh index directory to use."""
-        self.index_dir = index_dir
+    DEFAULT_LIMIT = 100
+
+    @classmethod
+    def init_class(cls, index_dir):
+        """Class level initialize. Initialize search index once for performance reasons"""
+        cls.whoosh_index = open_dir(index_dir)
+        # setup cached fields
+        importance_sort_facet = sorting.FieldFacet("importance", reverse=True)
+        score = ScoreFacet()
+        cls.sort_order = [score, importance_sort_facet]
+        #cls.sort_order = importance_sort_facet
+        cls.collapse_facet = sorting.FieldFacet('geoid')
+        def language_filter(s, docid):
+            (lang,score) = s.key_terms([docid], "isolanguage")
+            return lang == 'en'
+        cls.collapse_order_facet = sorting.FunctionFacet(language_filter)
 
     @timepro.profile()
-    def search(self, query, page=1, pagelen=20):
+    def search(self, query, page=1, pagelen=20, autocomplete=False):
         """Return a sorted list of results.
-        pagelen specifies the number of hits per page.
-        page specifies the page of results to return (first page is 1)
-        Set pagelen = None or 0 to retrieve all results.
+        :param page: specifies the page of results to return (first page is 1)
+        :param pagelen: specifies the number of hits per page.
+            Set pagelen = None or 0 to retrieve up to DEFAULT_MAX results.
+        :param autocomplete: flag indicating whether full record or just autocomplete matches should be returned
         """
+
+        if not self.whoosh_index:
+            raise ValueError("Not initialized. Must call init_mod to initialize before use.")
+
         query = unicode(query)  # Must be unicode
-        importance_sort_facet = sorting.FieldFacet("importance", reverse=True)
-        ix = whoosh_open_dir_32_or_64(self.index_dir)
-        with ix.searcher() as searcher:
-            query = QueryParser("ngram_name", ix.schema).parse(query)
+        query = QueryParser("name", self.whoosh_index.schema).parse(query)
+
+        with self.whoosh_index.searcher() as searcher:
+            args = {
+                'q' : query,
+                #'sortedby' : self.sort_order,
+                #'collapse' : self.collapse_facet,
+                #'collapse_limit' : 1,
+                #'collapse_order' : self.collapse_order_facet
+            }
+
             if pagelen is not None and pagelen != 0:
+                args.update({
+                    'pagenum' : page,
+                    'pagelen' : pagelen
+                })
                 try:
-                    results = searcher.search_page(query, page, pagelen=pagelen,
-                                                sortedby=importance_sort_facet)
+                    results = searcher.search_page(**args)
                 except ValueError, e:  # Invalid page number
                     results = []
             else:
-                results = searcher.search(query, limit=None, sortedby=importance_sort_facet)
-            #r = [x.items() for x in results]
+                args.update({
+                    'limit' : self.DEFAULT_LIMIT
+                })
+                results = searcher.search(**args)
+            print query, results
             r = whoosh2dict(results)
-        ix.close()
-        # experiment with tucking away content for display in popup.
-        for d in r:
-            d['popupText'] = 'test content'
+        self.whoosh_index.close()
+        if not autocomplete:
+            for d in r:
+                #print d
+                geoid = d['geoid']
+                info = map_model.GeoInfo.query.filter_by(id=geoid).first()
+                d['latitude'] = info.latitude
+                d['longitude'] = info.longitude
+                d['links'] = map(lambda r: getattr(r, 'link'), map_model.GeoLinks.query.filter_by(geonameid=geoid).all())
+
         return r
 
     def count(self, query):
         """Return total number of matching documents in index"""
         query = unicode(query)  # Must be unicode
-        ix = whoosh_open_dir_32_or_64(self.index_dir)
-        with ix.searcher() as searcher:
-            query = QueryParser("title", ix.schema).parse(query)
+        with self.whoosh_index.searcher() as searcher:
+            query = QueryParser("title", self.whoosh_index.schema).parse(query)
             results = searcher.search(query)
             n = len(results)
-        ix.close()
+        self.whoosh_index.close()
         return n
+

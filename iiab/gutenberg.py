@@ -11,7 +11,7 @@ import json
 
 from contextlib import closing
 
-from .extensions import db
+from .extensions import db_gutenberg as db
 from gutenberg_models import (GutenbergBook, GutenbergFile,
                               GutenbergCreator, gutenberg_books_creator_map)
 from gutenberg_content import find_htmlz, find_epub
@@ -48,7 +48,9 @@ def init_db():
         # set global config variables referenced by SQLAlchemy
         flask_app.config['SQLALCHEMY_ECHO'] = config().getboolean('GUTENBERG', 'sqlalchemy_echo')
         database_path = config().get_path('GUTENBERG', 'sqlalchemy_database_uri')
-        flask_app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.abspath(database_path)
+        if 'SQLALCHEMY_BINDS' not in flask_app.config:
+            flask_app.config['SQLALCHEMY_BINDS'] = {}
+        flask_app.config['SQLALCHEMY_BINDS'].update({ 'gutenberg': 'sqlite:///' + os.path.abspath(database_path) })
         db.init_app(flask_app)
         is_init = True
 

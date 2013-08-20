@@ -40,9 +40,8 @@ def whoosh2dict(hits):
     each schema column"""
     m = []
     for hit in hits:
-        d = {}
-        for k, v in hit.items():
-            d[k] = v
+        # use dict of list comprehension rather than dict comprehension for py2.6 compat
+        d = dict((k, v) for (k, v) in hit.items())
         m.append(d)
     return m
 

@@ -15,6 +15,7 @@ import wikipedia_views
 import zim_views
 import settings_views
 from babel_patch import babel_patched_load
+import map_search
 
 
 def create_app(debug=True, enable_profiler=False, profiler_quiet=False, enable_timepro=False):
@@ -52,6 +53,10 @@ def create_app(debug=True, enable_profiler=False, profiler_quiet=False, enable_t
 
     gutenberg.set_flask_app(app)
     gutenberg.init_db()
+
+    osm_search_dir = config().get_path('OSM', 'osm_search_dir')
+    map_search.MapSearch.init_class(osm_search_dir)
+    map_search.init_db(app)
 
     configure_babel(app)
 

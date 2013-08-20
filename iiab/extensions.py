@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from flask.ext.sqlalchemy import SQLAlchemy
-db = SQLAlchemy()
+db_gutenberg = SQLAlchemy()
+db_map = SQLAlchemy()
 
 #from flask.ext.mail import Mail
 #mail = Mail()
