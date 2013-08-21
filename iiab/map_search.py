@@ -34,8 +34,7 @@ class MapSearch(object):
         # setup cached fields
         importance_sort_facet = sorting.FieldFacet("importance", reverse=True)
         score = ScoreFacet()
-        cls.sort_order = [score, importance_sort_facet]
-        #cls.sort_order = importance_sort_facet
+        cls.sort_order = [importance_sort_facet, score]
         cls.collapse_facet = sorting.FieldFacet('geoid')
         def language_filter(s, docid):
             (lang,score) = s.key_terms([docid], "isolanguage")
