@@ -30,7 +30,7 @@ def replace_paths(top_url, html):
 def mangle_article(html, mimetype, humanReadableId):
     if mimetype in ['text/html; charset=utf-8', 'stylesheet/css', 'text/html']:
         try:
-            html = html.decode('utf-8')
+            html = html.decode('utf-8',errors='replace')
         except UnicodeDecodeError:
             try:
                 print "utf-8 decoding failed, falling back to latin1"
