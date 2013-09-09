@@ -21,7 +21,8 @@ setup(
         'Flask-SQLAlchemy',
         'SQLAlchemy >= 0.8.2',
         'whoosh >= 2.4.1',
-        'backports.lzma >= 0.0.2'
+        'backports.lzma >= 0.0.2',
+        'repoze.lru'
     ]
     #data_files=[("", ["LICENSE.txt", "README.md", "INSTALL.txt"])]
 )

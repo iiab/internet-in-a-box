@@ -22,6 +22,26 @@ else:
         # namespace until we get it resolved upstream
         from backportslzma import lzma
 
+try:
+    # repose.lru does not help much in production
+    # web serving.  It makes a HUGE difference in
+    # pre-processing.  So we don't want to make it
+    # a hard dependency.
+    from repoze.lru import LRUCache
+except ImportError as e:
+    class LRUCache(object):
+        def __init__(self, cache_size):
+            return
+
+        def get(self, key, value=None):
+            return value
+
+        def put(self, key, value):
+            return
+
+        def clear(self):
+            return
+
 from StringIO import StringIO
 
 logger = logging.getLogger(__name__)
@@ -131,6 +151,7 @@ class Format(object):
         self.compiled = struct.Struct(self.fmt)
         self.size = self.compiled.size
 
+    @timepro.profile()
     def unpack_format(self, buffer, offset=0):
         fields = self.compiled.unpack_from(buffer, offset)
         d = []
@@ -138,6 +159,7 @@ class Format(object):
             d.append((entry[1], field))
         return d
 
+    @timepro.profile()
     def unpack_format_from_file(self, f, seek=None):
         if seek is not None:
             f.seek(seek)
@@ -165,7 +187,30 @@ class ClusterFormat(Format):
     def __init__(self):
         super(ClusterFormat, self).__init__(CLUSTER_FORMAT)
 
+
+class ClusterCache(object):
+    def __init__(self, cache_size):
+        self.lru = LRUCache(cache_size)
+        self.hits = 0
+        self.misses = 0
+
+    def get(self, file_buffer, ptr):
+        v = self.lru.get((file_buffer, ptr))
+        if v is not None:
+            self.hits += 1
+            return v
+        v = ClusterData(file_buffer, ptr)
+        self.lru.put((file_buffer, ptr), v)
+        self.misses += 1
+        return v
+
+    def clear(self):
+        print "CACHE HITS " + str(self.hits) + " VS MISSES " + str(self.misses)
+        self.lru.clear()
+
+
 class ClusterData(object):
+    @timepro.profile()
     def __init__(self, file_buffer, ptr):
         cluster_info = dict(ClusterFormat().unpack_from_file(file_buffer, ptr))
         self.compressed = cluster_info['compressionType'] == 4
@@ -181,7 +226,8 @@ class ClusterData(object):
 
         self.read_offsets()
 
-    def _decompress(self, chunk_size=32):
+    @timepro.profile()
+    def _decompress(self, chunk_size=32000):
         """Decompresses the cluster if compression flag was found. Stores
         uncompressed results internally."""
 
@@ -195,10 +241,17 @@ class ClusterData(object):
 
         decomp = lzma.LZMADecompressor()
         while not decomp.eof:
+            timepro.start("file_buf read")
             comp_data = self.file_buf.read(chunk_size)
+            timepro.end("file_buf read")
 
+            timepro.start("decompress")
             uncomp_data = decomp.decompress(comp_data)
+            timepro.end("decompress")
+
+            timepro.start("write")
             self.uncomp_buf.write(uncomp_data)
+            timepro.end("write")
 
         return self.uncomp_buf
 
@@ -218,6 +271,7 @@ class ClusterData(object):
         ptr = struct.unpack('I', buf)[0]
         return ptr
 
+    @timepro.profile()
     def read_offsets(self):
         """Reads the cluster header with the offsets of the blobs"""
 
@@ -235,6 +289,7 @@ class ClusterData(object):
 
         return self.offsets
 
+    @timepro.profile()
     def read_blob(self, blob_index):
         """Reads a blob from the cluster"""
 
@@ -314,7 +369,7 @@ class MimeTypeListFormat(Format):
 
 
 class ZimFile(object):
-    def __init__(self, filename):
+    def __init__(self, filename, cache_size=4):
         self.filename = filename
         self.redirectEntryFormat = RedirectEntryFormat()
         self.articleEntryFormat = ArticleEntryFormat()
@@ -322,8 +377,10 @@ class ZimFile(object):
         self.f = open(filename, "r")
         self.header = dict(HeaderFormat().unpack_from_file(self.f))
         self.mimeTypeList = MimeTypeListFormat().unpack_from_file(self.f, self.header['mimeListPos'])
+        self.clusterCache = ClusterCache(cache_size=cache_size)
 
     def close(self):
+        self.clusterCache.clear()
         self.f.close()
 
     def get_uuid(self):
@@ -379,12 +436,14 @@ class ZimFile(object):
     @timepro.profile()
     def read_directory_entry_by_index(self, index):
         ptr = self.read_url_pointer(index)
-        return self.read_directory_entry(ptr)
+        d = self.read_directory_entry(ptr)
+        d['index'] = index
+        return d
 
     @timepro.profile()
     def read_blob(self, cluster_index, blob_index):
         ptr = self.read_cluster_pointer(cluster_index)
-        cluster_data = ClusterData(self.f, ptr)
+        cluster_data = self.clusterCache.get(self.f, ptr)
         return cluster_data.read_blob(blob_index)
 
     @timepro.profile()
@@ -452,7 +511,7 @@ class ZimFile(object):
         """Generator which iterates through all articles"""
         for i in range(self.header['articleCount']):
             entry = self.read_directory_entry_by_index(i)
-            entry['fullUrl'] = full_url(entry['namespace'], entry['url']) + "\n"
+            entry['fullUrl'] = full_url(entry['namespace'], entry['url'])
             yield entry
 
     def validate(self):
