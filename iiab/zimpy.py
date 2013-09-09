@@ -478,7 +478,7 @@ class ZimFile(object):
 
         m = binary_search(check, nsurl, 0, self.header['articleCount'])
         if m is None:
-            return None
+            return None, None
         entry = self.read_directory_entry_by_index(m)
         return entry, m
 

@@ -1,9 +1,13 @@
 #!/usr/bin/python
+# Performs a link analysis on a zim file, recording
+# the in-degree and out-degree of each article
+# By Braddock Gaskill, 9 Sept 2013
 
 import sys
 import os
 import re
 import string
+import time
 from optparse import OptionParser
 import progressbar
 import logging
@@ -15,32 +19,14 @@ import iiab
 from iiab.zimpy import ZimFile, full_url
 import iiab.timepro as timepro
 
+import memory_profiler
+
 
 def progress_bar(name, maxval):
     widgets = [name, progressbar.Percentage(), ' ', progressbar.Bar(), ' ', progressbar.ETA()]
     pbar = progressbar.ProgressBar(widgets=widgets, maxval=maxval)
     pbar.start()
     return pbar
-
-
-@timepro.profile_and_print()
-def init_article_info(zf, show_progress=True):
-    # Initialize the article info dictionary
-    article_info = {}
-    articles_by_index = []
-    articles = zf.articles()
-    if show_progress:
-        count = zf.header['articleCount']
-        progress = progress_bar("Reading " + str(count) + " article indices", count)
-    for entry in articles:
-        entry['indegree'] = 0
-        entry['outdegree'] = 0
-        article_info[entry['fullUrl']] = entry
-        articles_by_index.append(entry)
-        if show_progress and (len(articles_by_index) % 100 == 0):
-            progress.update(len(articles_by_index))
-    print
-    return article_info, articles_by_index
 
 
 # Regex to match references to other articles
@@ -53,57 +39,61 @@ def find_urls(html):
     return re.findall(regex, html)
 
 
-@timepro.profile_and_print()
-def process(zf, article_info, articles_by_entry, not_found, show_progress=True):
+def process2(zf, namespaces=['A']):
     mime_indices = set()
     for n, mimetype in enumerate(zf.mimeTypeList):
         if mimetype in ['text/html; charset=utf-8', 'stylesheet/css', 'text/html']:
             mime_indices.add(n)
-    if show_progress:
-        progress = progress_bar("Processing " + str(len(article_info)) + " in " + os.path.basename(zf.filename), len(article_info))
-    count = 0
-    for entry in articles_by_entry:
-        if 'redirectIndex' not in entry.keys() and entry['mimetype'] in mime_indices:
+
+    articleCount = zf.header['articleCount']
+    progress = progress_bar("Processing " + str(articleCount) + " articles in " + os.path.basename(zf.filename), articleCount)
+
+    links = {}
+
+    articles = zf.articles()
+    for entry in articles:
+        if 'redirectIndex' not in entry.keys() and entry['mimetype'] in mime_indices and entry['namespace'] in namespaces:
             body = zf.read_blob(entry['clusterNumber'], entry['blobNumber'])
             body = body.decode('utf-8', errors='replace')
             urls = find_urls(body)
-            entry['outdegree'] = len(urls)
-            for url in (full_url(namespace, title) for namespace, title in urls):
-                dst = article_info.get(url, None)
-                if dst is None:
-                    #print "Could not find destination " + url
-                    n = not_found.get(url, 0)
-                    not_found[url] = n + 1
-                else:
-                    dst['indegree'] += 1
-        count += 1
-        if show_progress:
-            progress.update(count)
+            urls = [(namespace, title) for (namespace, title) in urls if namespace in namespaces]
+
+            # Record outbound links
+            link = links.get(entry['fullUrl'], (0, 0))
+            links[entry['fullUrl']] = (link[0], link[1] + len(urls))
+
+            # Record inbound links
+            for namespace, title in urls:
+                if namespace in namespaces:
+                    full = full_url(namespace, title)
+                    link = links.get(full, (0, 0))
+                    links[full] = (link[0] + 1, link[1])
+
+            progress.update(entry['index'])
     print
+    return links
 
 
-def output(fname, article_info):
+def output2(fname, zf, links):
+    not_found = 0
+    progress = progress_bar("Writing " + str(len(links)) + " articles in " + os.path.basename(zf.filename), len(links))
     f = open(fname, "w")
-    m = [(x['index'], x['indegree'], x['outdegree'], x['fullUrl']) for x in article_info.values()]
-    m.sort(key=lambda x: -x[1])
-    m = [str(x[0]) + "\t" + str(x[1]) + "\t" + str(x[2]) + "\t" + x[3].replace("\t", " ").replace("\n", " ") for x in m]
-    txt = string.join(m, '\n') + "\n"
-    txt = txt.encode('utf-8', errors='replace')
     f.write("INDEX\tTO\tFROM\tURL\n")
-    f.write(txt)
+    for idx, (fullurl, link) in enumerate(links.items()):
+        if (idx % 100 == 0):
+            progress.update(idx)
+        namespace, url = fullurl.split("/", 1)
+        entry, m = zf.get_entry_by_url(namespace, url)
+        if entry is None:
+            not_found += 1
+        else:
+            s = string.join([str(entry['index']), str(link[0]), str(link[1]), fullurl.replace("\t", " ").replace("\n", " ")], '\t')
+            s = s.encode('utf-8', errors='replace') + "\n"
+            f.write(s)
     f.close()
-    print
-
-
-def output_notfound(fname, not_found):
-    f = open(fname, "w")
-    m = [(v, k) for (k, v) in not_found.items()]
-    m.sort(key=lambda x: -x[0])
-    m = [str(v) + "\t" + k]
-    txt = string.join(m, "\n") + "\n"
-    txt = txt.encode('utf-8', errors='replace')
-    f.write(txt)
-    f.close()
+    if not_found > 0:
+        print
+        print "WARNING: " + str(not_found) + " referenced articles not found by URL"
 
 
 def main(argv):
@@ -129,23 +119,20 @@ def main(argv):
         timepro.global_active = True
 
     for zim_filename in args:
+        t0 = time.time()
         zf = ZimFile(zim_filename, cache_size=1024)
-        article_info, articles_by_index = init_article_info(zf)
-        timepro.reset()
-        print
-
-        not_found = {}
-        process(zf, article_info, articles_by_index, not_found)
 
         outname = os.path.basename(zim_filename)
         outname, ext = os.path.splitext(outname)
-        outname_notfound = outname + ".not_found"
-        outname_notfound = os.path.join(options.outputdir, outname_notfound)
         outname += ".links"
         outname = os.path.join(options.outputdir, outname)
-        output(outname, article_info)
-        output_notfound(outname_notfound, not_found)
-        zf.close()
+        if os.path.exists(outname):
+            print "Skipping " + zim_filename + " because output file " + outname + " already exists"
+        else:
+            links = process2(zf)
+            output2(outname, zf, links)
+        print zim_filename + " completed in " + str((time.time() - t0)/60.0) + " minutes"
+    return
 
 
 if __name__ == '__main__':
