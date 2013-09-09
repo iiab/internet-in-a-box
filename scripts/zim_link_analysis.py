@@ -119,7 +119,9 @@ def main(argv):
         timepro.global_active = True
 
     for zim_filename in args:
+        print "Processing " + zim_filename
         t0 = time.time()
+
         zf = ZimFile(zim_filename, cache_size=1024)
 
         outname = os.path.basename(zim_filename)
@@ -132,7 +134,7 @@ def main(argv):
             links = process2(zf)
             output2(outname, zf, links)
         print zim_filename + " completed in " + str((time.time() - t0)/60.0) + " minutes"
-    return
+        print
 
 
 if __name__ == '__main__':
