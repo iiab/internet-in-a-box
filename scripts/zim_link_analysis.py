@@ -4,6 +4,7 @@ import sys
 import os
 import re
 import string
+import time
 from optparse import OptionParser
 import progressbar
 import logging
@@ -129,6 +130,9 @@ def main(argv):
         timepro.global_active = True
 
     for zim_filename in args:
+        print "Processing " + zim_filename
+        t0 = time.time()
+
         zf = ZimFile(zim_filename, cache_size=1024)
         article_info, articles_by_index = init_article_info(zf)
         timepro.reset()
@@ -146,6 +150,9 @@ def main(argv):
         output(outname, article_info)
         output_notfound(outname_notfound, not_found)
         zf.close()
+
+        print "Processed " + zim_filename + " in " + str(time.time() - t0) + " seconds"
+        print
 
 
 if __name__ == '__main__':
