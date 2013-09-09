@@ -19,7 +19,7 @@ import iiab
 from iiab.zimpy import ZimFile, full_url
 import iiab.timepro as timepro
 
-import memory_profiler
+#import memory_profiler
 
 
 def progress_bar(name, maxval):
