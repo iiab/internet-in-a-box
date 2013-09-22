@@ -424,5 +424,8 @@ Upload an update to PyPi
     cd internet-in-a-box
     python setup.py sdist upload
 
+Tag a release:
+    Increment version in iiab/__init__.py
+
 
 ----
