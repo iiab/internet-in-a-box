@@ -307,6 +307,27 @@ tarball, install our Debian tarball from /knowledge/sys/ instead.
 
 After reboot: 
 
+To properly set the ethernet address you must do an extra step
+after the GoFlex Home is rebooted that is NOT DOCUMENTED IN THE
+Arch instructions.  Replace uu:vv:... with the MAC on the bottom
+of the unit.
+
+ubit_start
+ethaddr uu:vv:ww:xx:yy:zz
+exit
+/sbin/halt
+
+For online install of knowledge dataset over ethernet:
+
+1. mke2fs -L data -j /dev/sda2
+2. mount -a
+3. mkdir /mnt/data/knowledge
+4. cd /mnt/data/knowledge
+5. time rsync --delete -avrP rsync://orlop/knowledge modules
+ 
+
+For SATA direct install (altenative):
+
 1. connect drive to SATA on orlop.
 
 2. Format second partition to ext3 fs with label "data"
