@@ -68,7 +68,7 @@ def main(argv):
     #print config().all_items_to_str()
 
     debug = config().getboolean('DEFAULT', 'debug')
-    webapp = create_app(debug, enable_profiler=options.profile, profiler_quiet=options.profiler_quiet)
+    webapp = create_app(debug, enable_timepro=options.timepro, enable_profiler=options.profile, profiler_quiet=options.profiler_quiet)
 
     # Warm up the Khan Video cache
     try:
@@ -78,7 +78,7 @@ def main(argv):
 
     host = config().get('WEBAPP', 'interface')
     port = config().getint('WEBAPP', 'port')
-    if not options.profile:
+    if not options.profile and not options.timepro:
         webapp.run(debug=debug, port=port, host=host, processes=6)
     else:
         # adapted from flask.Flask.run for use with middleware
@@ -92,7 +92,7 @@ def main(argv):
             # reset the first request information if the development server
             # resetted normally.  This makes it possible to restart the server
             # without reloader and that stuff from an interactive shell.
-            webapp.app._got_first_request = False
+            webapp._app._got_first_request = False
 
 
 if __name__ == "__main__":

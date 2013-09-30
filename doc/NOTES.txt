@@ -1065,4 +1065,14 @@ Module Sizes
 Generating module digests - 7/21/13
 for name in *; do date; echo $name; (cd $name; md5deep -l -r . >MANIFEST); done
 
+----
 
+IF you want to redirect traffic from the main site to the IIAB page, run 'a2enmod rewrite' and add to iiab.conf:
+RewriteEngine On
+RewriteRule ^/$ /iiab [R]
+
+or (under Apache 2.2?  Under Debian 6.0 I could not get RewriteEngine to work)
+a2enmod alias
+RedirectMatch ^/$ /iiab
+
+----

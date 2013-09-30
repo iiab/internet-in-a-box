@@ -117,6 +117,7 @@ def format_from_rich(rich_format):
     return "<" + string.join([x[0] for x in rich_format], "")
 
 
+@timepro.profile()
 def read_null_terminated(f, encoding='utf-8'):
     s = ""
     while True:
@@ -162,7 +163,9 @@ class Format(object):
     @timepro.profile()
     def unpack_format_from_file(self, f, seek=None):
         if seek is not None:
+            timepro.start("seek")
             f.seek(seek)
+            timepro.end("seek")
         buf = f.read(self.size)
         d = self.unpack_format(buf)
         return d
@@ -403,8 +406,12 @@ class ZimFile(object):
     @timepro.profile()
     def read_directory_entry(self, offset):
         """May return either a Redirect or Article entry depending on flag"""
+        timepro.start("seek")
         self.f.seek(offset)
+        timepro.end("seek")
+        timepro.start("read(2)")
         buf = self.f.read(2)
+        timepro.end("read(2)")
         fields = struct.unpack('H', buf)
         if fields[0] == 0xffff:  # Then redirect
             return dict(self.redirectEntryFormat.unpack_from_file(self.f, offset))
@@ -485,7 +492,7 @@ class ZimFile(object):
     def get_article_by_url(self, namespace, url, follow_redirect=True):
         entry, idx = self.get_entry_by_url(namespace, url)
         if idx is None:
-            return None
+            return None, None, None
         return self.get_article_by_index(idx, follow_redirect=follow_redirect)
 
     def get_main_page(self):

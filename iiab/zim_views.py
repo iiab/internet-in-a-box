@@ -2,7 +2,7 @@
 import os
 import re
 
-from flask import Blueprint, Response, render_template, request, flash, url_for
+from flask import Blueprint, Response, render_template, request, flash, url_for, abort
 from flask.ext.babel import gettext as _
 
 from zimpy import ZimFile
@@ -60,6 +60,8 @@ def zim_main_page_view(humanReadableId):
 def zim_view(humanReadableId, namespace, url):
     zimfile = load_zim_file(humanReadableId)
     article, mimetype, ns = zimfile.get_article_by_url(namespace, url)
+    if article is None:
+        abort(404)
     html = mangle_article(article, mimetype, humanReadableId)
     return Response(html, mimetype=mimetype)
 

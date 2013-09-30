@@ -1,4 +1,4 @@
-from flask import Flask, request, url_for, session
+from flask import Flask, url_for
 from flask.ext.babel import Babel
 from flask.ext.autoindex import AutoIndex
 import sys
@@ -17,7 +17,7 @@ import settings_views
 from babel_patch import babel_patched_load
 
 
-def create_app(debug=True, enable_profiler=False, profiler_quiet=False):
+def create_app(debug=True, enable_profiler=False, profiler_quiet=False, enable_timepro=False):
     """
     :param debug: whether to configure app for debug
     :param enable_profiler: enable flask profiler, causes function to return ProfilerMiddleware rather than Flask object which can be started by run_simple
@@ -55,15 +55,6 @@ def create_app(debug=True, enable_profiler=False, profiler_quiet=False):
 
     configure_babel(app)
 
-    if enable_profiler:
-        from werkzeug.contrib.profiler import ProfilerMiddleware, MergeStream
-        f = open('profiler.log', 'w')
-        if profiler_quiet:
-            app = ProfilerMiddleware(app, f)
-        else:
-            stream = MergeStream(sys.stdout, f)
-            app = ProfilerMiddleware(app, stream)
-
     # Auto Index the software repository
     autoindex = AutoIndex(app, add_url_rules=False)
     # FIXME: this should be done more elegantly -bcg'13
@@ -88,6 +79,27 @@ def create_app(debug=True, enable_profiler=False, profiler_quiet=False):
     @app.context_processor
     def inject_static():
         return dict(static=static)
+
+    if enable_profiler:
+        from werkzeug.contrib.profiler import ProfilerMiddleware, MergeStream
+        f = open('profiler.log', 'w')
+        if profiler_quiet:
+            profile_app = ProfilerMiddleware(app, f, profile_dir="/tmp")
+        else:
+            stream = MergeStream(sys.stdout, f)
+            profile_app = ProfilerMiddleware(app, stream, profile_dir="/tmp")
+        return profile_app
+
+    if enable_timepro:
+        from timepro_flask import TimeProMiddleware, MergeStream
+        f = open('timepro.log', 'w')
+        if profiler_quiet:
+            profile_app = TimeProMiddleware(app, f, profile_dir="/tmp")
+        else:
+            stream = MergeStream(sys.stdout, f)
+            profile_app = TimeProMiddleware(app, stream, profile_dir="/tmp")
+        return profile_app
+
 
     return app
 

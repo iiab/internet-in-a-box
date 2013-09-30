@@ -320,10 +320,13 @@ exit
 For online install of knowledge dataset over ethernet:
 
 1. mke2fs -L data -j /dev/sda2
-2. mount -a
-3. mkdir /mnt/data/knowledge
-4. cd /mnt/data/knowledge
-5. time rsync --delete -avrP rsync://orlop/knowledge modules
+2. Turn off auto fsck: 
+   tune2fs -i -1 -c -1 /dev/sda1
+3. tune2fs -i -1 -c -1 /dev/sda2
+4. mount -a
+5. mkdir /mnt/data/knowledge
+6. cd /mnt/data/knowledge
+7. time rsync --delete -avrP rsync://orlop/knowledge modules
  
 
 For SATA direct install (altenative):
@@ -413,6 +416,12 @@ Installation of the Internet-in-a-Box server on an XO-4 running OLPC OS 13.1
 BUILDING FEDORA RPMS AND PyPi
 -----------------------------
 
+Tag a release:
+    Increment version in iiab/__init__.py
+    git commit -am'Version number bump'
+    git tag -a 'v0.5.3' -m'Version number bump to fix Python 2.6 UTF-8 decode issue'
+    git push
+
 Tested on Fedora 18.
 
     sudo yum install git wget rsync python-pip python-devel gcc xz-devel
@@ -423,9 +432,6 @@ Upload an update to PyPi
 
     cd internet-in-a-box
     python setup.py sdist upload
-
-Tag a release:
-    Increment version in iiab/__init__.py
 
 
 ----

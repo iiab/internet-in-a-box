@@ -1,6 +1,7 @@
 import os
 from glob import glob
 import logging
+import time
 
 from flask import Blueprint, render_template
 
@@ -16,7 +17,7 @@ blueprint = Blueprint('wikipedia_views', __name__,
 
 logger = logging.getLogger(__name__)
 
-@timepro.profile_and_print()
+#timepro.profile_and_print()
 def organize_books_by_language(filenames, library_file):
     if not os.path.exists(library_file):
         logger.error("Can not find Kiwix library file: %s" % library_file)
@@ -27,7 +28,10 @@ def organize_books_by_language(filenames, library_file):
 
     for zim_fn in filenames:
         zim_obj = ZimFile(zim_fn)
+        t0 = time.time()
         book_data = zim_obj.metadata()
+        if time.time() - t0 > 0.5:
+            logger.info("Metadata search took %f sec for %s" % (time.time() - t0, zim_fn))
 
         # Make sure book has metadata, if not look up in kiwix library
         # This solution allows us to add zim files not in the kiwix library
