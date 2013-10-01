@@ -1,9 +1,8 @@
 # Internet-in-a-Box System
 # By Braddock Gaskill, 16 Feb 2013
-from whoosh.index import open_dir
 from whoosh.qparser import QueryParser
 
-from utils import whoosh2dict
+from utils import whoosh2dict, whoosh_open_dir_32_or_64
 
 
 class WikipediaSearch(object):
@@ -19,13 +18,13 @@ class WikipediaSearch(object):
         Set pagelen = None or 0 to retrieve all results.
         """
         query = unicode(query)  # Must be unicode
-        ix = open_dir(self.index_dir)
+        ix = whoosh_open_dir_32_or_64(self.index_dir)
         with ix.searcher() as searcher:
             query = QueryParser("title", ix.schema).parse(query)
             if pagelen is not None and pagelen != 0:
                 try:
                     results = searcher.search_page(query, page, pagelen=pagelen,
-                                                sortedby="score", reverse=True)
+                                                   sortedby="score", reverse=True)
                 except ValueError, e:  # Invalid page number
                     results = []
             else:
@@ -39,7 +38,7 @@ class WikipediaSearch(object):
     def count(self, query):
         """Return total number of matching documents in index"""
         query = unicode(query)  # Must be unicode
-        ix = open_dir(self.index_dir)
+        ix = whoosh_open_dir_32_or_64(self.index_dir)
         with ix.searcher() as searcher:
             query = QueryParser("title", ix.schema).parse(query)
             results = searcher.search(query)

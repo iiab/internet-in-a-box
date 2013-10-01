@@ -6,9 +6,9 @@ import os
 from optparse import OptionParser
 import logging
 
-#sys.path.append('.')
+# We look first to the iiab module in our own directory
 package_dir = os.path.dirname(__file__)
-sys.path.append(package_dir)
+sys.path.insert(1, package_dir)
 
 from iiab.webapp import create_app
 from iiab.config import load_config, config
