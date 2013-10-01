@@ -1,6 +1,6 @@
 # Internet-in-a-Box System
 # By Braddock Gaskill, 16 Feb 2013
-from whoosh.index import open_dir
+from utils import whoosh_open_dir_32_or_64
 from whoosh.qparser import QueryParser
 from whoosh import sorting
 
@@ -21,7 +21,7 @@ class MapSearch(object):
         """
         query = unicode(query)  # Must be unicode
         population_sort_facet = sorting.FieldFacet("population", reverse=True)
-        ix = open_dir(self.index_dir)
+        ix = whoosh_open_dir_32_or_64(self.index_dir)
         with ix.searcher() as searcher:
             query = QueryParser("ngram_name", ix.schema).parse(query)
             if pagelen is not None and pagelen != 0:
@@ -43,7 +43,7 @@ class MapSearch(object):
     def count(self, query):
         """Return total number of matching documents in index"""
         query = unicode(query)  # Must be unicode
-        ix = open_dir(self.index_dir)
+        ix = whoosh_open_dir_32_or_64(self.index_dir)
         with ix.searcher() as searcher:
             query = QueryParser("title", ix.schema).parse(query)
             results = searcher.search(query)

@@ -1,6 +1,6 @@
 import os
 
-from whoosh.index import open_dir
+from utils import whoosh_open_dir_32_or_64
 from whoosh.qparser import MultifieldParser
 
 from .whoosh_multi_field_spelling_correction import MultiFieldQueryCorrector
@@ -57,7 +57,7 @@ def paginated_search(index_dir, search_columns, query_text, page=1, pagelen=20, 
     page specifies page of results (first page is 1)
     """
     query_text = unicode(query_text)  # Must be unicode
-    ix = open_dir(index_dir)
+    ix = whoosh_open_dir_32_or_64(index_dir)
     with ix.searcher() as searcher:
         query = MultifieldParser(search_columns, ix.schema).parse(query_text)
         try:
