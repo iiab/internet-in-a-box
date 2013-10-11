@@ -4,6 +4,7 @@ import re
 
 from flask import Blueprint, Response, render_template, request, flash, url_for, abort
 from flask.ext.babel import gettext as _
+from whoosh import scoring
 
 from zimpy import ZimFile
 from config import config
@@ -83,7 +84,8 @@ def search(humanReadableId):
         index_base_dir = config().get_path("ZIM", "wikipedia_index_dir")
         index_dir = os.path.join(index_base_dir, humanReadableId)
         page = int(request.args.get('page', 1))
-        (pagination, suggestion) = paginated_search(index_dir, ["title", "content"], query, page)
+        # Set a higher value for the title field so it is weighted more
+        (pagination, suggestion) = paginated_search(index_dir, ["title", "content"], query, page, weighting=scoring.BM25F(title=1.0))
     else:
         flash(_('Please input keyword(s)'), 'error')
     return render_template('zim/search.html', humanReadableId=humanReadableId, pagination=pagination, suggestion=suggestion, keywords=query, endpoint_desc=EndPointDescription('zim_views.search', {'humanReadableId':humanReadableId}))
