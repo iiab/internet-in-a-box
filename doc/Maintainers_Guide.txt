@@ -326,7 +326,14 @@ For online install of knowledge dataset over ethernet:
 4. mount -a
 5. mkdir /mnt/data/knowledge
 6. cd /mnt/data/knowledge
-7. time rsync --delete -avrP rsync://orlop/knowledge modules
+7. Install virtualenv
+   mkdir /knowledge/sys
+   cd /knowledge/sys
+   virtualenv venv
+   . venv/bin/activate
+   pip install Internet-in-a-Box
+
+8. time rsync --delete -avrP rsync://orlop/knowledge modules
  
 
 For SATA direct install (altenative):
