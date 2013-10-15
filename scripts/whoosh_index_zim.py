@@ -59,20 +59,43 @@ def content_as_text(zim_obj, article_info, index):
     return content
 
 def get_schema():
-    # Create schema use by all indexes
+    # Create schema used by all indexes
     # Use an unbounded cache for StemmingAnalyzer to speed up indexing
-    schema = Schema(title=TEXT(stored=True), 
-                    url=ID(stored=True),
+    schema = Schema(title=TEXT(stored=True, sortable=True), 
+                    url=ID(stored=True, sortable=True),
                     content=TEXT(stored=False, analyzer=StemmingAnalyzer(cachesize = -1)),
-                    blobNumber=NUMERIC(stored=True),
-                    namespace=ID(stored=True),
+                    blobNumber=NUMERIC(stored=True, sortable=True),
+                    namespace=ID(stored=True, sortable=True),
                     fullUrl=ID,
                     clusterNumber=NUMERIC,
                     mimetype=NUMERIC,
                     parameter=ID,
                     parameterLen=NUMERIC,
-                    revision=NUMERIC,)
+                    revision=NUMERIC,
+                    # Links to an article from others
+                    reverse_links=NUMERIC(stored=True, sortable=True),
+                    # Links from an article to others
+                    forward_links=NUMERIC(stored=True, sortable=True))
     return schema
+
+def load_links_file(zim_fn, links_dir):
+    """Returns the contents of a links file with a count of forward and backward
+    links for each file. The data type returned is a dictionary with the key
+    being the article index and the value being a tuple with the TO and FROM
+    links in that order."""
+    
+    links_filename = os.path.join(links_dir, os.path.splitext(os.path.basename(zim_fn))[0] + ".links")
+
+    links_info = {}
+    with open(links_filename, "r") as links_contents:
+        # Discard header
+        header = links_contents.readline()
+        for links_line in links_contents.readlines():
+            line_match = re.search('(\d+)\s+(\d+)\s+(\d+)', links_line)
+            index, to_links, from_links = [ int(g) for g in line_match.groups() ]
+            links_info[index] = (to_links, from_links)
+
+    return links_info
 
 class InProgress(object):
     """Stores articles being added to the index in case the writer stage is interrupted."""
@@ -90,13 +113,23 @@ class InProgress(object):
         self.content = None
         self.article_info = {}
 
-def index_zim_file(zim_filename, output_dir=".", index_contents=True, mime_types=DEFAULT_MIME_TYPES, memory_limit=DEFAULT_MEMORY_LIMIT, processors=1, optimize=False, **kwargs):
-    zim_obj = ZimFile(zim_filename)
+def index_zim_file(zim_filename, output_dir=".", links_dir=None, index_contents=True, mime_types=DEFAULT_MIME_TYPES, memory_limit=DEFAULT_MEMORY_LIMIT, processors=1, optimize=False, **kwargs):
+    zim_obj = ZimFile(zim_filename, cache_size=1024)
 
     logger.info("Indexing: %s" % zim_filename)
 
     if not index_contents:
-        logger.info("Not indexing article contents")        
+        logger.info("Not indexing article contents")
+
+
+    if links_dir != None:
+        logger.debug("Loading links file")
+        links_info = load_links_file(zim_filename, links_dir)
+        if len(links_info) == 0:
+            logger.error("No links loaded from links directory: %s" % links_dir)
+    else:
+        links_info = {}
+        logger.warning("No links directory specified.")
 
     # Figure out which mime type indexes from this file we will use
     logger.debug("All mime type names: %s" % zim_obj.mimeTypeList)
@@ -166,6 +199,13 @@ def index_zim_file(zim_filename, output_dir=".", index_contents=True, mime_types
             else:
                 content = None
 
+            # Look for forward and backwards links
+            if len(links_info) > 0:
+                article_links = links_info.get(article_info['index'], None)
+                if article_links != None:
+                    content['reverse_links'] = article_links[0]
+                    content['forward_links'] = article_links[1]
+
             # The inprogress object stores what is being
             # written by the writer in case it gets interrupted
             # if this article is not rewritten by finish()
@@ -198,6 +238,9 @@ def main(argv):
     parser.add_argument("-o", "--output-dir", dest="output_dir", action="store",
                         default="./zim-index",
                         help="The base directory where Woosh indexes are written. One sub directory per file.")
+    parser.add_argument("-l", "--links-dir", dest="links_dir", action="store",
+                        default="./zim-links",
+                        help="Directory where a pre-created text file with statistics of forward and reverse article links is located.")
     parser.add_argument("-m", "--mime-types", dest="mime_types",
                         metavar="MIME_TYPE", nargs="*", 
                         default=DEFAULT_MIME_TYPES,
