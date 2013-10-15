@@ -7,6 +7,7 @@ import re
 import signal
 import logging
 import argparse
+import traceback
 
 from whoosh import index
 from whoosh.analysis import StemmingAnalyzer
@@ -72,6 +73,7 @@ def get_schema():
                     parameter=ID,
                     parameterLen=NUMERIC,
                     revision=NUMERIC,
+                    index=NUMERIC,
                     # Links to an article from others
                     reverse_links=NUMERIC(stored=True, sortable=True),
                     # Links from an article to others
@@ -203,8 +205,10 @@ def index_zim_file(zim_filename, output_dir=".", links_dir=None, index_contents=
             if len(links_info) > 0:
                 article_links = links_info.get(article_info['index'], None)
                 if article_links != None:
-                    content['reverse_links'] = article_links[0]
-                    content['forward_links'] = article_links[1]
+                    article_info['reverse_links'] = article_links[0]
+                    article_info['forward_links'] = article_links[1]
+                else:
+                    logger.debug("No links info found for index: %d" % idx)
 
             # The inprogress object stores what is being
             # written by the writer in case it gets interrupted
