@@ -4,7 +4,7 @@ import re
 
 from flask import Blueprint, Response, render_template, request, flash, url_for, abort
 from flask.ext.babel import gettext as _
-from whoosh import scoring
+from whoosh import scoring, sorting
 
 from zimpy import ZimFile
 from config import config
@@ -84,9 +84,25 @@ def search(humanReadableId):
         index_base_dir = config().get_path("ZIM", "wikipedia_index_dir")
         index_dir = os.path.join(index_base_dir, humanReadableId)
         page = int(request.args.get('page', 1))
+
         # Set a higher value for the title field so it is weighted more
         weighting=scoring.BM25F(title_B=1.0)
-        (pagination, suggestion) = paginated_search(index_dir, ["title", "content"], query, page, weighting=weighting)
+
+        # Sort pages with "Image:" in their title after
+        # regular articles
+        def image_pages_last(searcher, docnum):
+            fields = searcher.stored_fields(docnum)
+            if fields['title'].find("Image:") == 0:
+                return 1;
+            else:
+                return 0;
+
+        sortedby = sorting.MultiFacet([ sorting.FunctionFacet(image_pages_last),
+                                        sorting.ScoreFacet(),
+                                        sorting.FieldFacet("reverse_links", reverse=True),
+                                       ])
+        (pagination, suggestion) = paginated_search(index_dir, ["title", "content"], query, page, weighting=weighting, sort_column=sortedby)
     else:
         flash(_('Please input keyword(s)'), 'error')
+
     return render_template('zim/search.html', humanReadableId=humanReadableId, pagination=pagination, suggestion=suggestion, keywords=query, endpoint_desc=EndPointDescription('zim_views.search', {'humanReadableId':humanReadableId}))
