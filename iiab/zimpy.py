@@ -208,7 +208,7 @@ class ClusterCache(object):
         return v
 
     def clear(self):
-        print "CACHE HITS " + str(self.hits) + " VS MISSES " + str(self.misses)
+        logger.debug("CACHE HITS " + str(self.hits) + " VS MISSES " + str(self.misses))
         self.lru.clear()
 
 
@@ -551,8 +551,6 @@ class ZimFile(object):
 
         # Test load subset of all articles
         for i in range(0, self.header['articleCount'], 100):
-            if i % 1000 == 0:
-                print i
             article, mime, ns = self.get_article_by_index(i)
             if article is None:  # Redirect
                 assert mime is not None
