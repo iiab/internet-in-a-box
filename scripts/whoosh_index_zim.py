@@ -10,6 +10,7 @@ import argparse
 import traceback
 
 from whoosh import index
+from whoosh.writing import BufferedWriter
 from whoosh.analysis import StemmingAnalyzer
 from whoosh.fields import TEXT, NUMERIC, ID, Schema
 from whoosh.qparser import QueryParser
@@ -115,7 +116,7 @@ class InProgress(object):
         self.content = None
         self.article_info = {}
 
-def index_zim_file(zim_filename, output_dir=".", links_dir=None, index_contents=True, mime_types=DEFAULT_MIME_TYPES, memory_limit=DEFAULT_MEMORY_LIMIT, processors=1, optimize=False, **kwargs):
+def index_zim_file(zim_filename, output_dir=".", links_dir=None, index_contents=True, mime_types=DEFAULT_MIME_TYPES, memory_limit=DEFAULT_MEMORY_LIMIT, processors=1, commit_period=120, commit_limit=10, **kwargs):
     zim_obj = ZimFile(zim_filename, cache_size=1024)
 
     logger.info("Indexing: %s" % zim_filename)
@@ -158,7 +159,7 @@ def index_zim_file(zim_filename, output_dir=".", links_dir=None, index_contents=
         ix = index.create_in(index_dir, get_schema())
         searcher = None
 
-    writer = ix.writer(limitmb=memory_limit, procs=processors)
+    writer = BufferedWriter(ix, period=commit_period, limit=commit_limit, writerargs={'limitmb':memory_limit, 'procs':processors})
 
     # Store the current document being updated here
     inprogress = InProgress()
@@ -174,7 +175,7 @@ def index_zim_file(zim_filename, output_dir=".", links_dir=None, index_contents=
         zim_obj.close()
         if searcher != None:
             searcher.close()
-        writer.commit(optimize=optimize)
+        writer.commit()
         sys.exit(1)
 
     signal.signal(signal.SIGTERM, finish)
@@ -252,15 +253,18 @@ def main(argv):
     parser.add_argument("--no-contents", dest="index_contents", action="store_false",
                         default=True,
                         help="Turn of indexing of article contents")
-    parser.add_argument("--optimize", dest="optimize", action="store_true",
-                        default=False,
-                        help="Optimize index on commit, only necessary if multiple index segments exist already")
     parser.add_argument("--memory-limit", dest="memory_limit", action="store",
                         default=DEFAULT_MEMORY_LIMIT, type=int,
                         help="Set maximum memory in Mb to consume by writer")
     parser.add_argument("--processors", dest="processors", action="store",
                         default=1, type=int,
                         help="Set the number of processors for use by the writer")
+    parser.add_argument("--commit_period", dest="commit_period", action="store",
+                        default=1200, type=int,
+                        help="The maximum amount of time (in seconds) between commits")
+    parser.add_argument("--commit_limit", dest="commit_limit", action="store",
+                        default=5000, type=int,
+                        help="The maximum number of documents to buffer before committing.")
     parser.add_argument("-v", dest="verbose", action="store_true",
                         help="Turn on verbose logging")
 

@@ -18,6 +18,7 @@ def main(argv):
     parser.add_argument("-i", "--index-dir", dest="index_dir", action="store",
                         default="./zim-index",
                         help="The base directory where Woosh indexes are located.")
+
     parser.add_argument("-v", dest="verbose", action="store_true",
                         help="Turn on verbose logging")
 
@@ -34,14 +35,14 @@ def main(argv):
         index_dir = index_directory_path(args.index_dir, zim_fn)
 
         if not os.path.exists(index_dir):
-            logging.info("Index does not exist for %s" % zim_fn)
+            logging.info("Index does not exist for: %s" % zim_fn)
             continue
 
         zim_obj = ZimFile(zim_fn)
         ix = open_dir(index_dir)
 
         if ix.is_empty():
-            logging.info("Index is empty for %s" % zim_fn)
+            logging.info("Index is empty: %s" % index_dir)
         else:
             ix_count = ix.doc_count()
             zim_count = zim_obj.header['articleCount']
