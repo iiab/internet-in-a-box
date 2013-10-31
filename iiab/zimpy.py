@@ -285,7 +285,7 @@ class ClusterData(object):
         self.offsets.append(offset0)
         nblob = offset0 / 4
 
-        for idx in range(nblob-1):
+        for idx in xrange(nblob-1):
             raw = src_buf.read(4)
             offset = self.unpack_blob_index(raw)
             self.offsets.append(offset)
@@ -469,7 +469,7 @@ class ZimFile(object):
 
     @timepro.profile()
     def get_entry_by_url_linear(self, namespace, url):
-        for i in range(self.header['articleCount']):
+        for i in xrange(self.header['articleCount']):
             entry = self.read_directory_entry_by_index(i)
             if entry['url'] == url and entry['namespace'] == namespace:
                 return i
@@ -516,7 +516,7 @@ class ZimFile(object):
 
     def articles(self):
         """Generator which iterates through all articles"""
-        for i in range(self.header['articleCount']):
+        for i in xrange(self.header['articleCount']):
             entry = self.read_directory_entry_by_index(i)
             entry['fullUrl'] = full_url(entry['namespace'], entry['url'])
             yield entry
@@ -525,7 +525,7 @@ class ZimFile(object):
         """This is a mostly a self-test, but will validate various assumptions"""
         # Test that URLs are properly ordered
         last = None
-        for i in range(self.header['articleCount']):
+        for i in xrange(self.header['articleCount']):
             entry = self.read_directory_entry_by_index(i)
             assert entry is not None
             nsurl = full_url(entry['namespace'], entry['url'])
@@ -536,7 +536,7 @@ class ZimFile(object):
         timepro.reset()
 
         # Test load by url performance
-        for i in range(0, self.header['articleCount'], 100):
+        for i in xrange(0, self.header['articleCount'], 100):
             entry = self.read_directory_entry_by_index(i)
             entry2, idx = self.get_entry_by_url(entry['namespace'], entry['url'])
             assert entry2 is not None
@@ -550,7 +550,7 @@ class ZimFile(object):
         assert entry2 is not None
 
         # Test load subset of all articles
-        for i in range(0, self.header['articleCount'], 100):
+        for i in xrange(0, self.header['articleCount'], 100):
             article, mime, ns = self.get_article_by_index(i)
             if article is None:  # Redirect
                 assert mime is not None
@@ -560,7 +560,7 @@ class ZimFile(object):
     def list_articles_by_url(self):
         """Mostly for testing"""
         s = ""
-        for i in range(self.header['articleCount']):
+        for i in xrange(self.header['articleCount']):
             entry = self.read_directory_entry_by_index(i)
             s += full_url(entry['namespace'], entry['url']) + "\n"
         return s
