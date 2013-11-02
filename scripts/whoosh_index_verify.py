@@ -21,6 +21,8 @@ def verify_indexes(zim_files, index_dir_base, indexed_count_cache=None, verbose=
 
     missing_indexes = []
     empty_indexes = []
+    complete_indexes = []
+    incomplete_indexes = []
 
     # Load a dictionary from the index cache file 
     if indexed_count_cache != None:
@@ -36,14 +38,18 @@ def verify_indexes(zim_files, index_dir_base, indexed_count_cache=None, verbose=
     for zim_fn in zim_files:
         index_dir = index_directory_path(index_dir_base, zim_fn)
 
+        logging.debug("ZIM File: %s" % zim_fn)
+        logging.debug("Index Dir: %s" % index_dir)
+
         if not os.path.exists(index_dir):
+            logging.debug("\tIndex is missing\n")
             missing_indexes.append( (zim_fn, index_dir) )
             continue
 
         with nested(closing(ZimFile(zim_fn)), closing(open_dir(index_dir))) as (zim_obj, ix):
-            logger.debug("Examining ZIM file %s" % zim_fn)
 
             if ix.is_empty():
+                logger.debug("\tIndex exists but is empty\n")
                 empty_indexes.append( (zim_fn, index_dir) )
                 continue
 
@@ -75,21 +81,53 @@ def verify_indexes(zim_files, index_dir_base, indexed_count_cache=None, verbose=
             ix_count = ix.doc_count()
             zim_count = zim_obj.header['articleCount']
 
-            logging.info("ZIM File: %s" % zim_fn)
-            logging.info("Index Dir: %s" % index_dir)
-            logging.info("\t%d total in ZIM file" % zim_count)
+            logging.debug("\t%d total in ZIM file" % zim_count)
+            logging.debug("\t%d in index" % ix_count)
             if indexed_count != None:
-                logging.info("\t%d indexable in ZIM file" % indexed_count)
-            logging.info("\t%d in index" % ix_count)
+                logging.debug("\t%d indexable in ZIM file" % indexed_count)
+
+                if ix_count < indexed_count:
+                    incomplete_indexes.append( (zim_fn, index_dir) )
+                    logging.debug("\tincomplete index")
+                else:
+                    complete_indexes.append( (zim_fn, index_dir) )
+                    logging.debug("\tcomplete index")
+ 
+        logger.debug("")
+    
+    # Now report summary information
+    # Now report summary information
+    if len(complete_indexes) > 0:
+        logger.info("----------------------")
+        logger.info("Complete Index Files")
+        logger.info("----------------------")
+    elif zim_indexable != None:
+        logger.info("--------------------------------")
+        logger.info("Completed Indexes Not Computed")
+        logger.info("--------------------------------")
+    for zim_fn, index_dir in complete_indexes:
+        logging.info(zim_fn)
+
+    if len(incomplete_indexes) > 0:
+        logger.info("----------------------")
+        logger.info("Incomplete Index Files")
+        logger.info("----------------------")
+    elif zim_indexable != None:
+        logger.info("--------------------------------")
+        logger.info("Incompleted Indexes Not Computed")
+        logger.info("--------------------------------")
+    for zim_fn, index_dir in incomplete_indexes:
+        logging.info(zim_fn)
                     
     if len(missing_indexes) > 0:
+        logger.info("-------------------")
         logger.info("Missing Index Files")
         logger.info("-------------------")
     for zim_fn, index_dir in missing_indexes:
         logging.info(zim_fn)
-        pass
 
     if len(empty_indexes) > 0:
+        logger.info("--------------")
         logger.info("Index is Empty")
         logger.info("--------------")
     for zim_fn, index_dir in empty_indexes:

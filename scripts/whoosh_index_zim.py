@@ -8,6 +8,7 @@ import signal
 import logging
 import argparse
 import traceback
+from datetime import datetime, timedelta
 
 from whoosh import index
 from whoosh.writing import BufferedWriter
@@ -27,8 +28,11 @@ from html2text import html2text
 
 logger = logging.getLogger()
 
+ZIM_CACHE_SIZE = 1024
 DEFAULT_MIME_TYPES = ["text/html", "text/plain"]
 DEFAULT_MEMORY_LIMIT = 256
+DEFAULT_COMMIT_PERIOD = 300
+DEFAULT_COMMIT_LIMIT = 1000
 
 def article_info_as_unicode(articles):
     for article_info in articles:
@@ -116,8 +120,8 @@ class InProgress(object):
         self.content = None
         self.article_info = {}
 
-def index_zim_file(zim_filename, output_dir=".", links_dir=None, index_contents=True, mime_types=DEFAULT_MIME_TYPES, memory_limit=DEFAULT_MEMORY_LIMIT, processors=1, commit_period=120, commit_limit=10, **kwargs):
-    zim_obj = ZimFile(zim_filename, cache_size=1024)
+def index_zim_file(zim_filename, output_dir=".", links_dir=None, index_contents=True, mime_types=DEFAULT_MIME_TYPES, memory_limit=DEFAULT_MEMORY_LIMIT, processors=1, commit_period=DEFAULT_COMMIT_PERIOD, commit_limit=DEFAULT_COMMIT_LIMIT, use_progress_bar=False, **kwargs):
+    zim_obj = ZimFile(zim_filename, cache_size=ZIM_CACHE_SIZE)
 
     logger.info("Indexing: %s" % zim_filename)
 
@@ -180,11 +184,28 @@ def index_zim_file(zim_filename, output_dir=".", links_dir=None, index_contents=
 
     signal.signal(signal.SIGTERM, finish)
 
-    pbar = ProgressBar(widgets=[Percentage(), Bar(), ETA()], maxval=zim_obj.header['articleCount']).start()
+    num_articles = zim_obj.header['articleCount']
+    if use_progress_bar:
+        pbar = ProgressBar(widgets=[Percentage(), Bar(), ETA()], maxval=num_articles).start()
+    else:
+        logger.info("Not using progress bar, will display timestamped occasional updates.")
+
+    # Counter for when to output occasional updates
+    update_count = 0
+    last_update = datetime.now()
 
     try:
         for idx, article_info in enumerate(article_info_as_unicode(zim_obj.articles())):
-            pbar.update(idx)
+            if use_progress_bar:
+                pbar.update(idx)
+            else:
+                now = datetime.now()
+                if update_count > commit_limit or now > (last_update + timedelta(seconds=commit_period)):
+                    logger.info("%s - %d/%d - %.2f%%" % (now.isoformat(), idx, num_articles, idx / float(num_articles)))
+                    update_count = 0
+                    last_update = now
+                else:
+                    update_count += 1
 
             # Skip articles of undesired mime types
             # and those that have already been indexed
@@ -220,7 +241,8 @@ def index_zim_file(zim_filename, output_dir=".", links_dir=None, index_contents=
             writer.add_document(content=content, **article_info)
             inprogress.finish()
 
-        pbar.finish()
+        if use_progress_bar:
+            pbar.finish()
     except KeyboardInterrupt:
         # Run add document again, so if interrupt happened
         # during this call the index will not be corrupted
@@ -260,11 +282,13 @@ def main(argv):
                         default=1, type=int,
                         help="Set the number of processors for use by the writer")
     parser.add_argument("--commit_period", dest="commit_period", action="store",
-                        default=1200, type=int,
+                        default=DEFAULT_COMMIT_PERIOD, type=int,
                         help="The maximum amount of time (in seconds) between commits")
     parser.add_argument("--commit_limit", dest="commit_limit", action="store",
-                        default=5000, type=int,
+                        default=DEFAULT_COMMIT_LIMIT, type=int,
                         help="The maximum number of documents to buffer before committing.")
+    parser.add_argument("-p", dest="use_progress_bar", action="store_true",
+                        help="Turn on a progress bar instead of time stamped percentage") 
     parser.add_argument("-v", dest="verbose", action="store_true",
                         help="Turn on verbose logging")
 
