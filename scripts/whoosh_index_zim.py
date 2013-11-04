@@ -165,25 +165,6 @@ def index_zim_file(zim_filename, output_dir=".", links_dir=None, index_contents=
 
     writer = BufferedWriter(ix, period=commit_period, limit=commit_limit, writerargs={'limitmb':memory_limit, 'procs':processors})
 
-    # Store the current document being updated here
-    inprogress = InProgress()
-
-    # Set up a function to be called when a signal is thrown to commit
-    # what was indexed so far in the case of kills
-    def finish(*args):
-        # Add last document that was interrupted
-        if not inprogress.written:
-            logger.info("Rewriting interrupted article")
-            writer.add_document(content=inprogress.content, **inprogress.article_info)
-        logger.info("Commiting index")
-        zim_obj.close()
-        if searcher != None:
-            searcher.close()
-        writer.commit()
-        sys.exit(1)
-
-    signal.signal(signal.SIGTERM, finish)
-
     num_articles = zim_obj.header['articleCount']
     if use_progress_bar:
         pbar = ProgressBar(widgets=[Percentage(), Bar(), ETA()], maxval=num_articles).start()
@@ -194,69 +175,53 @@ def index_zim_file(zim_filename, output_dir=".", links_dir=None, index_contents=
     update_count = 0
     last_update = datetime.now()
 
-    try:
-        for idx, article_info in enumerate(article_info_as_unicode(zim_obj.articles())):
-            if use_progress_bar:
-                pbar.update(idx)
-            else:
-                now = datetime.now()
-                if update_count > commit_limit or now > (last_update + timedelta(seconds=commit_period)):
-                    logger.info("%s - %d/%d - %.2f%%" % (now.isoformat(), idx, num_articles, idx / float(num_articles)))
-                    update_count = 0
-                    last_update = now
-                else:
-                    update_count += 1
-
-            # Skip articles of undesired mime types
-            # and those that have already been indexed
-            if article_info['mimetype'] not in mime_type_indexes:
-                continue
-            elif searcher != None and searcher.document(url=article_info['url']) != None:
-                continue
-
-            if index_contents:
-                content = content_as_text(zim_obj, article_info, idx)
-                # Whoosh seems to take issue with empty content
-                # and complains about it not being unicode ?!
-                if content != None and len(content.strip()) == 0:
-                    content = None
-            else:
-                content = None
-
-            # Look for forward and backwards links
-            if len(links_info) > 0:
-                article_links = links_info.get(article_info['index'], None)
-                if article_links != None:
-                    article_info['reverse_links'] = article_links[0]
-                    article_info['forward_links'] = article_links[1]
-                else:
-                    logger.debug("No links info found for index: %d" % idx)
-
-            # The inprogress object stores what is being
-            # written by the writer in case it gets interrupted
-            # if this article is not rewritten by finish()
-            # then the index would become corrupted with
-            # a mismatch in the number of articles
-            inprogress.start(content, article_info)
-            writer.add_document(content=content, **article_info)
-            inprogress.finish()
-
+    for idx, article_info in enumerate(article_info_as_unicode(zim_obj.articles())):
         if use_progress_bar:
-            pbar.finish()
-    except KeyboardInterrupt:
-        # Run add document again, so if interrupt happened
-        # during this call the index will not be corrupted
-        # by partially written data
-        logger.info("Indexing interrupted, will try and commit")
-    except Exception as exc:
-        # Run commit then re-raise exception
-        logger.error("Encountered an unexpected exception:")
-        logger.error("%s" % exc)
-        logger.error("Will try and commit work so far.")
-        finish()
-        raise exc 
+            pbar.update(idx)
+        else:
+            now = datetime.now()
+            if update_count > commit_limit or now > (last_update + timedelta(seconds=commit_period)):
+                logger.info("%s - %d/%d - %.2f%%" % (now.isoformat(), idx, num_articles, (idx / float(num_articles)) * 100.0 ))
+                update_count = 0
+                last_update = now
+            else:
+                update_count += 1
 
-    finish() 
+        # Skip articles of undesired mime types
+        # and those that have already been indexed
+        if article_info['mimetype'] not in mime_type_indexes:
+            continue
+        elif searcher != None and searcher.document(url=article_info['url']) != None:
+            continue
+
+        if index_contents:
+            content = content_as_text(zim_obj, article_info, idx)
+            # Whoosh seems to take issue with empty content
+            # and complains about it not being unicode ?!
+            if content != None and len(content.strip()) == 0:
+                content = None
+        else:
+            content = None
+
+        # Look for forward and backwards links
+        if len(links_info) > 0:
+            article_links = links_info.get(article_info['index'], None)
+            if article_links != None:
+                article_info['reverse_links'] = article_links[0]
+                article_info['forward_links'] = article_links[1]
+            else:
+                logger.debug("No links info found for index: %d" % idx)
+
+        writer.add_document(content=content, **article_info)
+
+    if use_progress_bar:
+        pbar.finish()
+
+    logger.info("Making final commit")
+
+    writer.commit()
+
+    logger.info("Finished")
 
 def main(argv):
     parser =  argparse.ArgumentParser(description="Indexes the contents of a ZIM file using Woosh")
