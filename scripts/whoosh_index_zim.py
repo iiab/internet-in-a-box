@@ -188,10 +188,19 @@ def index_zim_file(zim_filename, output_dir=".", links_dir=None, index_contents=
                 update_count += 1
 
         # Skip articles of undesired mime types
-        # and those that have already been indexed
         if article_info['mimetype'] not in mime_type_indexes:
             continue
-        elif searcher != None and searcher.document(url=article_info['url']) != None:
+
+        # Protect read of existing documents as sometimes there
+        # incomplete writes
+        try:
+            existing = searcher.document(url=article_info['url'])
+        except:
+            logger.exception("Unexpected exception when looking for existing indexed article for index: %d" % idx)
+            existing = None
+        
+        # Skip articles that have already been indexed
+        if searcher != None and existing != None:
             continue
 
         if index_contents:
