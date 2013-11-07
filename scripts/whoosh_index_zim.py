@@ -11,7 +11,6 @@ import traceback
 from datetime import datetime, timedelta
 
 from whoosh import index
-from whoosh.writing import BufferedWriter
 from whoosh.analysis import StemmingAnalyzer
 from whoosh.fields import TEXT, NUMERIC, ID, Schema
 from whoosh.qparser import QueryParser
@@ -163,7 +162,7 @@ def index_zim_file(zim_filename, output_dir=".", links_dir=None, index_contents=
         ix = index.create_in(index_dir, get_schema())
         searcher = None
 
-    writer = BufferedWriter(ix, period=commit_period, limit=commit_limit, writerargs={'limitmb':memory_limit, 'procs':processors})
+    writer = ix.writer(limitmb=memory_limit, procs=processors)
 
     num_articles = zim_obj.header['articleCount']
     if use_progress_bar:
@@ -174,16 +173,22 @@ def index_zim_file(zim_filename, output_dir=".", links_dir=None, index_contents=
     # Counter for when to output occasional updates
     update_count = 0
     last_update = datetime.now()
+    needs_commit = False
 
     for idx, article_info in enumerate(article_info_as_unicode(zim_obj.articles())):
         if use_progress_bar:
             pbar.update(idx)
         else:
             now = datetime.now()
-            if update_count > commit_limit or now > (last_update + timedelta(seconds=commit_period)):
+            if update_count >= commit_limit or now > (last_update + timedelta(seconds=commit_period)):
                 logger.info("%s - %d/%d - %.2f%%" % (now.isoformat(), idx, num_articles, (idx / float(num_articles)) * 100.0 ))
                 update_count = 0
                 last_update = now
+
+                if needs_commit:
+                    writer.commit()
+                    writer = ix.writer(limitmb=memory_limit, procs=processors)
+                    needs_commit = False
             else:
                 update_count += 1
 
@@ -225,6 +230,7 @@ def index_zim_file(zim_filename, output_dir=".", links_dir=None, index_contents=
                 logger.debug("No links info found for index: %d" % idx)
 
         writer.add_document(content=content, **article_info)
+        needs_commit = True
 
     if use_progress_bar:
         pbar.finish()
@@ -255,9 +261,10 @@ def main(argv):
     parser.add_argument("--memory-limit", dest="memory_limit", action="store",
                         default=DEFAULT_MEMORY_LIMIT, type=int,
                         help="Set maximum memory in Mb to consume by writer")
-    parser.add_argument("--processors", dest="processors", action="store",
-                        default=1, type=int,
-                        help="Set the number of processors for use by the writer")
+    # Commented out as it seems to cause more problems than its worth
+    #    parser.add_argument("--processors", dest="processors", action="store",
+    #                        default=1, type=int,
+    #                        help="Set the number of processors for use by the writer")
     parser.add_argument("--commit_period", dest="commit_period", action="store",
                         default=DEFAULT_COMMIT_PERIOD, type=int,
                         help="The maximum amount of time (in seconds) between commits")
