@@ -131,7 +131,7 @@ def verify_indexes(zim_files, index_dir_base, indexed_count_cache=None, verbose=
         logger.info("Index is Empty")
         logger.info("--------------")
     for zim_fn, index_dir in empty_indexes:
-        logging.info(index_dir)
+        logging.info(zim_fn)
 
 
 def main(argv):

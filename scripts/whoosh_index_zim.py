@@ -194,13 +194,16 @@ def index_zim_file(zim_filename, output_dir=".", links_dir=None, index_contents=
         # Protect read of existing documents as sometimes there
         # incomplete writes
         try:
-            existing = searcher.document(url=article_info['url'])
+            if searcher != None:
+                existing = searcher.document(url=article_info['url'])
+            else:
+                existing = None
         except:
             logger.exception("Unexpected exception when looking for existing indexed article for index: %d" % idx)
             existing = None
         
         # Skip articles that have already been indexed
-        if searcher != None and existing != None:
+        if existing != None:
             continue
 
         if index_contents:
