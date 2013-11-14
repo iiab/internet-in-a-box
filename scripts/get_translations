@@ -1,0 +1,29 @@
+#!/bin/bash
+
+PO_DIR=$(dirname $0)/../po
+COMPILE_CMD="$(dirname $0)/compile_translations.sh"
+
+if [ ! -e "$PO_DIR" ]; then
+    echo "Could not find $PO_DIR"
+    exit
+fi
+
+if [ ! -x "$COMPILE_CMD" ]; then
+    echo "Could not find $COMPILE_CMD"
+    exit
+fi
+
+LANGS="en_GB en_US fr nl zh_CN da ht id it"
+BASE_URL=http://translate.sugarlabs.org/export/IIAB/
+for LANG in $LANGS; do
+    URL="$BASE_URL/$LANG/iiab.po"
+    wget "$URL" -O "${PO_DIR}/${LANG}.po"
+done 
+
+# We rename Haitian for our Babel hack
+mv -v "$PO_DIR/ht.po" "$PO_DIR/cpf.po"
+
+"$COMPILE_CMD"
+
+git add "$PO_DIR"
+git add "$(dirname $0)/../iiab/translations"
