@@ -300,10 +300,69 @@ http://archlinuxarm.org/platforms/armv5/seagate-goflex-home
 tarball, install our Debian tarball from /knowledge/sys/ instead.
 
     cd alarm
-    scp braddock@192.168.1.105:/knowledge/sys/debian-squeeze-20130501a.tgz .
-    tar xvzf debian-squeeze-20130501a.tgz
-    rm debian-squeeze-20130501a.tgz
+    scp braddock@192.168.1.105:/knowledge/sys/debian-squeeze-20131003.tgz .
+    tar xvzf debian-squeeze-20131003.tgz
+    rm debian-squeeze-20131003.tgz
     sync
+
+
+Line by line directions:
+========================
+
+ssh braddock_hipserv2_seagateplug_PGXX-JQFG-CFVB-BTQJ@192.168.1.196
+
+sudo -E -s
+
+killall -9 mynetworkd access-patrol seagate-lifecycle oe-spd xinetd udevd httpd avahi-daemon smbd nmbd vsftpd afpd minidlna mt-daapd check_igd.pl igd-daemon
+
+/sbin/swapoff -a
+
+while [ `mount | grep sda1 | wc -l` -gt 0 ]; do umount -f /dev/sda1; done
+
+/sbin/fdisk /dev/sda
+d 1
+n p 1 +5G 
+n p 2 p
+/dev/sda1               1         609     4891761   83  Linux
+/dev/sda2             610      243201  1948620240   83  Linux
+
+cd /tmp
+wget http://archlinuxarm.org/os/pogoplug/mke2fs
+chmod 755 mke2fs
+./mke2fs -j /dev/sda1
+mkdir alarm
+mount /dev/sda1 alarm
+
+cd alarm
+scp braddock@192.168.1.105:/knowledge/sys/debian-squeeze-20131003.tgz .
+tar xvzf debian-squeeze-20131003.tgz
+rm debian-squeeze-20131003.tgz
+sync
+
+cd ..
+umount alarm
+
+cd /tmp
+wget http://jeff.doozan.com/debian/goflex/v0.6/uInitrd
+wget http://jeff.doozan.com/debian/goflex/v0.6/ubit_start
+chmod +x ubit_start
+
+./ubit_start
+chain_install goflexhome 
+chain_revert 
+uboot_uptodate
+
+# You need to set your MAC address to the what's on the sticker on the bottom
+# of the device (use arp and cut-n-paste)
+ethaddr uu:vv:ww:xx:yy:zz
+
+on /dev/sda1 ubit_write
+
+tune2fs -L "rootfs" /dev/sda1
+
+exit 
+/sbin/halt
+
 
 After reboot: 
 
@@ -317,23 +376,25 @@ ethaddr uu:vv:ww:xx:yy:zz
 exit
 /sbin/halt
 
-For online install of knowledge dataset over ethernet:
+# For online install of knowledge dataset over ethernet:
 
-1. mke2fs -L data -j /dev/sda2
-2. Turn off auto fsck: 
-   tune2fs -i -1 -c -1 /dev/sda1
-3. tune2fs -i -1 -c -1 /dev/sda2
-4. mount -a
-5. mkdir /mnt/data/knowledge
-6. cd /mnt/data/knowledge
-7. Install virtualenv
-   mkdir /knowledge/sys
-   cd /knowledge/sys
-   virtualenv venv
-   . venv/bin/activate
-   pip install Internet-in-a-Box
+mke2fs -L data -j /dev/sda2
+# Turn off auto fsck: 
+tune2fs -i -1 -c -1 /dev/sda1
+tune2fs -i -1 -c -1 /dev/sda2
+mount -a
+mkdir /mnt/data/knowledge
+cd /mnt/data/knowledge
 
-8. time rsync --delete -avrP rsync://orlop/knowledge modules
+# Install virtualenv
+mkdir /knowledge/sys
+cd /knowledge/sys
+virtualenv venv
+. venv/bin/activate
+pip install Internet-in-a-Box
+
+cd /knowledge
+time rsync --delete -avrP rsync://orlop/knowledge modules
  
 
 For SATA direct install (altenative):
