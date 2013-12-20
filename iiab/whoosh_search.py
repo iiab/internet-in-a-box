@@ -1,6 +1,5 @@
 import os
 
-from utils import whoosh_open_dir_32_or_64
 from whoosh.qparser import MultifieldParser
 from whoosh import scoring
 
@@ -51,14 +50,14 @@ def deduplicate_corrections(corrections):
     return dict((c.string, c) for c in corrections if c.original_query != c.query).values()
 
 
-def paginated_search(index_dir, search_columns, query_text, page=1, pagelen=20, sort_column=None, weighting=scoring.BM25F):
+def paginated_search(ix, search_columns, query_text, page=1, pagelen=20, sort_column=None, weighting=scoring.BM25F):
     """
     Return a tuple consisting of an object that emulates an SQLAlchemy pagination object and corrected query suggestion
     pagelen specifies number of hits per page
     page specifies page of results (first page is 1)
     """
     query_text = unicode(query_text)  # Must be unicode
-    ix = whoosh_open_dir_32_or_64(index_dir)
+
     with ix.searcher(weighting=weighting) as searcher:
         query = MultifieldParser(search_columns, ix.schema).parse(query_text)
         try:

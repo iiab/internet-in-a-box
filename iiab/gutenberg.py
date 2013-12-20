@@ -19,6 +19,8 @@ from config import config
 
 from whoosh_search import paginated_search
 from whoosh.index import open_dir
+from utils import whoosh_open_dir_32_or_64
+
 from .endpoint_description import EndPointDescription
 
 DEFAULT_RESULTS_PER_PAGE = 20
@@ -63,7 +65,8 @@ def search():
     if query:
         index_dir = config().get_path('GUTENBERG', 'index_dir')
         page = int(request.args.get('page', 1))
-        (pagination, suggestion) = paginated_search(index_dir, DEFAULT_SEARCH_COLUMNS, query, page, sort_column='creator')
+        ix = whoosh_open_dir_32_or_64(index_dir)
+        (pagination, suggestion) = paginated_search(ix, DEFAULT_SEARCH_COLUMNS, query, page, sort_column='creator')
     else:
         flash(_('Please input keyword(s)'), 'error')
     #print pagination.items

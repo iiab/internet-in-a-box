@@ -10,6 +10,8 @@ from zimpy import ZimFile
 from config import config
 
 from whoosh_search import paginated_search
+from utils import whoosh_open_dir_32_or_64
+
 from .endpoint_description import EndPointDescription
 
 DEFAULT_RESULTS_PER_PAGE = 20
@@ -84,9 +86,12 @@ def search(humanReadableId):
         index_base_dir = config().get_path("ZIM", "wikipedia_index_dir")
         index_dir = os.path.join(index_base_dir, humanReadableId)
         page = int(request.args.get('page', 1))
+    
+        # Load index so we can query it for which fields exist
+        ix = whoosh_open_dir_32_or_64(index_dir)
 
         # Set a higher value for the title field so it is weighted more
-        weighting=scoring.BM25F(title_B=1.0)
+        weighting = scoring.BM25F(title_B=1.0)
 
         # Sort pages with "Image:" in their title after
         # regular articles
@@ -97,11 +102,18 @@ def search(humanReadableId):
             else:
                 return 0;
 
-        sortedby = sorting.MultiFacet([ sorting.FunctionFacet(image_pages_last),
-                                        sorting.ScoreFacet(),
-                                        sorting.FieldFacet("reverse_links", reverse=True),
-                                       ])
-        (pagination, suggestion) = paginated_search(index_dir, ["title", "content"], query, page, weighting=weighting, sort_column=sortedby)
+        # Support older whoosh indexes that do not have a reverse_links field
+        if 'reverse_links' in ix.schema.names():
+            sortedby = sorting.MultiFacet([ sorting.FunctionFacet(image_pages_last),
+                                            sorting.ScoreFacet(),
+                                            sorting.FieldFacet("reverse_links", reverse=True),
+                                           ])
+        else:
+            sortedby = sorting.MultiFacet([ sorting.FunctionFacet(image_pages_last),
+                                            sorting.ScoreFacet(),
+                                           ])
+
+        (pagination, suggestion) = paginated_search(ix, ["title", "content"], query, page, weighting=weighting, sort_column=sortedby)
     else:
         flash(_('Please input keyword(s)'), 'error')
 
