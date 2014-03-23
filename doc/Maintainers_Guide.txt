@@ -322,9 +322,11 @@ while [ `mount | grep sda1 | wc -l` -gt 0 ]; do umount -f /dev/sda1; done
 /sbin/fdisk /dev/sda
 d 1
 n p 1 +5G 
-n p 2 p
+n p 2
 /dev/sda1               1         609     4891761   83  Linux
 /dev/sda2             610      243201  1948620240   83  Linux
+w
+
 
 cd /tmp
 wget http://archlinuxarm.org/os/pogoplug/mke2fs
