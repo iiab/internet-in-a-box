@@ -20,7 +20,7 @@ setup(
         'Flask-AutoIndex',
         'Flask-SQLAlchemy',
         'SQLAlchemy >= 0.8.2',
-        'whoosh >= 2.4.1',
+        'whoosh >= 2.6.0',
         'backports.lzma >= 0.0.2',
         'repoze.lru'
     ]
