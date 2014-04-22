@@ -27,6 +27,14 @@ def index():
         return render_template("home.html", error=Markup(error))
 
 
+@blueprint.route('robots.txt')
+def robots_view():
+    """We need a robots.txt or else search engines may
+    find this installation and spider the ENTIRE dataset"""
+    robots = "User-agent: *\nDisallow: /\nDisallow: /iiab\n"
+    return robots
+
+
 @blueprint.route('detect')
 def detect_view():
     """Detect if a valid IIAB installation exists on the localhost
