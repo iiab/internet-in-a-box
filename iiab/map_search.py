@@ -1,7 +1,9 @@
 # Internet-in-a-Box System
 # By Braddock Gaskill, 16 Feb 2013
+# Modified by Tim Moody, 8 Apr 2016
 from utils import whoosh_open_dir_32_or_64
-from whoosh.qparser import QueryParser
+# from whoosh.qparser import QueryParser
+from whoosh.qparser import MultifieldParser
 from whoosh import sorting
 
 from utils import whoosh2dict
@@ -23,21 +25,25 @@ class MapSearch(object):
         population_sort_facet = sorting.FieldFacet("population", reverse=True)
         ix = whoosh_open_dir_32_or_64(self.index_dir)
         with ix.searcher() as searcher:
-            query = QueryParser("ngram_name", ix.schema).parse(query)
+            # query = QueryParser("ngram_name", ix.schema).parse(query)
+            mparser = MultifieldParser(["ngram_name", "admin1_code", "country_code"], schema=ix.schema)
+            query = mparser.parse(query)
             if pagelen is not None and pagelen != 0:
                 try:
-                    results = searcher.search_page(query, page, pagelen=pagelen,
-                                                sortedby=population_sort_facet)
+                    results = searcher.search_page(query, page, pagelen=pagelen)
                 except ValueError, e:  # Invalid page number
                     results = []
             else:
-                results = searcher.search(query, limit=None, sortedby=population_sort_facet)
+                results = searcher.search(query, limit=None)
             #r = [x.items() for x in results]
             r = whoosh2dict(results)
         ix.close()
         # experiment with tucking away content for display in popup.
+        print r
         for d in r:
             d['popupText'] = 'test content'
+            d['name'] = d['name'] + ', ' + d['admin1_code'] + ', ' + d['country_code']
+
         return r
 
     def count(self, query):
