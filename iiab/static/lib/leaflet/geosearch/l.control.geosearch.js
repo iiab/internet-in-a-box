@@ -30,7 +30,7 @@ L.Control.GeoSearch = L.Control.extend({
         this._config = {
             'country': options.country || '',
             'provider': options.provider,
-            
+
             'searchLabel': options.searchLabel || 'search for address...',
             'notFoundMessage' : options.notFoundMessage || 'Sorry, that address could not be found.',
             'messageHideDelay': options.messageHideDelay || 3000,
@@ -86,7 +86,7 @@ L.Control.GeoSearch = L.Control.extend({
         $(this._container).append(this._searchbox, this._msgbox);
 
         if (this._config.enableAutocomplete) {
-            this._autocomplete = new L.AutoComplete({}).addTo(this._container, function (suggestionText) {
+            this._autocomplete = new L.AutoComplete(this.options).addTo(this._container, function (suggestionText) {
                 this._searchbox.value = suggestionText;
             }.bind(this));
             $(this._container).append(this._autocomplete);
@@ -103,7 +103,7 @@ L.Control.GeoSearch = L.Control.extend({
 
         return this._container;
     },
-    
+
     geosearch: function (qry) {
         this.geosearch_ext(qry, this._processResults.bind(this), this._printError.bind(this));
     },
@@ -214,7 +214,7 @@ L.Control.GeoSearch = L.Control.extend({
         $('#leaflet-control-geosearch-qry').val('');
         $('.leaflet-geosearch-cancel-button').hide();
     },
-    
+
     _onPasteToInput: function () {
         // onpaste requires callback to allow for input update do this by default.
         setTimeout(this._onInputUpdate.bind(this), 0);
@@ -318,7 +318,7 @@ L.AutoComplete = L.Class.extend({
             .disableClickPropagation(this._tool)
             // consider whether to make delayed hide onBlur.
             // If so, consider canceling timer on mousewheel and mouseover.
-            .on(this._tool, 'blur', this.hide, this) 
+            .on(this._tool, 'blur', this.hide, this)
             .on(this._tool, 'mousewheel', function(e) {
                 L.DomEvent.stopPropagation(e); // to prevent map zoom
                 if (e.axis === e.VERTICAL_AXIS) {
