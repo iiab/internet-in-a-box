@@ -30,7 +30,7 @@ class MapSearch(object):
     @classmethod
     def init_class(cls, index_dir):
         """Class level initialize. Initialize search index once for performance reasons"""
-        cls.whoosh_index = open_dir(index_dir)
+        cls.whoosh_index = whoosh_open_dir_32_or_64(index_dir)
         # setup cached fields
         importance_sort_facet = sorting.FieldFacet("importance", reverse=True)
         score = ScoreFacet()
