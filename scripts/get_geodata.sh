@@ -9,4 +9,4 @@ wget http://download.geonames.org/export/dump/cities1000.zip
 wget http://download.geonames.org/export/dump/country_catagories.txt
 wget http://download.geonames.org/export/dump/countryInfo.txt
 wget http://download.geonames.org/export/dump/featureCodes_en.txt
-wget http://download.geonames.org/export/dump/nocountry.txt
+wget http://download.geonames.org/export/dump/no-country.zip
