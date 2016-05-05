@@ -8,8 +8,65 @@ import codecs
 import geoname_org_model as dbmodel
 import dbhelper
 
-def record_iterator(filename, field_names):
+def main(dbfilename, build_info, build_names):
     """
+    :param dbfilename: SQLite database filename to create
+    :param build_info: bool flag to indicate whether to populate place info table
+    :param build_names: bool flag to indicate whether to populate place names table
+    """
+    aux_data = load_lookup_tables()
+
+    database = dbhelper.Database(dbmodel.Base, dbfilename)
+    database.create()
+    session = database.get_session()
+
+    if build_names:
+        print 'parse names...'
+        parse_alt_names_to_db(session)
+
+    if build_info:
+        print 'parse places...'
+        parse_place_info_to_db(session, aux_data)
+
+def load_lookup_tables():
+    aux_data = {}
+    aux_data['admin1'] = build_dictionary('admin1CodesASCII.txt', dbmodel.admin1_fields, 'code')
+    aux_data['admin2'] = build_dictionary('admin2Codes.txt', dbmodel.admin2_fields, 'code')
+    aux_data['features'] = build_dictionary('featureCodes_en.txt', dbmodel.feature_fields, 'code')
+    aux_data['countries'] = build_dictionary('countryInfo.txt', dbmodel.country_fields, 'iso')
+    aux_data['cities'] = build_dictionary('cities1000.txt', dbmodel.place_fields, 'id')
+    return aux_data
+
+def parse_alt_names_to_db(dbSession):
+    """Create names data"""
+    for count, record in enumerate(record_iterator('alternateNames.txt', dbmodel.altname_fields)):
+        pn = dbmodel.PlaceNames(**record)
+        dbSession.add(pn)
+        # without an occasional commit we were running out of memory
+        if (count & 0x7ffff) == 0:
+            dbSession.commit()
+            print '.',
+    dbSession.commit()
+
+def parse_place_info_to_db(dbSession, aux_data):
+    """Create places database while denormalizing smaller geonames source tables with aux_data"""
+    dbSession.query(dbmodel.PlaceInfo).delete()
+
+    # create names data
+    for count, record in enumerate(record_iterator('allCountries.txt', dbmodel.place_fields)):
+        #augment record
+        record = augment_record(aux_data, record)
+        pi = make_place_info(aux_data, record)
+        dbSession.add(pi)
+        # without an occasional commit we were running out of memory
+        if (count & 0x7ffff) == 0:
+            dbSession.commit()
+            print '.',
+    dbSession.commit()
+
+def record_iterator(filename, field_names):
+    """Iterate over source text-data files
+
     Parse tab delimited files, skipping lines starting with #, yielding on each record in the file.
     Return a dict of values tagged with keys provided in field_names list.
     """
@@ -21,7 +78,13 @@ def record_iterator(filename, field_names):
 
 
 def build_dictionary(filename, fields, key):
-    """Return a dictionary of records hashed using the record field named in parameter key (typically the record id)"""
+    """Parse records in filename into a dictionary map indexed by field `key`
+
+    :param filename: filename of text source file containing records to parse
+    :param fields: list of field names identifying delimited field in each record
+    :param key: string name of a field in `fields` which should be used as the key in resulting record map
+    :return: dictionary of fields indexed using the field named in `key`
+    """
     assert key in fields
 
     results = {}
@@ -54,6 +117,49 @@ def builddb(db, insp, descriptor):
             print count
             db.commit()
     db.commit()
+
+def make_place_info(aux_data, rec):
+    data = {}
+
+    direct_copy_fields = ('id', 'latitude', 'longitude', 'population', 'feature_code', 'name', 'asciiname')
+    for f in direct_copy_fields:
+        data[f] = rec[f]
+
+    # Probably need lookup table for admin4/admin3 codes conversion to geoid.
+    data['admin4_id'] = rec['admin4_code']
+    data['admin3_id'] = rec['admin3_code']
+    data['admin2_id'] = place_admin2_id(aux_data, rec)
+    data['admin1_id'] = place_admin1_id(aux_data, rec)
+    data['country_id'] = place_country_id(aux_data, rec)
+    data['feature_name'] = place_feature_name(aux_data, rec)
+    try_for_improved_population_estimate(aux_data, data)
+    return dbmodel.PlaceInfo(**data)
+
+def augment_record(aux_data, record):
+    """For entities with populations insert the largest population found into the record"""
+    for auxkey in ('cities', 'countries'):
+        geoid = record['id']
+        if geoid in aux_data[auxkey]:
+            population = aux_data[auxkey][geoid]['population']
+            if population > record['population']:
+                record['population'] = population
+    return record
+
+def try_for_improved_population_estimate(aux_data, data):
+    if data['id'] in aux_data['cities']:
+        citypop = aux_data['cities'][data['id']]['population']
+        if data['population'] != citypop:
+            if data['population'] != 0:
+                print "city population mismatch on %d: %d %d" % (
+                        data['id'], data['population'], citypop)
+            data['population'] = citypop
+    elif data['id'] in aux_data['countries']:
+        countrypop = aux_data['countries']['population']
+        if data['population'] != countrypop:
+            if data['population'] != 0:
+                print "country population mismatch on %d: %d %d" % (
+                        data['id'], data['population'], countrypop)
+            data['population'] = countrypop
 
 def place_admin1_id(aux_data, rec):
     # bear in mind that the admin1 code 00 means no specific admin1 code is defined
@@ -109,103 +215,6 @@ def place_feature_name(aux_data, rec):
         print u''.join((u"Failed to find feature code for ", featurekey, u" on ", rec['id'])).encode('utf-8')
         return ''
 
-def try_for_improved_population_estimate(aux_data, data):
-    if data['id'] in aux_data['cities']:
-        citypop = aux_data['cities'][data['id']]['population']
-        if data['population'] != citypop:
-            if data['population'] != 0:
-                print "city population mismatch on %d: %d %d" % (
-                        data['id'], data['population'], citypop)
-            data['population'] = citypop
-    elif data['id'] in aux_data['countries']:
-        countrypop = aux_data['countries']['population']
-        if data['population'] != countrypop:
-            if data['population'] != 0:
-                print "country population mismatch on %d: %d %d" % (
-                        data['id'], data['population'], countrypop)
-            data['population'] = countrypop
-
-def make_place_info(aux_data, rec):
-    data = {}
-
-    direct_copy_fields = ('id', 'latitude', 'longitude', 'population', 'feature_code', 'name', 'asciiname')
-    for f in direct_copy_fields:
-        data[f] = rec[f]
-
-    # Probably need lookup table for admin4/admin3 codes conversion to geoid.
-    data['admin4_id'] = rec['admin4_code']
-    data['admin3_id'] = rec['admin3_code']
-    data['admin2_id'] = place_admin2_id(aux_data, rec)
-    data['admin1_id'] = place_admin1_id(aux_data, rec)
-    data['country_id'] = place_country_id(aux_data, rec)
-    data['feature_name'] = place_feature_name(aux_data, rec)
-    try_for_improved_population_estimate(aux_data, data)
-    return dbmodel.PlaceInfo(**data)
-
-def augment_record(aux_data, record):
-    for auxkey in ('cities', 'countries'):
-        geoid = record['id']
-        if geoid in aux_data[auxkey]:
-            population = aux_data[auxkey][geoid]['population']
-            if population > record['population']:
-                record['population'] = population
-    return record
-
-def parse_alt_names_to_db(dbSession):
-    # create names data
-    for count, record in enumerate(record_iterator('alternateNames.txt', dbmodel.altname_fields)):
-        pn = dbmodel.PlaceNames(**record)
-        dbSession.add(pn)
-        # without an occasional commit we were running out of memory
-        if (count & 0x7ffff) == 0:
-            dbSession.commit()
-            print '.',
-    dbSession.commit()
-
-def parse_place_info_to_db(dbSession, aux_data):
-    dbSession.query(dbmodel.PlaceInfo).delete()
-
-    # create names data
-    for count, record in enumerate(record_iterator('allCountries.txt', dbmodel.place_fields)):
-        #augment record
-        record = augment_record(aux_data, record)
-        pi = make_place_info(aux_data, record)
-        dbSession.add(pi)
-        # without an occasional commit we were running out of memory
-        if (count & 0x7ffff) == 0:
-            dbSession.commit()
-            print '.',
-    dbSession.commit()
-
-
-def load_lookup_tables():
-    aux_data = {}
-    aux_data['admin1'] = build_dictionary('admin1CodesASCII.txt', dbmodel.admin1_fields, 'code')
-    aux_data['admin2'] = build_dictionary('admin2Codes.txt', dbmodel.admin2_fields, 'code')
-    aux_data['features'] = build_dictionary('featureCodes_en.txt', dbmodel.feature_fields, 'code')
-    aux_data['countries'] = build_dictionary('countryInfo.txt', dbmodel.country_fields, 'iso')
-    aux_data['cities'] = build_dictionary('cities1000.txt', dbmodel.place_fields, 'id')
-    return aux_data
-
-def main(dbfilename, build_info, build_names):
-    """
-    :param dbfilename: SQLite database filename to create
-    :param build_info: bool flag to indicate whether to populate place info table
-    :param build_names: bool flag to indicate whether to populate place names table
-    """
-    aux_data = load_lookup_tables()
-
-    database = dbhelper.Database(dbmodel.Base, dbfilename)
-    database.create()
-    session = database.get_session()
-
-    if build_names:
-        print 'parse names...'
-        parse_alt_names_to_db(session)
-
-    if build_info:
-        print 'parse places...'
-        parse_place_info_to_db(session, aux_data)
 
     
 if __name__ == '__main__':
