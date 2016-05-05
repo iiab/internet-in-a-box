@@ -1,10 +1,21 @@
 #!/usr/bin/env python
 
+# Expand the import search path to allow inclusion of profiling code
+import sys
+import os
+import logging
+package_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+sys.path.insert(0, package_dir)
+
 from optparse import OptionParser
 import geoname_org_model as gndata
 import iiab_maps_model as ibdata
 import dbhelper
 from unicodedata2 import script_cat # helper script from local directory
+
+import iiab.timepro as timepro
+
+log = logging.getLogger("iiab_db_generator")
 
 """
 Read geoname.org data that has been placed into a SQLite database and create
@@ -27,6 +38,7 @@ def add(lookup, key, value):
     else:
         lookup[key] = [value]
 
+@timepro.profile()
 def get_namesets(session, idlist):
     """
     Return a dictionary of all the names that will be used to construct the fully expanded place name
@@ -120,6 +132,7 @@ def match_script(refname, candidatematches):
     name = candidatematches[0] # just take first entry
     return (name, number_of_matches, perfect_match, best_match) 
 
+@timepro.profile()
 def get_closest_match(records, rec, gid):
     """
     Return a geographic container name for gid that has similar language and type flags as the rec name
@@ -203,6 +216,7 @@ def get_expanded_info_asciiname(records, id_list):
 def work(insession, outsession):
     # for each place, inspect all of the different names.
     for count, v in enumerate(insession.query(gndata.PlaceInfo).yield_per(1)):
+        timepro.start("convert PlaceInfo")
         id_list = (v.id, v.admin4_id, v.admin3_id, v.admin2_id, v.admin1_id, v.country_id)
         (name_records, links) = get_namesets(insession, id_list)
 
@@ -216,6 +230,7 @@ def work(insession, outsession):
             outsession.add(ibdata.GeoLinks(geonameid=v.id, link=l))
 
         # Not all places have alternate name records -- use them if we do, otherwise fallback to name in the placeinfo table
+        timepro.start("add GeoNames")
         if v.id in name_records:
             for record in name_records[v.id]:
                 expanded_name = get_expanded_name(name_records, record, id_list)
@@ -224,6 +239,7 @@ def work(insession, outsession):
                 outsession.add(place)
 
                 #print v.id, record.isolanguage, expanded_name, v.feature_name, v.population
+        timepro.end("add GeoNames")
 
         # now expand name found in the placeinfo table.
         (name, expanded_name) = get_expanded_info_name(name_records, id_list)
@@ -239,6 +255,8 @@ def work(insession, outsession):
         if (count & 0xffff) == 0:
             print '.',
             outsession.commit()
+
+        timepro.end("convert PlaceInfo")
 
     outsession.commit()
 
@@ -267,6 +285,8 @@ def main(geoname_db_filename, iiab_db_filename):
     work(sepDb.get_session(), uniDb.get_session())
 
     show_stats()
+    timepro.log_all();
+
 
     
 if __name__ == '__main__':

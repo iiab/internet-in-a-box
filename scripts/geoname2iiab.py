@@ -1,10 +1,24 @@
 #!/usr/bin/env python
 
+# Expand the import search path to allow inclusion of profiling code
+import os
+import sys
+import logging
+package_dir = os.path.dirname(os.path.dirname(__file__))
+sys.path.insert(0, package_dir)
+
 from optparse import OptionParser, OptionGroup
 
 import geoname_parser.geoname_db_generator as gn
 import geoname_parser.iiab_db_generator as iiab
 import geoname_parser.whoosh_indexer as whooshgen
+
+import iiab.timepro as timepro
+
+# Debug logging required to see profiling output.
+# In other cases logging level can be tuned if desired.
+logging.basicConfig(level=logging.DEBUG, stream=sys.stdout, format="%(message)s")
+
 
 def main(geodb_filename, iiabdb_filename, make_geonames_info_db=True, make_geonames_names_db=True, make_iiab_db=True):
     if make_geonames_info_db or make_geonames_names_db:
@@ -44,12 +58,18 @@ if __name__ == '__main__':
                       help="Simple list of feature codes to permit in the index, one code per line. Defaults to geotag_featurecode_whitelist.txt")
     parser.add_option_group(dbgroup)
     parser.add_option_group(whooshgroup)
+    parser.add_option("--timepro", action="store_true", default=False,
+                      help="Enable timepro performance profiler")
 
     (options, args) = parser.parse_args()
 
     if not options.mkdb and not options.mkwhoosh:
         print "Nothing to do. Specify options to make something happen."
     else:
+        # timepro must be configured prior to making the database or index
+        if options.timepro:
+            timepro.global_active = True
+
         if options.mkdb:
             main(options.geodb_filename, options.iiabdb_filename, not options.skip_gn_info, not options.skip_gn_names, not options.skip_iiab_db)
 
