@@ -33,10 +33,7 @@ def add(lookup, key, value):
     :param key: dict key
     :param value: new value to add to list in dict
     """
-    if key in lookup:
-        lookup[key].append(value)
-    else:
-        lookup[key] = [value]
+    lookup.setdefault(key, []).append(value)
 
 @timepro.profile()
 def get_namesets(session, idlist):
@@ -53,7 +50,7 @@ def get_namesets(session, idlist):
     links = []  # links (just for geoid)
 
     # store PlaceNames records
-    for v in session.query(gndata.PlaceNames).filter(gndata.PlaceNames.geonameid.in_(idlist)).yield_per(1):
+    for v in session.query(gndata.PlaceNames).filter(gndata.PlaceNames.geonameid.in_(idlist)).all():
         if not v.isolanguage:
             if v.geonameid == geoid:
                 stats('isolanguage empty')
@@ -74,7 +71,7 @@ def get_namesets(session, idlist):
         add(lookup, (v.geonameid, v.isolanguage, v.isPreferredName), value_tup) # key:int,str,bool
 
     # store PlaceInfo records
-    for v in session.query(gndata.PlaceInfo).filter(gndata.PlaceInfo.id.in_(idlist)).yield_per(1):
+    for v in session.query(gndata.PlaceInfo).filter(gndata.PlaceInfo.id.in_(idlist)).all():
         add(lookup, (v.id, "__infoname__"), v)
 
     return (lookup, links)
@@ -101,7 +98,7 @@ def match_script(refname, candidatematches):
     :param candidatematches: list of name records to search
     """
     # find the predominent script used in each candidate name. then create a dict with script name as
-    # as the key and the list of places as the value 
+    # as the key and the list of places as the value
     candidatescripts = {} # key: script name, value: list of geographic names
     for namerec in candidatematches:
         try: # Might be best to profile compared to test for attribute. Primary case is a name record.
@@ -130,7 +127,7 @@ def match_script(refname, candidatematches):
     perfect_match = False
     best_match = False
     name = candidatematches[0] # just take first entry
-    return (name, number_of_matches, perfect_match, best_match) 
+    return (name, number_of_matches, perfect_match, best_match)
 
 @timepro.profile()
 def get_closest_match(records, rec, gid):
@@ -215,7 +212,8 @@ def get_expanded_info_asciiname(records, id_list):
 
 def work(insession, outsession):
     # for each place, inspect all of the different names.
-    for count, v in enumerate(insession.query(gndata.PlaceInfo).yield_per(1)):
+    BLK_SIZE = 1000
+    for count, v in enumerate(insession.query(gndata.PlaceInfo).yield_per(BLK_SIZE).enable_eagerloads(False)):
         timepro.start("convert PlaceInfo")
         id_list = (v.id, v.admin4_id, v.admin3_id, v.admin2_id, v.admin1_id, v.country_id)
         (name_records, links) = get_namesets(insession, id_list)
@@ -227,7 +225,7 @@ def work(insession, outsession):
 
         # insert into geolinks
         for l in links:
-            outsession.add(ibdata.GeoLinks(geonameid=v.id, link=l))
+            outsession.add(ibdata.GeoLinks(geoid=v.id, link=l))
 
         # Not all places have alternate name records -- use them if we do, otherwise fallback to name in the placeinfo table
         timepro.start("add GeoNames")
@@ -243,17 +241,17 @@ def work(insession, outsession):
 
         # now expand name found in the placeinfo table.
         (name, expanded_name) = get_expanded_info_name(name_records, id_list)
-        place = ibdata.GeoNames(geonameid=v.id, isolanguage='en', name=name, fullname=expanded_name, importance=v.population)
+        place = ibdata.GeoNames(geoid=v.id, lang='en', name=name, fullname=expanded_name, importance=v.population)
         outsession.add(place)
 
         # now expand asciiname found in the placeinfo table.
         (name, expanded_name) = get_expanded_info_asciiname(name_records, id_list)
-        place = ibdata.GeoNames(geonameid=v.id, isolanguage='en', name=name, fullname=expanded_name, importance=v.population)
+        place = ibdata.GeoNames(geoid=v.id, lang='en', name=name, fullname=expanded_name, importance=v.population)
         outsession.add(place)
 #        print expanded_name
 
-        if (count & 0xffff) == 0:
-            print '.',
+        if (count & 0x1ff) == 0:
+            log.info("progress: %d" % count)
             outsession.commit()
 
         timepro.end("convert PlaceInfo")
@@ -288,7 +286,6 @@ def main(geoname_db_filename, iiab_db_filename):
     timepro.log_all();
 
 
-    
 if __name__ == '__main__':
     parser = OptionParser(description="Parse geonames.org geo data database to create the geodata db IIAB will use.")
     parser.add_option("--in", dest="db_filename", action="store",

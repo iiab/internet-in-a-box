@@ -18,16 +18,11 @@ class GeoInfo(Base):
     feature_code = Column(String)
     feature_name = Column(String)
 
-class GeoLanguage(Base):
-    __tablename__ = 'geolang'
-    id = Column(Integer, primary_key=True)
-    lang = Column(String, index=True)
-
 class GeoNames(Base):
     __tablename__ = "geonames"
     id = Column(Integer, primary_key=True) # generated row id's
-    geoid = Column(Integer, ForeignKey(GeoInfo.c.id))
-    langid = Column(Integer, ForeignKey(GeoLanguage.c.id))
+    geoid = Column(Integer, ForeignKey('geoinfo.id'))
+    lang = Column(String, index=True)
     name = Column(String)
     fullname = Column(String)
     importance = Column(Integer, index=True)
@@ -35,6 +30,6 @@ class GeoNames(Base):
 class GeoLinks(Base):
     __tablename__ = 'geolinks'
     id = Column(Integer, primary_key=True)
-    geoid = Column(Integer, ForeignKey(GeoInfo.c.id))
+    geoid = Column(Integer, ForeignKey('geoinfo.id'))
     link = Column(String)
 

@@ -56,27 +56,39 @@ def builddb(db, insp, descriptor):
     db.commit()
 
 def place_admin1_id(aux_data, rec):
-    if rec['admin1_code'] == '':
-        return '';
-    admin1code = "%s.%s" % (rec['country_code'], rec['admin1_code'])
+    # bear in mind that the admin1 code 00 means no specific admin1 code is defined
+    country_code = rec['country_code']
+    admin1_code = rec['admin1_code']
+
+    if country_code == '' or admin1_code == '':
+        return ''
+    admin1key = "%s.%s" % (country_code, admin1_code)
     try:
-        return aux_data['admin1'][admin1code]['id']
+        return aux_data['admin1'][admin1key]['id']
     except KeyError:
-        print u''.join((u"Failed to find admin1 code for ", admin1code, u" on ", rec['id'])).encode('utf-8')
+        print u''.join((u"Failed to find admin1 code for ", admin1key, u" on ", rec['id'])).encode('utf-8')
         return ''
 
 def place_admin2_id(aux_data, rec):
-    if rec['admin1_code'] == '' or rec['admin2_code'] == '':
-        return '';
-    admin2code = "%s.%s.%s" % (rec['country_code'], rec['admin1_code'], rec['admin2_code'])
+    # bear in mind that the admin1 code 00 means no specific admin1 code is defined
+    country_code = rec['country_code']
+    admin1_code = rec['admin1_code']
+    admin2_code = rec['admin2_code']
+
+    if admin1_code == '' or admin2_code == '' or country_code == '':
+        return ''
+    admin2key = "%s.%s.%s" % (country_code, admin1_code, admin2_code)
     try:
-        return aux_data['admin2'][admin2code]['id']
+        return aux_data['admin2'][admin2key]['id']
     except KeyError:
-        print u''.join((u"Failed to find admin2 code for ", admin2code, u" on ", rec['id'])).encode('utf-8')
+        print u''.join((u"Failed to find admin2 code for ", admin2key, u" on ", rec['id'])).encode('utf-8')
         return ''
 
 def place_country_id(aux_data, rec):
     countrycode = rec['country_code']
+    if countrycode == '':
+        return ''
+
     try:
         return aux_data['countries'][countrycode]['id']
     except KeyError:
@@ -84,11 +96,17 @@ def place_country_id(aux_data, rec):
         return ''
 
 def place_feature_name(aux_data, rec):
-    feature = "%s.%s" % (rec['feature_class'], rec['feature_code'])
+    featureclass = rec['feature_class']
+    featurecode = rec['feature_code']
+
+    if featureclass == '' or featurecode == '':
+        return ''
+
+    featurekey = "%s.%s" % (feature_class, feature_code)
     try:
-        return aux_data['features'][feature]['name']
+        return aux_data['features'][featurekey]['name']
     except KeyError:
-        print u''.join((u"Failed to find feature code for ", feature, u" on ", rec['id'])).encode('utf-8')
+        print u''.join((u"Failed to find feature code for ", featurekey, u" on ", rec['id'])).encode('utf-8')
         return ''
 
 def try_for_improved_population_estimate(aux_data, data):
@@ -162,11 +180,11 @@ def parse_place_info_to_db(dbSession, aux_data):
 
 def load_lookup_tables():
     aux_data = {}
-    aux_data['admin1'] = build_dictionary('admin1CodesASCII.txt', dbmodel.admin1_fields, 'code');
-    aux_data['admin2'] = build_dictionary('admin2Codes.txt', dbmodel.admin2_fields, 'code');
-    aux_data['features'] = build_dictionary('featureCodes_en.txt', dbmodel.feature_fields, 'code');
-    aux_data['countries'] = build_dictionary('countryInfo.txt', dbmodel.country_fields, 'iso');
-    aux_data['cities'] = build_dictionary('cities1000.txt', dbmodel.place_fields, 'id');
+    aux_data['admin1'] = build_dictionary('admin1CodesASCII.txt', dbmodel.admin1_fields, 'code')
+    aux_data['admin2'] = build_dictionary('admin2Codes.txt', dbmodel.admin2_fields, 'code')
+    aux_data['features'] = build_dictionary('featureCodes_en.txt', dbmodel.feature_fields, 'code')
+    aux_data['countries'] = build_dictionary('countryInfo.txt', dbmodel.country_fields, 'iso')
+    aux_data['cities'] = build_dictionary('cities1000.txt', dbmodel.place_fields, 'id')
     return aux_data
 
 def main(dbfilename, build_info, build_names):
