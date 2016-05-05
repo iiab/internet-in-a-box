@@ -26,22 +26,79 @@ and geolookup.
 # storage for stats collection since not organized as a class...
 _stats = {}
 
-def add(lookup, key, value):
-    """
-    Helper function for creating/adding values to a dict of lists
-    :param lookup: dictionary
-    :param key: dict key
-    :param value: new value to add to list in dict
-    """
-    lookup.setdefault(key, []).append(value)
+def main(geoname_db_filename, iiab_db_filename):
+    sepDb = dbhelper.Database(gndata.Base, geoname_db_filename)
+
+    uniDb = dbhelper.Database(ibdata.Base, iiab_db_filename)
+    uniDb.clear_table(ibdata.GeoNames)
+    uniDb.clear_table(ibdata.GeoInfo)
+    uniDb.clear_table(ibdata.GeoLinks)
+
+    uniDb.create()
+
+    work(sepDb.get_session(), uniDb.get_session())
+
+    show_stats()
+    timepro.log_all();
+
+def work(insession, outsession):
+    # for each place, inspect all of the different names.
+    BLK_SIZE = 1000
+    for count, v in enumerate(insession.query(gndata.PlaceInfo).yield_per(BLK_SIZE).enable_eagerloads(False)):
+        timepro.start("convert PlaceInfo")
+        id_list = (v.id, v.admin4_id, v.admin3_id, v.admin2_id, v.admin1_id, v.country_id)
+        (name_records, links) = get_namesets(insession, id_list)
+
+        # insert geoinfo record
+        info = ibdata.GeoInfo(id=v.id, latitude=v.latitude, longitude=v.longitude, population=v.population,
+                feature_code=v.feature_code, feature_name=v.feature_name)
+        outsession.add(info)
+
+        # insert into geolinks
+        for l in links:
+            outsession.add(ibdata.GeoLinks(geoid=v.id, link=l))
+
+        # Not all places have alternate name records -- use them if we do, otherwise fallback to name in the placeinfo table
+        timepro.start("add GeoNames")
+        if v.id in name_records:
+            for record in name_records[v.id]:
+                expanded_name = get_expanded_name(name_records, record, id_list)
+
+                place = ibdata.GeoNames(geoid=v.id, lang=record.isolanguage, name=record.alternate, fullname=expanded_name, importance=v.population)
+                outsession.add(place)
+
+                #print v.id, record.isolanguage, expanded_name, v.feature_name, v.population
+        timepro.end("add GeoNames")
+
+        # now expand name found in the placeinfo table.
+        (name, expanded_name) = get_expanded_info_name(name_records, id_list)
+        place = ibdata.GeoNames(geoid=v.id, lang='en', name=name, fullname=expanded_name, importance=v.population)
+        outsession.add(place)
+
+        # now expand asciiname found in the placeinfo table.
+        (name, expanded_name) = get_expanded_info_asciiname(name_records, id_list)
+        place = ibdata.GeoNames(geoid=v.id, lang='en', name=name, fullname=expanded_name, importance=v.population)
+        outsession.add(place)
+#        print expanded_name
+
+        if (count & 0x1ff) == 0:
+            log.info("progress: %d" % count)
+            outsession.commit()
+
+        timepro.end("convert PlaceInfo")
+
+    outsession.commit()
 
 @timepro.profile()
 def get_namesets(session, idlist):
-    """
-    Return a dictionary of all the names that will be used to construct the fully expanded place name
-    Indexes names in a variety of ways. Note carefully that two different value types are stored.
-    The value type is a PlaceNames record except when the key is (id, '__infoname__') when the value is
-    a PlaceInfo record.
+    """Compile all name variations and links associated with a geoid
+
+    Return a dictionary of all the names that will be used to construct the
+    fully expanded place name Indexes names in a variety of ways. Note
+    carefully that two different value types are stored.  The value type is a
+    PlaceNames record except when the key is (id, '__infoname__') when the
+    value is a PlaceInfo record.
+
     :param session: database session for querying the allCountries and alternatenames content
     :param idlist: ordered list of geographic IDs, administrative area ID codes, and country ID code.
     """
@@ -82,6 +139,7 @@ def append_if_not_empty(namelist, name):
         namelist.append(name)
 
 def build_script_tally(name):
+    """Build a frequency tally of script types used in the name"""
     scripts = {}
     for c in name:
         scriptname = script_cat(c)
@@ -92,8 +150,12 @@ def build_script_tally(name):
     return scripts
 
 def match_script(refname, candidatematches):
-    """
-    Return tuple consisting of (single name record with best match, int number of records that matched, bool true if some script in common, bool true if matched predominant script)
+    """Find name that best matches the requested unicode script
+
+    Return tuple consisting of (single name record with best match, int number
+    of records that matched, bool true if some script in common, bool true if
+    matched predominant script)
+
     :param refname: name record we are matching
     :param candidatematches: list of name records to search
     """
@@ -131,8 +193,9 @@ def match_script(refname, candidatematches):
 
 @timepro.profile()
 def get_closest_match(records, rec, gid):
-    """
-    Return a geographic container name for gid that has similar language and type flags as the rec name
+    """Return a geographic container name for gid that has similar language and
+    type flags as the rec name
+
     :param records: dictionary of namesets obtained from get_nameset
     :param rec: specific PlaceNames record whose containing place name we are searching for
     :param gid: the place id of the containing geography whose name we seek
@@ -210,53 +273,14 @@ def get_expanded_info_asciiname(records, id_list):
             append_if_not_empty(fullname_parts, info_rec.asciiname)
     return (fullname_parts[0], u', '.join(fullname_parts))
 
-def work(insession, outsession):
-    # for each place, inspect all of the different names.
-    BLK_SIZE = 1000
-    for count, v in enumerate(insession.query(gndata.PlaceInfo).yield_per(BLK_SIZE).enable_eagerloads(False)):
-        timepro.start("convert PlaceInfo")
-        id_list = (v.id, v.admin4_id, v.admin3_id, v.admin2_id, v.admin1_id, v.country_id)
-        (name_records, links) = get_namesets(insession, id_list)
-
-        # insert geoinfo record
-        info = ibdata.GeoInfo(id=v.id, latitude=v.latitude, longitude=v.longitude, population=v.population,
-                feature_code=v.feature_code, feature_name=v.feature_name)
-        outsession.add(info)
-
-        # insert into geolinks
-        for l in links:
-            outsession.add(ibdata.GeoLinks(geoid=v.id, link=l))
-
-        # Not all places have alternate name records -- use them if we do, otherwise fallback to name in the placeinfo table
-        timepro.start("add GeoNames")
-        if v.id in name_records:
-            for record in name_records[v.id]:
-                expanded_name = get_expanded_name(name_records, record, id_list)
-
-                place = ibdata.GeoNames(geoid=v.id, lang=record.isolanguage, name=record.alternate, fullname=expanded_name, importance=v.population)
-                outsession.add(place)
-
-                #print v.id, record.isolanguage, expanded_name, v.feature_name, v.population
-        timepro.end("add GeoNames")
-
-        # now expand name found in the placeinfo table.
-        (name, expanded_name) = get_expanded_info_name(name_records, id_list)
-        place = ibdata.GeoNames(geoid=v.id, lang='en', name=name, fullname=expanded_name, importance=v.population)
-        outsession.add(place)
-
-        # now expand asciiname found in the placeinfo table.
-        (name, expanded_name) = get_expanded_info_asciiname(name_records, id_list)
-        place = ibdata.GeoNames(geoid=v.id, lang='en', name=name, fullname=expanded_name, importance=v.population)
-        outsession.add(place)
-#        print expanded_name
-
-        if (count & 0x1ff) == 0:
-            log.info("progress: %d" % count)
-            outsession.commit()
-
-        timepro.end("convert PlaceInfo")
-
-    outsession.commit()
+def add(lookup, key, value):
+    """
+    Helper function for creating/adding values to a dict of lists
+    :param lookup: dictionary
+    :param key: dict key
+    :param value: new value to add to list in dict
+    """
+    lookup.setdefault(key, []).append(value)
 
 def stats(tag, extra=''):
     global _stats
@@ -269,21 +293,6 @@ def stats(tag, extra=''):
 
 def show_stats():
     print _stats
-
-def main(geoname_db_filename, iiab_db_filename):
-    sepDb = dbhelper.Database(gndata.Base, geoname_db_filename)
-
-    uniDb = dbhelper.Database(ibdata.Base, iiab_db_filename)
-    uniDb.clear_table(ibdata.GeoNames)
-    uniDb.clear_table(ibdata.GeoInfo)
-    uniDb.clear_table(ibdata.GeoLinks)
-
-    uniDb.create()
-
-    work(sepDb.get_session(), uniDb.get_session())
-
-    show_stats()
-    timepro.log_all();
 
 
 if __name__ == '__main__':
