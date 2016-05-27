@@ -26,7 +26,7 @@ def get_query_corrections(searcher, query, qstring):
     :param qstring: search string that was passed to the query object
     :returns: MultiFieldQueryCorrector with one corrector for each corrected column
     """
-    fieldnames = [name for name, field in searcher.schema.items() if field.spelling]
+    fieldnames = [name for name, field in searcher.schema.items() if hasattr(field, 'spelling') and field.spelling]
     correctors = {}
     for fieldname in fieldnames:
         if fieldname not in correctors:
