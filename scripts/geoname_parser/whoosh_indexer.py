@@ -9,6 +9,7 @@ from whoosh.fields import ID, TEXT, KEYWORD, STORED, NUMERIC, NGRAMWORDS
 from argparse import ArgumentParser
 import iiab_maps_model as model
 import dbhelper
+import multiprocessing
 
 
 
@@ -35,13 +36,15 @@ def get_schema():
     MAX_LEN = 151 # based on max name length found in geonames db.
     FIXED_PREFIX = "start"
     return wf.Schema(nameid=ID(unique=True, stored=True),
-        geoid=ID(stored=True),
-        fullname=TEXT(stored=True), 
+        #geoid=ID(stored=True),
+        fullname=TEXT(stored=True, sortable=True),
         name=TEXT,
-        lang=KEYWORD(stored=True),
-        #ngram_fullname=NGRAMWORDS(minsize=MIN_LEN, maxsize=MAX_LEN, at=FIXED_PREFIX, queryor=True),
+        lang=KEYWORD(stored=True, sortable=True),
+        ngram_fullname=NGRAMWORDS(minsize=MIN_LEN, maxsize=MAX_LEN, at=FIXED_PREFIX, queryor=True),
         #ngram_name=NGRAMWORDS(minsize=MIN_LEN, maxsize=MAX_LEN, at=FIXED_PREFIX, queryor=True),
-        importance=NUMERIC(int, bits=64, sortable=True) 
+        latitude=STORED,
+        longitude=STORED,
+        importance=NUMERIC(int, bits=64, sortable=True)
         )
 
 def load_feature_code_whitelist(filename):
@@ -78,7 +81,7 @@ def passes_whitelist(feature_code, feature_code_whitelist):
 class WhooshGenerator:
     def setup(self, index_dir, schema):
         self.whoosh_index = create_in(index_dir, schema)
-        self.writer = self.whoosh_index.writer()
+        self.writer = self.whoosh_index.writer(procs=multiprocessing.cpu_count())
         self.in_group = False  # only one level of grouping is used here
 
     def start_group(self):
@@ -137,11 +140,13 @@ class NullGenerator:
 RECORD_MAPPING = {
     # from, to
     ('id', 'nameid'),
-    ('geoid', 'geoid'),
+    #('geoid', 'geoid'),
     ('fullname', 'fullname'),
     ('name', 'name'),
     ('lang', 'lang'),
-    #('fullname', 'ngram_fullname'),
+    ('latitude', 'latitude'),
+    ('longitude', 'longitude'),
+    ('fullname', 'ngram_fullname'),
     #('name', 'ngram_name'),
     ('importance', 'importance')
     }
@@ -174,9 +179,12 @@ def parse_geo(dbfilename, index_dir, whitelist_filename):
     geoid = None
     db = dbhelper.Database(model.Base, dbfilename)
 
-    for count, record in enumerate(db.session.query(model.GeoNames).order_by(model.GeoNames.geoid).yield_per(1)):
-        feature_code = db.session.query(model.GeoInfo).filter_by(id=record.geoid).first().feature_code
-        if passes_whitelist(feature_code, feature_code_whitelist):
+    BLK_SIZE = 1000
+    for count, record in enumerate(db.session.query(model.GeoNames).order_by(model.GeoNames.geoid).yield_per(BLK_SIZE)):
+        geoinfo = db.session.query(model.GeoInfo).filter_by(id=record.geoid).first()
+        if passes_whitelist(geoinfo.feature_code, feature_code_whitelist):
+            record.latitude = geoinfo.latitude
+            record.longitude = geoinfo.longitude
             # our format does not seem to conform to the classic parent-child group so holding of on grouping for now
             #if geoid != record.geoid:
             #    geoid = record.geoid
@@ -197,13 +205,13 @@ def parse_geo(dbfilename, index_dir, whitelist_filename):
     print 'omitted %d items' % omitted_count
     generator.commit()
     print 'done'
-        
+
 
 if __name__ == '__main__':
     parser = ArgumentParser(description="""
-    Parses geo data from tab delimited text file.  Obtain the geo data file from 
+    Parses geo data from tab delimited text file.  Obtain the geo data file from
     http://download.geonames.org/export/dump/ usually allCountries.txt (found in allCountries.zip)
-    After parsing the content, a whoosh index is created.  The index output directory must already 
+    After parsing the content, a whoosh index is created.  The index output directory must already
     exist. Be aware the index size will be on the order of 2GB.
     """)
     parser.add_argument("--db", dest="dbfilename", action="store",

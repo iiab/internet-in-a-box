@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
-# Expand the import search path to allow inclusion of profiling code
 import os
 import sys
 import logging
+
+# Expand import search path to allow import of timepro profiling code
 package_dir = os.path.dirname(os.path.dirname(__file__))
 sys.path.insert(0, package_dir)
 

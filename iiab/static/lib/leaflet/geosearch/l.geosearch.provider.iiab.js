@@ -33,8 +33,6 @@ L.GeoSearch.Provider.iiab = L.Class.extend({
                 data[i].longitude, 
                 data[i].latitude, 
                 data[i].fullname,
-                data[i].geoid,
-                data[i].nameid,
                 data[i].isolanguage
             ));
         

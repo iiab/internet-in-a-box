@@ -3,6 +3,7 @@
 from utils import whoosh_open_dir_32_or_64
 from whoosh.qparser import QueryParser
 from whoosh.sorting import ScoreFacet, FunctionFacet
+from whoosh.query import Term
 from whoosh import sorting
 from flask.ext.sqlalchemy import SQLAlchemy
 import os
@@ -20,17 +21,17 @@ def init_db(app):
         app.config['SQLALCHEMY_BINDS'] = {}
     database_path = config().get_path('OSM', 'sqlalchemy_database_uri')
     db_uri = 'sqlite:///' + os.path.abspath(database_path)
-    app.config['SQLALCHEMY_BINDS'].update({ 'maps' : db_uri })
+    app.config['SQLALCHEMY_BINDS'].update({ 'maps': db_uri })
     db_map.init_app(app)
     print app.config['SQLALCHEMY_BINDS']
 
 class MapSearch(object):
-    DEFAULT_LIMIT = 100
+    DEFAULT_LIMIT = 10
 
     @classmethod
     def init_class(cls, index_dir):
         """Class level initialize. Initialize search index once for performance reasons"""
-        cls.whoosh_index = whoosh_open_dir_32_or_64(index_dir)
+        cls.ix = whoosh_open_dir_32_or_64(index_dir)
         # setup cached fields
         importance_sort_facet = sorting.FieldFacet("importance", reverse=True)
         score = ScoreFacet()
@@ -50,25 +51,28 @@ class MapSearch(object):
         :param autocomplete: flag indicating whether full record or just autocomplete matches should be returned
         """
 
-        if not self.whoosh_index:
+        if not MapSearch.ix:
             raise ValueError("Not initialized. Must call init_mod to initialize before use.")
 
         query = unicode(query)  # Must be unicode
-        query = QueryParser("name", self.whoosh_index.schema).parse(query)
+        ix = MapSearch.ix
+        with ix.searcher() as searcher:
+            if autocomplete:
+                query = QueryParser("ngram_fullname", ix.schema).parse(query)
+            else:
+                query = QueryParser("fullname", ix.schema).parse(query)
 
-        with self.whoosh_index.searcher() as searcher:
             args = {
-                'q' : query,
-                #'sortedby' : self.sort_order,
-                #'collapse' : self.collapse_facet,
-                #'collapse_limit' : 1,
-                #'collapse_order' : self.collapse_order_facet
+                'q': query,
+                'sortedby': MapSearch.sort_order,
+                #'collapse': MapSearch.collapse_facet,
+                #'collapse_limit': 1,
+                #'collapse_order': MapSearch.collapse_order_facet
             }
-
             if pagelen is not None and pagelen != 0:
                 args.update({
-                    'pagenum' : page,
-                    'pagelen' : pagelen
+                    'pagenum': page,
+                    'pagelen': pagelen
                 })
                 try:
                     results = searcher.search_page(**args)
@@ -76,30 +80,29 @@ class MapSearch(object):
                     results = []
             else:
                 args.update({
-                    'limit' : self.DEFAULT_LIMIT
+                    'limit': self.DEFAULT_LIMIT
                 })
                 results = searcher.search(**args)
-            print query, results
+#            print query, results
             r = whoosh2dict(results)
-        self.whoosh_index.close()
-        if not autocomplete:
-            for d in r:
-                #print d
-                geoid = d['geoid']
-                info = map_model.GeoInfo.query.filter_by(id=geoid).first()
-                d['latitude'] = info.latitude
-                d['longitude'] = info.longitude
-                d['links'] = map(lambda r: getattr(r, 'link'), map_model.GeoLinks.query.filter_by(geonameid=geoid).all())
+#        if not autocomplete:
+#            for d in r:
+#                #print d
+#                geoid = d['geoid']
+#                info = map_model.GeoInfo.query.filter_by(id=geoid).first()
+#                d['latitude'] = info.latitude
+#                d['longitude'] = info.longitude
+#                d['links'] = map(lambda r: getattr(r, 'link'), map_model.GeoLinks.query.filter_by(geonameid=geoid).all())
 
         return r
 
     def count(self, query):
         """Return total number of matching documents in index"""
         query = unicode(query)  # Must be unicode
-        with self.whoosh_index.searcher() as searcher:
-            query = QueryParser("title", self.whoosh_index.schema).parse(query)
+        ix = MapSearch.ix
+        with ix.searcher() as searcher:
+            query = QueryParser("fullname", ix.schema).parse(query)
             results = searcher.search(query)
             n = len(results)
-        self.whoosh_index.close()
         return n
 
