@@ -73,9 +73,9 @@ L.Control.GeoSearch = L.Control.extend({
         }
 
         if (this._config.enableButtons) {
-            var submitContainer = L.DomUtil.create('div', 'leaflet-geosearch-submit-button-container', this._container);
+            var submitContainer = L.DomUtil.create('span', 'leaflet-geosearch-submit-button-container', form);
             L.DomUtil.create('span', 'leaflet-geosearch-submit-button', submitContainer);
-            var cancelButton = L.DomUtil.create('span', 'leaflet-geosearch-cancel-button', this._container);
+            var cancelButton = L.DomUtil.create('span', 'leaflet-geosearch-cancel-button', form);
             L.DomEvent.on(submitContainer, 'click', this.startSearch, this);
             L.DomEvent.on(cancelButton, 'click', this._clearUserSearchInput, this);
         }
@@ -315,7 +315,7 @@ L.Control.GeoSearch = L.Control.extend({
     _printInfo: function (message) {
         this._showFlashMessage(message);
         this._map.fireEvent('geosearch_showinfo', {message: message});
-    }
+    },
 
     _showFlashMessage: function (message) {
         this._msgbox.innerHTML = message;
@@ -372,15 +372,16 @@ L.Control.GeoSearch = L.Control.extend({
 
     _onInputUpdate: function () {
         // define function for requery of user input after delay
+        var sb = this._searchbox;
         function getQuery() {
-            return this._searchbox.value;
+            return sb.value;
         }
         var qry = getQuery();
 
         if (this._config.enableAutocomplete) {
             this._autocomplete.recordLastUserInput(qry);
             if (qry.length >= this._config.autocompleteMinQueryLen) {
-                this.geosearch_autocomplete(getQuery.bind(this), this._config.autocompleteQueryDelay_ms);
+                this.geosearch_autocomplete(getQuery, this._config.autocompleteQueryDelay_ms);
             } else {
                 this._autocomplete.hide();
             }
@@ -390,14 +391,6 @@ L.Control.GeoSearch = L.Control.extend({
             $('.leaflet-geosearch-cancel-button').show();
         } else {
             $('.leaflet-geosearch-cancel-button').hide();
-        }
-    },
-
-    _onKeyUp: function (e) {
-        var esc = 27;
-
-        if (e.keyCode === esc) { // escape key detection is unreliable
-            this.cancelSearch();
         }
     },
 
@@ -441,12 +434,24 @@ L.Control.GeoSearch = L.Control.extend({
  });
 
 L.AutoComplete = L.Class.extend({
-    _config: {
-        'maxResultCount': 10,
-        'onMakeSuggestionHTML': function (geosearchResult) {
-            return this._htmlEscape(geosearchResult.Label);
-        }.bind(this)
-    },
+    _config: (function () {
+        function _htmlEscape(str) {
+            // implementation courtesy of http://stackoverflow.com/a/7124052
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+
+        return {
+            'maxResultCount': 10,
+            'onMakeSuggestionHTML': function (geosearchResult) {
+                return _htmlEscape(geosearchResult.Label);
+            }
+        };
+    })(),
 
     initialize: function (options) {
         L.Util.extend(this._config, options);
@@ -507,16 +512,6 @@ L.AutoComplete = L.Class.extend({
 
     isVisible: function() {
         return this._tool.style.display !== 'none';
-    },
-
-    _htmlEscape: function (str) {
-        // implementation courtesy of http://stackoverflow.com/a/7124052
-        return String(str)
-            .replace(/&/g, '&amp;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;');
     },
 
     _newSuggestion: function (result) {
