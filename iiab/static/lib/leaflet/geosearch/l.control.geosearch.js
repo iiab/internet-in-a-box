@@ -438,7 +438,7 @@ L.AutoComplete = L.Class.extend({
         'maxResultCount': 10,
         'onMakeSuggestionHTML': function (geosearchResult) {
             return this._htmlEscape(geosearchResult.Label);
-        }.bind(this);
+        }.bind(this)
     },
 
     initialize: function (options) {
