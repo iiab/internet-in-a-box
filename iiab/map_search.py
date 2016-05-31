@@ -87,8 +87,12 @@ class IndexAccessor(object):
 
         # Position based scoring. Note position information does not appear to be supported by ngram columns
         def position_score_fn(searcher, fieldname, text, matcher):
-            poses = matcher.value_as("positions")
-            return 1.0 / (poses[0] + 1)
+            if matcher.supports("positions"):
+                poses = matcher.value_as("positions")
+                return 1.0 / (poses[0] + 1)
+            else:
+                return 0.10
+
         self.weighting = FunctionWeighting(position_score_fn)
 
     def close(self):
