@@ -24,13 +24,14 @@ L.GeoSearch.Provider.iiab = L.Class.extend({
     },
 
     ParseJSON: function (data) {
-        if (data.length == 0)
+        if (data.length == 0) {
             return [];
+        }
 
         var results = [],
             bounds = undefined,
             details;
-        for (var i = 0; i < data.length; i++) 
+        for (var i = 0; i < data.length; ++i) {
             details = {
                 language: data[i].lang
             };
@@ -42,6 +43,7 @@ L.GeoSearch.Provider.iiab = L.Class.extend({
                 bounds,
                 details
             ));
+        }
         
         return results;
     }
