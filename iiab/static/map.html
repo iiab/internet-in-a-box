@@ -13,6 +13,9 @@
             html, body, #map {
                 height: 100%;
             }
+            .leaflet-control-geosearch form input {
+                width: 500px;
+            }
         </style>
 
         <script type="text/javascript">
@@ -61,10 +64,13 @@
                     notFoundMessage: "No matches found",
                     zoomLevel: 8,
                     position: 'topleft',
-                    showMarker: true,
                     maxMarkers: 10,
+                    showMarker: true,
+                    showPopup: true,
                     enableAutocomplete: true,
-                    enableButtons: true
+                    autocompleteQueryDelay_ms: 250,
+                    enableButtons: true,
+                    alwaysShowSearchBox: true
                 };
                 new L.Control.GeoSearch(geoOptions).addTo(map);
 

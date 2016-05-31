@@ -79,7 +79,7 @@
     top:100%;
     left:0;
     float:left;
-    width:100%;
+    width:inherit;
     box-shadow: 0 0 8px rgba(0,0,0,0.4);
     -webkit-border-radius: 5px;
     -webkit-border-top-left-radius: 0;
@@ -105,6 +105,7 @@
     white-space:nowrap;
     font-size:.85em;
     vertical-align:center;
+    width: 50em;
 }
 
 .leaflet-geosearch-suggestion:hover, .leaflet-geosearch-suggestion-selected {
@@ -116,7 +117,7 @@
     background: none repeat scroll 0 0 #AAAAAA;
     border-radius: 4px 4px 4px 4px;
     height: 24px;
-    margin: 2px 0;
+    margin: 1px 0;
     position: absolute;
     right: 8px;
     width: 27px;
@@ -124,7 +125,7 @@
 
 .leaflet-geosearch-submit-button-container .leaflet-geosearch-submit-button {
     display: block;
-    margin: 2px 0;
+    margin: 1px 0;
     position: absolute;
     text-decoration: none;
     background: url("../img/search-icon.png") no-repeat scroll 0 0 transparent;
