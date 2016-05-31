@@ -281,8 +281,7 @@ L.Control.GeoSearch = L.Control.extend({
                 this._markerList.push(marker);
             }
             this._layer = L.layerGroup(this._markerList).addTo(this._map);
-            // For convenience piggybacking on error message.  Not optimal as this is not really an error.
-            this._printError('Displaying ' + Math.min(this._autocomplete._config.maxResultCount, results.length) + ' of ' + results.length +' results.');
+            this._printInfo('Displaying ' + Math.min(this._config.maxMarkers, results.length) + ' of ' + results.length +' results.');
         }
 
         var premierLocation = results[0];
@@ -303,17 +302,25 @@ L.Control.GeoSearch = L.Control.extend({
         });
     },
 
-    _isShowingError: false,
+    _isShowingFlashMessage: false,
 
-    _printError: function(message) {
-        this._msgbox.innerHTML = message;
-        L.DomUtil.removeClass(this._msgbox, 'displayNone');
-
+    _printError: function (message) {
+        this._showFlashMessage(message);
         this._map.fireEvent('geosearch_error', {message: message});
 
         // show alert icon
         this.resetLink('alert');
-        this._isShowingError = true;
+    },
+
+    _printInfo: function (message) {
+        this._showFlashMessage(message);
+        this._map.fireEvent('geosearch_showinfo', {message: message});
+    }
+
+    _showFlashMessage: function (message) {
+        this._msgbox.innerHTML = message;
+        L.DomUtil.removeClass(this._msgbox, 'displayNone');
+        this._isShowingFlashMessage = true;
     },
 
     _getZoomLevel: function() {
@@ -324,11 +331,11 @@ L.Control.GeoSearch = L.Control.extend({
     },
 
     _onInput: function() {
-        if (this._isShowingError) {
+        if (this._isShowingFlashMessage) {
             this.resetLink('glass');
             L.DomUtil.addClass(this._msgbox, 'displayNone');
 
-            this._isShowingError = false;
+            this._isShowingFlashMessage = false;
         }
     },
 
@@ -373,7 +380,7 @@ L.Control.GeoSearch = L.Control.extend({
         if (this._config.enableAutocomplete) {
             this._autocomplete.recordLastUserInput(qry);
             if (qry.length >= this._config.autocompleteMinQueryLen) {
-                this.geosearch_autocomplete(getQuery, this._config.autocompleteQueryDelay_ms);
+                this.geosearch_autocomplete(getQuery.bind(this), this._config.autocompleteQueryDelay_ms);
             } else {
                 this._autocomplete.hide();
             }
