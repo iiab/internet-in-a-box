@@ -23,7 +23,8 @@ L.Control.GeoSearch = L.Control.extend({
         showPopup: false,
         customIcon: false,
         retainZoomLevel: false,
-        draggable: false
+        draggable: false,
+        alwaysShowSearchBox: false
     },
 
     _config: {
@@ -61,7 +62,8 @@ L.Control.GeoSearch = L.Control.extend({
         this.resetLink('glass');
 
         // create the form that will contain the input
-        var form = L.DomUtil.create('form', 'displayNone', this._container);
+        var formCls = this.options.alwaysShowSearchBox? '' : 'displayNone';
+        var form = L.DomUtil.create('form', formCls, this._container);
 
         // create the input, and set its placeholder text
         var searchbox = L.DomUtil.create('input', null, form);
@@ -88,14 +90,20 @@ L.Control.GeoSearch = L.Control.extend({
             .on(link, 'click', L.DomEvent.preventDefault)
             .on(link, 'click', function() {
 
-                if (L.DomUtil.hasClass(form, 'displayNone')) {
-                    L.DomUtil.removeClass(form, 'displayNone'); // unhide form
-                    searchbox.focus();
+                // If the input box is always visible, clicking the link icon launches a search
+                // otherwise toggle visible/hidden
+                if (this.options.alwaysShowSearchBox) {
+                    this.startSearch();
                 } else {
-                    L.DomUtil.addClass(form, 'displayNone'); // hide form
+                    if (L.DomUtil.hasClass(form, 'displayNone')) {
+                        L.DomUtil.removeClass(form, 'displayNone'); // unhide form
+                        searchbox.focus();
+                    } else {
+                        L.DomUtil.addClass(form, 'displayNone'); // hide form
+                    }
                 }
 
-            })
+            }.bind(this))
             .on(link, 'dblclick', L.DomEvent.stopPropagation);
 
         if (this._config.enableAutocomplete) {
@@ -162,16 +170,22 @@ L.Control.GeoSearch = L.Control.extend({
         }.bind(this), requestDelay_ms);
     },
 
-    cancelSearch: function() {
+    _finishSearch: function () {
         var form = this._container.querySelector('form');
-        L.DomUtil.addClass(form, 'displayNone');
+        if (!this.options.alwaysShowSearchBox) {
+            L.DomUtil.addClass(form, 'displayNone');
+        }
 
-        this._clearUserSearchInput();
+        this._hideAutocomplete();
         this.resetLink('glass');
 
-        L.DomUtil.addClass(this._msgbox, 'displayNone');
-
         this._map._container.focus();
+    },
+
+    cancelSearch: function() {
+        this._finishSearch();
+        this._clearUserSearchInput();
+        L.DomUtil.addClass(this._msgbox, 'displayNone');
     },
 
     startSearch: function() {
@@ -251,7 +265,7 @@ L.Control.GeoSearch = L.Control.extend({
         if (results.length > 0) {
             this._map.fireEvent('geosearch_foundlocations', {Locations: results});
             this._showLocations(results, qry);
-            this.cancelSearch();
+            this._finishSearch();
         } else {
             this._printError(this._config.notFoundMessage);
         }
