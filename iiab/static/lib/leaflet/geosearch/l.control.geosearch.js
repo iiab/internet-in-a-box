@@ -107,8 +107,11 @@ L.Control.GeoSearch = L.Control.extend({
             .on(link, 'dblclick', L.DomEvent.stopPropagation);
 
         if (this._config.enableAutocomplete) {
-            this._autocomplete = new L.AutoComplete({}).addTo(this._container, function (suggestionText) {
+            this._autocomplete = new L.AutoComplete({}).addTo(this._container, function (suggestionText, isActivated) {
                 this._searchbox.value = suggestionText;
+                if (isActivated) {
+                    this.startSearch();
+                }
             }.bind(this));
             $(this._container).append(this._autocomplete);
         }
@@ -535,7 +538,7 @@ L.AutoComplete = L.Class.extend({
         L.DomEvent
             .disableClickPropagation(tip)
             .on(tip, 'click', function(e) {
-                this._onSelection(tip._text);
+                this._onSelection(tip._text, true);
             }.bind(this), this);
         return tip;
     },
@@ -559,9 +562,9 @@ L.AutoComplete = L.Class.extend({
                 this._tool.scrollTop = tipOffsetTop;
             }
 
-            this._onSelection(entries[this._tool.currentSelection]._text);
+            this._onSelection(entries[this._tool.currentSelection]._text, false);
         } else {
-            this._onSelection(this._lastUserInput);
+            this._onSelection(this._lastUserInput, false);
         }
     },
     moveUp: function () {
