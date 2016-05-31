@@ -1,66 +1,70 @@
 /*
- * L.Control.GeoSearch - search for an address and zoom to it's location
- * https://github.com/smeijer/leaflet.control.geosearch
+ * L.Control.GeoSearch - search for an address and zoom to its location
+ * https://github.com/smeijer/L.GeoSearch
  */
 
 L.GeoSearch = {};
 L.GeoSearch.Provider = {};
 
-// MSIE needs cors support
-jQuery.support.cors = true;
-
-L.GeoSearch.Result = function (x, y, label, geoid, nameid, language) {
+L.GeoSearch.Result = function (x, y, label, bounds, details) {
     this.X = x;
     this.Y = y;
     this.Label = label;
-    this.geoid = geoid;
-    this.nameid = nameid;
-    this.language = language;
+    this.bounds = bounds;
+
+    if (details)
+        this.details = details;
 };
 
 L.Control.GeoSearch = L.Control.extend({
     options: {
-        position: 'topcenter'
+        position: 'topleft',
+        showMarker: true,
+        showPopup: false,
+        customIcon: false,
+        retainZoomLevel: false,
+        draggable: false
+    },
+
+    _config: {
+        country: '',
+        searchLabel: 'Enter address',
+        notFoundMessage: 'Sorry, that address could not be found.',
+        messageHideDelay: 3000,
+        zoomLevel: 18,
+        enableButtons: false,
+        enableAutoComplete: false,
+        autocompleteMinQueryLen: 3,
+        autocompleteQueryDelay_ms: 800,
+        maxMarkers: 1
     },
 
     initialize: function (options) {
-        this._config = {};
         L.Util.extend(this.options, options);
-        this.setConfig(options);
+        L.Util.extend(this._config, options);
     },
 
-    setConfig: function (options) {
-        this._config = {
-            'country': options.country || '',
-            'provider': options.provider,
-            
-            'searchLabel': options.searchLabel || 'search for address...',
-            'notFoundMessage' : options.notFoundMessage || 'Sorry, that address could not be found.',
-            'messageHideDelay': options.messageHideDelay || 3000,
-            'zoomLevel': options.zoomLevel || 18,
-
-            'maxMarkers': options.maxMarkers || 1,
-            'enableButtons': options.enableButtons || false,
-
-            'enableAutocomplete': options.enableAutocomplete || false,
-            'autocompleteMinQueryLen': options.autocompleteMinQueryLen || 3, // query length request threshold
-            'autocompleteQueryDelay_ms': options.autocompleteQueryDelay_ms || 800
-        };
+    resetLink: function(extraClass) {
+        var link = this._container.querySelector('a');
+        link.className = 'leaflet-bar-part leaflet-bar-part-single' + ' ' + extraClass;
     },
 
     onAdd: function (map) {
-        var $controlContainer = $(map._controlContainer);
+        this._container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-geosearch');
 
-        if ($controlContainer.children('.leaflet-top.leaflet-center').length == 0) {
-            $controlContainer.append('<div class="leaflet-top leaflet-center"></div>');
-            map._controlCorners.topcenter = $controlContainer.children('.leaflet-top.leaflet-center').first()[0];
-        }
+        // create the link - this will contain one of the icons
+        var link = L.DomUtil.create('a', '', this._container);
+        link.href = '#';
+        link.title = this._config.searchLabel;
 
-        this._map = map;
-        this._container = L.DomUtil.create('div', 'leaflet-control-geosearch');
+        // set the link's icon to magnifying glass
+        this.resetLink('glass');
 
-        var searchbox = document.createElement('input');
-        searchbox.id = 'leaflet-control-geosearch-qry';
+        // create the form that will contain the input
+        var form = L.DomUtil.create('form', 'displayNone', this._container);
+
+        // create the input, and set its placeholder text
+        var searchbox = L.DomUtil.create('input', null, form);
         searchbox.type = 'text';
         searchbox.placeholder = this._config.searchLabel;
         this._searchbox = searchbox;
@@ -69,24 +73,30 @@ L.Control.GeoSearch = L.Control.extend({
         }
 
         if (this._config.enableButtons) {
-            var submitContainer = L.DomUtil.create('div', 'leaflet-control-geosearch-button-submit-container', this._container);
+            var submitContainer = L.DomUtil.create('div', 'leaflet-geosearch-submit-button-container', this._container);
             L.DomUtil.create('span', 'leaflet-geosearch-submit-button', submitContainer);
             var cancelButton = L.DomUtil.create('span', 'leaflet-geosearch-cancel-button', this._container);
-            L.DomEvent.on(submitContainer, 'click', this._submitRequest, this);
+            L.DomEvent.on(submitContainer, 'click', this.startSearch, this);
             L.DomEvent.on(cancelButton, 'click', this._clearUserSearchInput, this);
         }
 
-        var msgbox = document.createElement('div');
-        msgbox.id = 'leaflet-control-geosearch-msg';
-        msgbox.className = 'leaflet-control-geosearch-msg';
+        var msgbox = L.DomUtil.create('div', 'leaflet-bar message displayNone', this._container);
         this._msgbox = msgbox;
 
-        var resultslist = document.createElement('ul');
-        resultslist.id = 'leaflet-control-geosearch-results';
-        this._resultslist = resultslist;
+        L.DomEvent
+            .on(link, 'click', L.DomEvent.stopPropagation)
+            .on(link, 'click', L.DomEvent.preventDefault)
+            .on(link, 'click', function() {
 
-        $(this._msgbox).append(this._resultslist);
-        $(this._container).append(this._searchbox, this._msgbox);
+                if (L.DomUtil.hasClass(form, 'displayNone')) {
+                    L.DomUtil.removeClass(form, 'displayNone'); // unhide form
+                    searchbox.focus();
+                } else {
+                    L.DomUtil.addClass(form, 'displayNone'); // hide form
+                }
+
+            })
+            .on(link, 'dblclick', L.DomEvent.stopPropagation);
 
         if (this._config.enableAutocomplete) {
             this._autocomplete = new L.AutoComplete({}).addTo(this._container, function (suggestionText) {
@@ -97,16 +107,17 @@ L.Control.GeoSearch = L.Control.extend({
 
         // TODO This will result in duplicate processing of events. Options?
         L.DomEvent
-          .addListener(this._container, 'click', L.DomEvent.stop)
-          .addListener(this._container, 'keyup', this._onKeyUp, this)
-          .addListener(this._container, 'change', this._onInputUpdate, this)
-          .addListener(this._container, 'paste', this._onPasteToInput, this);
+            .addListener(this._searchbox, 'keypress', this._onKeyPress, this)
+            .addListener(this._searchbox, 'keyup', this._onKeyUp, this)
+            .addListener(this._searchbox, 'input', this._onInput, this)
+            .addListener(this._searchbox, 'change', this._onInputUpdate, this)
+            .addListener(this._searchbox, 'paste', this._onPasteToInput, this);
 
         L.DomEvent.disableClickPropagation(this._container);
 
         return this._container;
     },
-    
+
     geosearch: function (qry) {
         this.geosearch_ext(qry, this._processResults.bind(this), this._printError.bind(this));
     },
@@ -116,22 +127,13 @@ L.Control.GeoSearch = L.Control.extend({
             var provider = this._config.provider;
 
             if(typeof provider.GetLocations == 'function') {
-                var results = provider.GetLocations(qry, function(results) {
-                    onSuccess(results);
-                }.bind(this));
+                provider.GetLocations(qry, function(results) {
+                    onSuccess(results, qry);
+                });
             }
             else {
                 var url = provider.GetServiceUrl(qry);
-
-                $.getJSON(url, function (data) {
-                    try {
-                        var results = provider.ParseJSON(data);
-                        onSuccess(results);
-                    }
-                    catch (error) {
-                        onFailure(error);
-                    }
-                }.bind(this));
+                this.sendRequest(provider, url, qry, onSuccess, onFailure);
             }
         }
         catch (error) {
@@ -160,46 +162,184 @@ L.Control.GeoSearch = L.Control.extend({
         }.bind(this), requestDelay_ms);
     },
 
-    _processResults: function(results) {
-        if (results.length == 0)
-            throw this._config.notFoundMessage;
+    cancelSearch: function() {
+        var form = this._container.querySelector('form');
+        L.DomUtil.addClass(form, 'displayNone');
 
-        this._map.fireEvent('geosearch_foundlocations', {Locations: results});
-        this._showLocations(results);
+        this._clearUserSearchInput();
+        this.resetLink('glass');
+
+        L.DomUtil.addClass(this._msgbox, 'displayNone');
+
+        this._map._container.focus();
     },
 
-    _showLocations: function (results) {
-        if (typeof this._layer !== 'undefined') {
-            this._map.removeLayer(this._layer);
-            this._layer = null;
-        }
-
-        this._markerList = []
-        for (var ii=0; ii < results.length && ii < this._config.maxMarkers; ii++) {
-            var location = results[ii];
-            var marker = L.marker([location.Y, location.X]).bindPopup(location.Label);
-            this._markerList.push(marker);
-        }
-        this._layer = L.layerGroup(this._markerList).addTo(this._map);
-        this._printError('Displaying ' + Math.min(this._autocomplete._config.maxResultCount, results.length) + ' of ' + results.length +' results.');
-
-        var premierResult = results[0];
-        this._map.setView([premierResult.Y, premierResult.X], this._config.zoomLevel, false);
-        this._map.fireEvent('geosearch_showlocation', {Location: premierResult});
-    },
-
-    _printError: function(message) {
-        $(this._resultslist)
-            .html('<li>'+message+'</li>')
-            .fadeIn('slow').delay(this._config.messageHideDelay).fadeOut('slow',
-                    function () { $(this).html(''); });
-    },
-
-    _submitRequest: function () {
-        var q = $('#leaflet-control-geosearch-qry').val();
+    startSearch: function() {
+        var q = this._searchbox.value;
         if (q.length > 0) {
             this._hideAutocomplete();
+            // show spinner icon
+            this.resetLink('spinner');
             this.geosearch(q);
+        }
+    },
+
+    sendRequest: function (provider, url, qry, onSuccess, onFailure) {
+        window.parseLocation = function (response) {
+            var results = provider.ParseJSON(response);
+            onSuccess(results, qry);
+
+            document.body.removeChild(document.getElementById('getJsonP'));
+            delete window.parseLocation;
+        };
+
+        function getJsonP (url) {
+            url = url + '&callback=parseLocation';
+            var script = document.createElement('script');
+            script.id = 'getJsonP';
+            script.src = url;
+            script.async = true;
+            document.body.appendChild(script);
+        }
+
+        if (XMLHttpRequest) {
+            var xhr = new XMLHttpRequest();
+
+            if ('withCredentials' in xhr) {
+                var xhr = new XMLHttpRequest();
+
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState == 4) {
+                        if (xhr.status == 200) {
+                            var response = JSON.parse(xhr.responseText),
+                                results = provider.ParseJSON(response);
+
+                            onSuccess(results, qry);
+                        } else if (xhr.status == 0 || xhr.status == 400) {
+                            getJsonP(url);
+                        } else {
+                            onFailure(xhr.responseText);
+                        }
+                    }
+                };
+
+                xhr.open('GET', url, true);
+                xhr.send();
+            } else if (XDomainRequest) {
+                var xdr = new XDomainRequest();
+
+                xdr.onerror = function (err) {
+                    onFailure(err);
+                };
+
+                xdr.onload = function () {
+                    var response = JSON.parse(xdr.responseText),
+                        results = provider.ParseJSON(response);
+
+                    onSuccess(results, qry);
+                };
+
+                xdr.open('GET', url);
+                xdr.send();
+            } else {
+                getJsonP(url);
+            }
+        }
+    },
+
+    _processResults: function(results, qry) {
+        if (results.length > 0) {
+            this._map.fireEvent('geosearch_foundlocations', {Locations: results});
+            this._showLocations(results, qry);
+            this.cancelSearch();
+        } else {
+            this._printError(this._config.notFoundMessage);
+        }
+    },
+
+    _showLocations: function (results, qry) {
+        if (this.options.showMarker == true) {
+            if (typeof this._layer !== 'undefined') {
+                this._map.removeLayer(this._layer);
+                this._layer = undefined;
+            }
+
+            this._markerList = []
+            for (var ii=0; ii < results.length && ii < this._config.maxMarkers; ++ii) {
+                var location = results[ii];
+                var marker = L.marker(
+                    [location.Y, location.X],
+                    {draggable: this.options.draggable}
+                );
+                if (this.options.customIcon) {
+                    marker.setIcon(this.options.customIcon);
+                }
+                if (this.options.showPopup) {
+                    // better to tag with location's Label instead of qry
+                    marker.bindPopup(location.Label);
+                }
+                this._markerList.push(marker);
+            }
+            this._layer = L.layerGroup(this._markerList).addTo(this._map);
+            // For convenience piggybacking on error message.  Not optimal as this is not really an error.
+            this._printError('Displaying ' + Math.min(this._autocomplete._config.maxResultCount, results.length) + ' of ' + results.length +' results.');
+        }
+
+        var premierLocation = results[0];
+        var premierMarker = this._markerList[0];
+        if (!this.options.retainZoomLevel && premierLocation.bounds && premierLocation.bounds.isValid()) {
+            this._map.fitBounds(premierLocation.bounds);
+        } else {
+            this._map.setView([premierLocation.Y, premierLocation.X], this._getZoomLevel(), false);
+        }
+
+        if (this.options.showMarker == true && this.options.showPopup) {
+            premierMarker.openPopup();
+        }
+
+        this._map.fireEvent('geosearch_showlocation', {
+            Location: premierLocation,
+            Marker : premierMarker
+        });
+    },
+
+    _isShowingError: false,
+
+    _printError: function(message) {
+        this._msgbox.innerHTML = message;
+        L.DomUtil.removeClass(this._msgbox, 'displayNone');
+
+        this._map.fireEvent('geosearch_error', {message: message});
+
+        // show alert icon
+        this.resetLink('alert');
+        this._isShowingError = true;
+    },
+
+    _getZoomLevel: function() {
+        if (! this.options.retainZoomLevel) {
+            return this._config.zoomLevel;
+        }
+        return this._map._zoom;
+    },
+
+    _onInput: function() {
+        if (this._isShowingError) {
+            this.resetLink('glass');
+            L.DomUtil.addClass(this._msgbox, 'displayNone');
+
+            this._isShowingError = false;
+        }
+    },
+
+    _onKeyPress: function (e) {
+        var enterKey = 13;
+
+        if (e.keyCode === enterKey) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            this.startSearch();
         }
     },
 
@@ -214,10 +354,10 @@ L.Control.GeoSearch = L.Control.extend({
 
     _clearUserSearchInput: function () {
         this._hideAutocomplete();
-        $('#leaflet-control-geosearch-qry').val('');
+        this._searchbox.value = '';
         $('.leaflet-geosearch-cancel-button').hide();
     },
-    
+
     _onPasteToInput: function () {
         // onpaste requires callback to allow for input update do this by default.
         setTimeout(this._onInputUpdate.bind(this), 0);
@@ -226,7 +366,7 @@ L.Control.GeoSearch = L.Control.extend({
     _onInputUpdate: function () {
         // define function for requery of user input after delay
         function getQuery() {
-            return $('#leaflet-control-geosearch-qry').val();
+            return this._searchbox.value;
         }
         var qry = getQuery();
 
@@ -247,8 +387,14 @@ L.Control.GeoSearch = L.Control.extend({
     },
 
     _onKeyUp: function (e) {
-        var REQ_DELAY_MS = 800;
-        var MIN_AUTOCOMPLETE_LEN = 3;
+        var esc = 27;
+
+        if (e.keyCode === esc) { // escape key detection is unreliable
+            this.cancelSearch();
+        }
+    },
+
+    _onKeyUp: function (e) {
         var enterKey = 13;
         var shift = 16;
         var ctrl = 17;
@@ -260,13 +406,10 @@ L.Control.GeoSearch = L.Control.extend({
 
         switch (e.keyCode) {
             case escapeKey:
-                // ESC first closes autocomplete if open. If closed then clears input.
+                // ESC first closes autocomplete if open. If closed then clears input or stops search.
                 if (!this._hideAutocomplete()) {
-                    this._clearUserSearchInput();
+                    this.cancelSearch();
                 }
-                break;
-            case enterKey:
-                this._submitRequest();
                 break;
             case upArrow:
                 if (this._config.enableAutocomplete && this._autocomplete.isVisible()) {
@@ -278,6 +421,7 @@ L.Control.GeoSearch = L.Control.extend({
                     this._autocomplete.moveDown();
                 }
                 break;
+            case enterKey:
             case leftArrow:
             case rightArrow:
             case shift:
@@ -285,23 +429,20 @@ L.Control.GeoSearch = L.Control.extend({
                 break;
             default:
                 this._onInputUpdate();
-        }
-    }
-});
+         }
+     }
+ });
 
 L.AutoComplete = L.Class.extend({
-    initialize: function (options) {
-        this._config = {};
-        this.setConfig(options);
+    _config: {
+        'maxResultCount': 10,
+        'onMakeSuggestionHTML': function (geosearchResult) {
+            return this._htmlEscape(geosearchResult.Label);
+        }.bind(this);
     },
 
-    setConfig: function (options) {
-        this._config = {
-            'maxResultCount': options.maxResultCount || 10,
-            'onMakeSuggestionHTML': options.onMakeSuggestionHTML || function (geosearchResult) {
-                return this._htmlEscape(geosearchResult.Label);
-            }.bind(this),
-        };
+    initialize: function (options) {
+        L.Util.extend(this._config, options);
     },
 
     addTo: function (container, onSelectionCallback) {
@@ -321,7 +462,7 @@ L.AutoComplete = L.Class.extend({
             .disableClickPropagation(this._tool)
             // consider whether to make delayed hide onBlur.
             // If so, consider canceling timer on mousewheel and mouseover.
-            .on(this._tool, 'blur', this.hide, this) 
+            .on(this._tool, 'blur', this.hide, this)
             .on(this._tool, 'mousewheel', function(e) {
                 L.DomEvent.stopPropagation(e); // to prevent map zoom
                 if (e.axis === e.VERTICAL_AXIS) {
@@ -334,7 +475,6 @@ L.AutoComplete = L.Class.extend({
             }, this);
         return this;
     },
-
 
     show: function (results) {
         this._tool.innerHTML = '';
@@ -352,6 +492,7 @@ L.AutoComplete = L.Class.extend({
         }
         return count;
     },
+
     hide: function () {
         this._tool.style.display = 'none';
         this._tool.innerHTML = '';
@@ -382,6 +523,7 @@ L.AutoComplete = L.Class.extend({
             }.bind(this), this);
         return tip;
     },
+
     _onSelectedUpdate: function () {
         var entries = this._tool.hasChildNodes() ? this._tool.childNodes : [];
         for (var ii=0; ii < entries.length; ++ii) {
@@ -421,8 +563,8 @@ L.AutoComplete = L.Class.extend({
         }
         return this;
     },
+
     suggestionCount: function () {
         return this._tool.hasChildNodes() ? this._tool.childNodes.length : 0;
-    },
+    }
 });
-

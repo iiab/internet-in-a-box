@@ -27,13 +27,20 @@ L.GeoSearch.Provider.iiab = L.Class.extend({
         if (data.length == 0)
             return [];
 
-        var results = [];
+        var results = [],
+            bounds = undefined,
+            details;
         for (var i = 0; i < data.length; i++) 
+            details = {
+                language: data[i].lang
+            };
+
             results.push(new L.GeoSearch.Result(
                 data[i].longitude, 
                 data[i].latitude, 
                 data[i].fullname,
-                data[i].isolanguage
+                bounds,
+                details
             ));
         
         return results;
