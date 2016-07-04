@@ -16,21 +16,21 @@ name/language variation with the place information record.
 
 Then the index is generated on the target iiab recordset.
 
-This process is handled by scripts/geoname2iiab.py.  It creates the two
+This process is handled by ```scripts/geoname2iiab.py```.  It creates the two
 intermediate SQLite databases to merge the geonames.org data (enable with
-option --mkdb) before creating the whoosh index (enable with --mkwhoosh).
+option ```--mkdb```) before creating the whoosh index (enable with ```--mkwhoosh```).
 
 There are three steps in creating the merged data records in the two intermediate databases.
 
 1. parse the geonames.org geoinfo into an intermediate database
-   geoname_geonames.db. Skip this step with --skip_gn_info.
+   geoname_geonames.db. Skip this step with ```--skip_gn_info.```
 
 2. parse the geonames.org geoname variations into a separate table in the an
-   intermediate db geoname_geonames.db.  Skip this step with --skip_gn_names.
+   intermediate db geoname_geonames.db.  Skip this step with ```--skip_gn_names.```
 
 3. merge records from the geoname_geonames.db and additional geonames.org files
    to create the iiab geo records in geoname_iiab.db.  Skip this step with
-   --skip_iiab_db
+   ```--skip_iiab_db```
 
 The whoosh index is built using the geoname_iiab.db merged record database.
 

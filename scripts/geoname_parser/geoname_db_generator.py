@@ -146,20 +146,18 @@ def augment_record(aux_data, record):
     return record
 
 def try_for_improved_population_estimate(aux_data, data):
+    def update_pop(key):
+        pop = aux_data[key][data['id']]['population']
+        if data['population'] != pop:
+            if data['population'] != 0:
+                print key + " population mismatch on %d: %d %d" % (
+                        data['id'], data['population'], pop)
+            data['population'] = pop
+
     if data['id'] in aux_data['cities']:
-        citypop = aux_data['cities'][data['id']]['population']
-        if data['population'] != citypop:
-            if data['population'] != 0:
-                print "city population mismatch on %d: %d %d" % (
-                        data['id'], data['population'], citypop)
-            data['population'] = citypop
+        update_pop('cities')
     elif data['id'] in aux_data['countries']:
-        countrypop = aux_data['countries']['population']
-        if data['population'] != countrypop:
-            if data['population'] != 0:
-                print "country population mismatch on %d: %d %d" % (
-                        data['id'], data['population'], countrypop)
-            data['population'] = countrypop
+        update_pop('countries')
 
 def place_admin1_id(aux_data, rec):
     # bear in mind that the admin1 code 00 means no specific admin1 code is defined
