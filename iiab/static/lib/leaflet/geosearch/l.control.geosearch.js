@@ -51,6 +51,13 @@ L.Control.GeoSearch = L.Control.extend({
     },
 
     onAdd: function (map) {
+        var $controlContainer = $(map._controlContainer);
+
+        if ($controlContainer.children('.leaflet-top.leaflet-center').length == 0) {
+            $controlContainer.append('<div class="leaflet-top leaflet-center"></div>');
+            map._controlCorners.topcenter = $controlContainer.children('.leaflet-top.leaflet-center').first()[0];
+        }
+
         this._container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-geosearch');
 
         // create the link - this will contain one of the icons
