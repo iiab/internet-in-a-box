@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 
 __all__ = ["country_fields", "place_fields", "altname_fields",
         "admin1_fields", "admin2_fields", "feature_fields",
-        "PlaceInfo", "PlaceNames"]
+        "PlaceInfo", "PlaceNames", "create_indices", "drop_indices"]
 
 Base = declarative_base()
 
@@ -55,3 +55,10 @@ class PlaceNames(Base):
     isColloquial = Column(String)
     isHistoric = Column(String)
 
+def drop_indices(session):
+    session.execute('DROP INDEX IF EXISTS ix_placeinfo_population')
+    session.execute('DROP INDEX IF EXISTS ix_placenames_geonameid')
+
+def create_indices(session):
+    session.execute('CREATE INDEX ix_placenames_geonameid ON placenames (geonameid)')
+    session.execute('CREATE INDEX ix_placeinfo_population ON placeinfo (population)')

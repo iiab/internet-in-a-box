@@ -20,6 +20,10 @@ def main(dbfilename, build_info, build_names):
     database.create()
     session = database.get_session()
 
+    if build_info or build_names:
+        print 'dropping index...'
+        dbmodel.drop_indices(session)
+
     if build_names:
         print 'parse names...'
         parse_alt_names_to_db(session)
@@ -27,6 +31,10 @@ def main(dbfilename, build_info, build_names):
     if build_info:
         print 'parse places...'
         parse_place_info_to_db(session, aux_data)
+
+    if build_info or build_names:
+        print 'creating index...'
+        dbmodel.create_indices(session)
 
 def load_lookup_tables():
     aux_data = {}
@@ -146,20 +154,25 @@ def augment_record(aux_data, record):
     return record
 
 def try_for_improved_population_estimate(aux_data, data):
-    def update_pop(key):
-        pop = aux_data[key][data['id']]['population']
+    """Populate place record `data` with population estimate from aux_data if any"""
+    def update_pop(geoid, rec):
+        pop = rec['population']
         if data['population'] != pop:
             if data['population'] != 0:
                 print key + " population mismatch on %d: %d %d" % (
-                        data['id'], data['population'], pop)
+                        geoid, data['population'], pop)
             data['population'] = pop
 
-    if data['id'] in aux_data['cities']:
-        update_pop('cities')
-    elif data['id'] in aux_data['countries']:
-        update_pop('countries')
+    geoid = data['id']
+    if geoid in aux_data['cities']:
+        rec = aux_data['cities'][geoid]
+        update_pop(geoid, rec)
+    elif geoid in aux_data['countries']:
+        rec = aux_data['countries'][geoid]
+        update_pop(geoid, rec)
 
 def place_admin1_id(aux_data, rec):
+    """Return geoid associated with records admin1 place code.  Returns '' if not found"""
     # bear in mind that the admin1 code 00 means no specific admin1 code is defined
     country_code = rec['country_code']
     admin1_code = rec['admin1_code']
@@ -174,6 +187,7 @@ def place_admin1_id(aux_data, rec):
         return ''
 
 def place_admin2_id(aux_data, rec):
+    """Return geoid associated with records admin2 place code.  Returns '' if not found"""
     # bear in mind that the admin1 code 00 means no specific admin1 code is defined
     country_code = rec['country_code']
     admin1_code = rec['admin1_code']
@@ -189,6 +203,7 @@ def place_admin2_id(aux_data, rec):
         return ''
 
 def place_country_id(aux_data, rec):
+    """Return geoid associated with records country_code.  Returns '' if not found"""
     countrycode = rec['country_code']
     if countrycode == '':
         return ''
@@ -206,7 +221,7 @@ def place_feature_name(aux_data, rec):
     if featureclass == '' or featurecode == '':
         return ''
 
-    featurekey = "%s.%s" % (feature_class, feature_code)
+    featurekey = "%s.%s" % (featureclass, featurecode)
     try:
         return aux_data['features'][featurekey]['name']
     except KeyError:

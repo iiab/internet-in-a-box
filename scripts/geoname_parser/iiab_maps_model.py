@@ -33,3 +33,12 @@ class GeoLinks(Base):
     geoid = Column(Integer, ForeignKey('geoinfo.id'))
     link = Column(String)
 
+
+def drop_indices(session):
+    session.execute('DROP INDEX IF EXISTS ix_geonames_lang')
+    session.execute('DROP INDEX IF EXISTS ix_geonames_importance')
+
+
+def create_indices(session):
+    session.execute('CREATE INDEX ix_geonames_lang ON geonames (lang)')
+    session.execute('CREATE INDEX ix_geonames_importance ON geonames (importance)')

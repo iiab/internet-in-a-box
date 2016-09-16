@@ -35,9 +35,11 @@ def main(geoname_db_filename, iiab_db_filename):
     uniDb.clear_table(ibdata.GeoLinks)
 
     uniDb.create()
+    ibdata.drop_indices(uniDb.get_session())
 
     work(sepDb.get_session(), uniDb.get_session())
 
+    ibdata.create_indices(uniDb.get_session())
     show_stats()
     timepro.log_all();
 
