@@ -47,8 +47,11 @@ def get_schema():
         importance=NUMERIC(int, bits=64, sortable=True)
         )
 
-def load_feature_code_whitelist(filename):
-    """return dict of feature code names from file where files lists one tag per line with no extra content"""
+def load_whitelist(filename):
+    """return dict of tags from file where files lists one tag per line with no extra content"""
+    if filename is None:
+        return None
+
     with open(filename, 'r') as f:
         tag_list = f.readlines()
 
@@ -74,9 +77,13 @@ def load_feature_code_whitelist(filename):
 
         return tag_dict
 
-def passes_whitelist(feature_code, feature_code_whitelist):
+def passes_featuretype_whitelist(feature_code, feature_code_whitelist):
     """returns true if feature_codes record should be retained"""
     return feature_code in feature_code_whitelist
+
+def passes_language_whitelist(lang, lang_whitelist):
+    """returns true if language record should be retained"""
+    return lang_whitelist is None or lang in lang_whitelist
 
 class WhooshGenerator:
     def setup(self, index_dir, schema):
@@ -157,16 +164,24 @@ def make_record(record):
         out[to] = unicode(getattr(record, from_))
     return out
 
-def parse_geo(dbfilename, index_dir, whitelist_filename):
+def parse_geo(dbfilename, index_dir, features_whitelist_filename, languages_whitelist_filename=None):
     """
     Parse geo data database and generate records for storage in whoosh or stdout.
     :param dbfilename: filename of sqlite database with geo data tailored for IIAB.
     :param index_dir: directory into which whoosh data should be stored
-    :param whitelist_filename: filename containing feature codes to be indexed.
+    :param features_whitelist_filename: filename containing feature codes to be indexed.
+    :param languages_whitelist_filename: filename containing language codes to be indexed.
     """
     sys.stdout = os.fdopen(sys.stdout.fileno(), 'w', 0)   # don't buffer stdout
 
-    feature_code_whitelist = load_feature_code_whitelist(whitelist_filename)
+    feature_code_whitelist = load_whitelist(features_whitelist_filename)
+    lang_whitelist = load_whitelist(languages_whitelist_filename)
+
+    print("Using feature whitelist with %d entries" % len(feature_code_whitelist))
+    if lang_whitelist is not None:
+        print("Using language whitelist with %d entries" % len(lang_whitelist))
+    else:
+        print("All languages include")
 
     generator = WhooshGenerator()
     #generator = StdoutGenerator()
@@ -181,16 +196,19 @@ def parse_geo(dbfilename, index_dir, whitelist_filename):
 
     BLK_SIZE = 1000
     for count, record in enumerate(db.session.query(model.GeoNames).order_by(model.GeoNames.geoid).yield_per(BLK_SIZE)):
-        geoinfo = db.session.query(model.GeoInfo).filter_by(id=record.geoid).first()
-        if passes_whitelist(geoinfo.feature_code, feature_code_whitelist):
-            record.latitude = geoinfo.latitude
-            record.longitude = geoinfo.longitude
-            # our format does not seem to conform to the classic parent-child group so holding of on grouping for now
-            #if geoid != record.geoid:
-            #    geoid = record.geoid
-            #    generator.start_group()
-            schema_record = make_record(record)
-            generator.write(schema_record)
+        if passes_language_whitelist(record.lang, lang_whitelist):
+            geoinfo = db.session.query(model.GeoInfo).filter_by(id=record.geoid).first()
+            if passes_featuretype_whitelist(geoinfo.feature_code, feature_code_whitelist):
+                record.latitude = geoinfo.latitude
+                record.longitude = geoinfo.longitude
+                # our format does not seem to conform to the classic parent-child group so holding off on grouping for now
+                #if geoid != record.geoid:
+                #    geoid = record.geoid
+                #    generator.start_group()
+                schema_record = make_record(record)
+                generator.write(schema_record)
+            else:
+                omitted_count += 1
         else:
             omitted_count += 1
 
@@ -220,15 +238,18 @@ if __name__ == '__main__':
     parser.add_argument("--indexdir", dest="indexdir", action="store",
                       default="geonames_index",
                       help="The output whoosh index directory name. Defaults to geonames_index")
-    parser.add_argument("--whitelist", dest="whitelist_filename", action="store",
+    parser.add_argument("--features-whitelist", dest="features_whitelist_filename", action="store",
                       default="geotag_featurecode_whitelist.txt",
                       help="Simple list of feature codes to permit in the index, one code per line. Defaults to geotag_featurecode_whitelist.txt")
+    parser.add_argument("--language-whitelist", dest="language_whitelist_filename", action="store",
+                      default=None,
+                      help="Simple list of language codes to permit in the index, one code per line. Defaults to include all.")
     parser.add_argument("--testonly", action="store_true",
                       help="Only run test query on existing whoosh index. Do not regenerate index")
     args = parser.parse_args()
 
     if not args.testonly:
-        parse_geo(args.dbfilename, args.indexdir, args.whitelist_filename)
+        parse_geo(args.dbfilename, args.indexdir, args.features_whitelist_filename)
 
     print "Test search of whoosh index for 'Los Angeles'..."
     test_search_results = test_query(args.indexdir, u"Los Angeles")

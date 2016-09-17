@@ -54,9 +54,12 @@ if __name__ == '__main__':
     whooshgroup.add_option("--indexdir", dest="indexdir", action="store",
                       default="geonames_index",
                       help="The output whoosh index directory name. Defaults to geonames_index")
-    whooshgroup.add_option("--whitelist", dest="whitelist_filename", action="store",
+    whooshgroup.add_option("--feature_whitelist", dest="feature_whitelist_filename", action="store",
                       default="geotag_featurecode_whitelist.txt",
                       help="Simple list of feature codes to permit in the index, one code per line. Defaults to geotag_featurecode_whitelist.txt")
+    whooshgroup.add_option("--language_whitelist", dest="language_whitelist_filename", action="store",
+                      default=None,
+                      help="Simple list of language codes to permit in the index, one code per line. Defaults to include all")
     parser.add_option_group(dbgroup)
     parser.add_option_group(whooshgroup)
     parser.add_option("--timepro", action="store_true", default=False,
@@ -75,5 +78,5 @@ if __name__ == '__main__':
             main(options.geodb_filename, options.iiabdb_filename, not options.skip_gn_info, not options.skip_gn_names, not options.skip_iiab_db)
 
         if options.mkwhoosh:
-            whooshgen.parse_geo(options.iiabdb_filename, options.indexdir, options.whitelist_filename)
+            whooshgen.parse_geo(options.iiabdb_filename, options.indexdir, options.feature_whitelist_filename, options.language_whitelist_filename)
 

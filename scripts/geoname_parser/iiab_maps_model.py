@@ -37,8 +37,10 @@ class GeoLinks(Base):
 def drop_indices(session):
     session.execute('DROP INDEX IF EXISTS ix_geonames_lang')
     session.execute('DROP INDEX IF EXISTS ix_geonames_importance')
+    session.execute('DROP INDEX IF EXISTS ix_geonames_geoid')
 
 
 def create_indices(session):
     session.execute('CREATE INDEX ix_geonames_lang ON geonames (lang)')
     session.execute('CREATE INDEX ix_geonames_importance ON geonames (importance)')
+    session.execute('CREATE INDEX ix_geonames_geoid ON geonames (geoid)')
