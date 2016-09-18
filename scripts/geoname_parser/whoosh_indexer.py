@@ -12,6 +12,17 @@ import dbhelper
 import multiprocessing
 
 
+def enable_sqlalchemy_logging():
+    import logging
+    logging.basicConfig(level=logging.DEBUG)
+    logging.getLogger('sqlalchemy').setLevel(logging.DEBUG)
+    logging.getLogger('sqlalchemy.engine').setLevel(logging.DEBUG)
+    logging.getLogger('sqlalchemy.pool').setLevel(logging.DEBUG)
+
+    logging.getLogger('sqlalchemy.dialects.sqlite').setLevel(logging.DEBUG)
+    logging.getLogger('sqlalchemy.orm').setLevel(logging.DEBUG)
+    logging.getLogger('sqlite').setLevel(logging.DEBUG)
+
 
 def test_query(indexdir, terms):
     from whoosh.index import open_dir
@@ -32,15 +43,15 @@ def get_schema():
     # the side effect seems to be that it polutes the match streams so that
     # spelling suggestions are meaningless.
 
-    MIN_LEN = 1
-    MAX_LEN = 151 # based on max name length found in geonames db.
+    MIN_LEN = 3
+    MAX_LEN = 10
     FIXED_PREFIX = "start"
     return wf.Schema(nameid=ID(unique=True, stored=True),
         #geoid=ID(stored=True),
         fullname=TEXT(stored=True, sortable=True),
         name=TEXT,
         lang=KEYWORD(stored=True, sortable=True),
-        ngram_fullname=NGRAMWORDS(minsize=MIN_LEN, maxsize=MAX_LEN, at=FIXED_PREFIX, queryor=True),
+        ngram_fullname=NGRAMWORDS(minsize=MIN_LEN, maxsize=MAX_LEN, at=FIXED_PREFIX, queryor=False),
         #ngram_name=NGRAMWORDS(minsize=MIN_LEN, maxsize=MAX_LEN, at=FIXED_PREFIX, queryor=True),
         latitude=STORED,
         longitude=STORED,
@@ -145,23 +156,23 @@ class NullGenerator:
         pass
 
 RECORD_MAPPING = {
-    # from, to
-    ('id', 'nameid'),
-    #('geoid', 'geoid'),
-    ('fullname', 'fullname'),
-    ('name', 'name'),
-    ('lang', 'lang'),
-    ('latitude', 'latitude'),
-    ('longitude', 'longitude'),
-    ('fullname', 'ngram_fullname'),
-    #('name', 'ngram_name'),
-    ('importance', 'importance')
+    # from-resultset, from-attribute, to
+    (0, 'id', 'nameid'),
+    #(0, 'geoid', 'geoid'),
+    (0, 'fullname', 'fullname'),
+    (0, 'name', 'name'),
+    (0, 'fullname', 'ngram_fullname'),
+    (0, 'lang', 'lang'),
+    (0, 'importance', 'importance'),
+    #(0, 'name', 'ngram_name'),
+    (1, 'latitude', 'latitude'),
+    (1, 'longitude', 'longitude')
     }
 
 def make_record(record):
     out = {}
-    for from_, to in RECORD_MAPPING:
-        out[to] = unicode(getattr(record, from_))
+    for ii, from_, to in RECORD_MAPPING:
+        out[to] = unicode(getattr(record[ii], from_))
     return out
 
 def parse_geo(dbfilename, index_dir, features_whitelist_filename, languages_whitelist_filename=None):
@@ -190,27 +201,25 @@ def parse_geo(dbfilename, index_dir, features_whitelist_filename, languages_whit
     schema = get_schema()
     generator.setup(index_dir, schema)
 
-    omitted_count = 0
     geoid = None
     db = dbhelper.Database(model.Base, dbfilename)
 
+    # Build query
+    query = db.session.query(model.GeoNames, model.GeoInfo).filter(model.GeoNames.geoid == model.GeoInfo.id)
+    if feature_code_whitelist is not None:
+        query = query.filter(model.GeoInfo.feature_code.in_(feature_code_whitelist))
+    if lang_whitelist is not None:
+        query = query.filter(model.GeoNames.lang.in_(lang_whitelist))
+    query = query.order_by(model.GeoNames.geoid)
+
     BLK_SIZE = 1000
-    for count, record in enumerate(db.session.query(model.GeoNames).order_by(model.GeoNames.geoid).yield_per(BLK_SIZE)):
-        if passes_language_whitelist(record.lang, lang_whitelist):
-            geoinfo = db.session.query(model.GeoInfo).filter_by(id=record.geoid).first()
-            if passes_featuretype_whitelist(geoinfo.feature_code, feature_code_whitelist):
-                record.latitude = geoinfo.latitude
-                record.longitude = geoinfo.longitude
-                # our format does not seem to conform to the classic parent-child group so holding off on grouping for now
-                #if geoid != record.geoid:
-                #    geoid = record.geoid
-                #    generator.start_group()
-                schema_record = make_record(record)
-                generator.write(schema_record)
-            else:
-                omitted_count += 1
-        else:
-            omitted_count += 1
+    for count, record in enumerate(query.yield_per(BLK_SIZE)):
+        # our format does not seem to conform to the classic parent-child group so holding off on grouping for now
+        #if geoid != record.geoid:
+        #    geoid = record.geoid
+        #    generator.start_group()
+        schema_record = make_record(record)
+        generator.write(schema_record)
 
         # print progress
         if count & 0x3ff == 0:  # every 1024 records
@@ -220,7 +229,6 @@ def parse_geo(dbfilename, index_dir, features_whitelist_filename, languages_whit
                 print '.',
 
     print 'parsing complete'
-    print 'omitted %d items' % omitted_count
     generator.commit()
     print 'done'
 
@@ -246,7 +254,12 @@ if __name__ == '__main__':
                       help="Simple list of language codes to permit in the index, one code per line. Defaults to include all.")
     parser.add_argument("--testonly", action="store_true",
                       help="Only run test query on existing whoosh index. Do not regenerate index")
+    parser.add_argument("--verbose", action="store_true",
+                      help="Enable DB query logging")
     args = parser.parse_args()
+
+    if args.verbose:
+        enable_sqlalchemy_logging()
 
     if not args.testonly:
         parse_geo(args.dbfilename, args.indexdir, args.features_whitelist_filename)

@@ -45,6 +45,6 @@ def search_map_view():
     pagelen = request.args.get('pagelen', 0, int)
     page = request.args.get('page', 1, int)
     ms = MapSearch()
-    results = ms.search(query, pagelen=pagelen, page=page)
+    results = ms.search(query, pagelen=pagelen, page=page, autocomplete=True)
     j = json.dumps(results, indent=4)
     return Response(j, mimetype='application/json')
