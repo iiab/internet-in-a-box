@@ -12,6 +12,7 @@ import geoname_org_model as gndata
 import iiab_maps_model as ibdata
 import dbhelper
 from unicodedata2 import script_cat # helper script from local directory
+from sqlalchemy import inspect
 
 import iiab.timepro as timepro
 
@@ -41,6 +42,10 @@ def main(geoname_db_filename, iiab_db_filename):
 
     ibdata.create_indices(uniDb.get_session())
     show_stats()
+
+    log.info("Removing redundant entries.")
+    remove_duplicate_rows(uniDb.get_session())
+
     timepro.log_all();
 
 def work(insession, outsession):
@@ -295,6 +300,21 @@ def stats(tag, extra=''):
 
 def show_stats():
     print _stats
+
+
+def remove_duplicate_rows(session):
+    columns = inspect(ibdata.GeoNames).columns.keys()
+    columns_without_id = filter(lambda r: r != 'id', columns)
+    count = session.query(ibdata.GeoNames).count()
+    log.info("Count before pruning: %d" % count)
+
+    # courtesy of https://stackoverflow.com/a/18949
+    table_name = ibdata.GeoNames.__tablename__
+    session.execute('DELETE FROM %s WHERE id NOT IN (SELECT MIN(id) FROM %s GROUP BY %s)' % (table_name, table_name, ', '.join(columns_without_id)))
+    session.commit()
+
+    count = session.query(ibdata.GeoNames).count()
+    log.info("Count after pruning: %d" % count)
 
 
 if __name__ == '__main__':
