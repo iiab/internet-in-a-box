@@ -73,6 +73,9 @@
                     alwaysShowSearchBox: true
                 };
                 new L.Control.GeoSearch(geoOptions).addTo(map);
+                L.control.scale({
+                    position: 'bottomright'
+                }).addTo(map);
 
                 map.fitWorld().setZoom(3);  // default world view
                 //map.locate({setView: true, maxZoom: 15});
