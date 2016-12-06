@@ -32,13 +32,13 @@ def get_schema():
     MIN_LEN = 3
     ngram_analyzer = analysis.NgramWordAnalyzer(MIN_LEN)
     return wf.Schema(geonameid=ID(unique=True, stored=True),
-        name=TEXT(stored=True, spelling=True), 
+        name=TEXT(stored=True, spelling=True),
         ngram_name=TEXT(analyzer=ngram_analyzer, phrase=False),
-        latitude=STORED, 
+        latitude=STORED,
         longitude=STORED,
         country_code=TEXT(stored=True),
         admin1_code=TEXT(stored=True),
-        population=NUMERIC(long, stored=True) 
+        population=NUMERIC(long, stored=True)
         )
 
 def load_feature_code_whitelist(filename):
@@ -110,10 +110,10 @@ class NullGenerator:
 #    country code      : ISO-3166 2-letter country code, 2 characters
 #    cc2               : alternate country codes, comma separated, ISO-3166 2-letter country code, 60 characters
 #    admin1 code       : fipscode (subject to change to iso code), see exceptions below, see file admin1Codes.txt for display names of this code; varchar(20)
-#    admin2 code       : code for the second administrative division, a county in the US, see file admin2Codes.txt; varchar(80) 
+#    admin2 code       : code for the second administrative division, a county in the US, see file admin2Codes.txt; varchar(80)
 #    admin3 code       : code for third level administrative division, varchar(20)
 #    admin4 code       : code for fourth level administrative division, varchar(20)
-#    population        : bigint (8 byte int) 
+#    population        : bigint (8 byte int)
 #    elevation         : in meters, integer
 #    dem               : digital elevation model, srtm3 or gtopo30, average elevation of 3''x3'' (ca 90mx90m) or 30''x30'' (ca 900mx900m) area in meters, integer. srtm processed by cgiar/ciat.
 #    timezone          : the timezone id (see file timeZone.txt) varchar(40)
@@ -175,13 +175,13 @@ def parse_geo(geo, index_dir, whitelist_filename):
         print 'omitted %d items' % omitted_count
         generator.commit()
         print 'done'
-        
+
 
 if __name__ == '__main__':
     parser = ArgumentParser(description="""
-    Parses geo data from tab delimited text file.  Obtain the geo data file from 
+    Parses geo data from tab delimited text file.  Obtain the geo data file from
     http://download.geonames.org/export/dump/ usually allCountries.txt (found in allCountries.zip)
-    After parsing the content, a whoosh index is created.  The index output directory must already 
+    After parsing the content, a whoosh index is created.  The index output directory must already
     exist. Be aware the index size will be on the order of 2GB.
     """)
     parser.add_argument("--geo", dest="geo", action="store",
