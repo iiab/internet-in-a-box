@@ -32,22 +32,33 @@ def main(geodb_filename, iiabdb_filename, make_geonames_info_db=True, make_geona
 
 
 if __name__ == '__main__':
-    parser = OptionParser(description="Parse geonames.org geo data into a SQLite DB.")
-    parser.add_option("--iiabdb", dest="iiabdb_filename", action="store",
-                      default="iiab_geonames.db",
-                      help="The name of the IIAB geonames SQLite database. Defaults to iiab_geonames.db.")
+    parser = OptionParser(description="""Parse geonames.org geo data into a SQLite DB and index with Whoosh.
+
+    The SQLite DB generation phase (mkdb) consists of two phases.
+    * Indexing of name and geographic metadata into a geoname_geonames.db (geodb) file.
+    * Conversion of the geodb database into a iiab_geonames.db (iiabdb) database with each geographic name
+      merged into a normalized form.
+
+    The Whoosh Index generation phase (mkwhoosh) transforms the iiabdb database into a searchable index.
+    The index can be restricted to a subset of the records by using the feature and language whitelists.
+    """)
+
     dbgroup = OptionGroup(parser, "Generate SQLite Databases")
     dbgroup.add_option("--mkdb", action="store_true",
                       help="Make the geonames and iiab databases.")
     dbgroup.add_option("--geodb", dest="geodb_filename", action="store",
                       default="geoname_geonames.db",
                       help="The geodata.db SQLite database")
+    dbgroup.add_option("--iiabdb", dest="iiabdb_filename", action="store",
+                      default="iiab_geonames.db",
+                      help="The name of the IIAB geonames SQLite database. Defaults to iiab_geonames.db.")
     dbgroup.add_option("--skip_gn_info", action="store_true",
                       help="Skip the geonames info db gen.")
     dbgroup.add_option("--skip_gn_names", action="store_true",
                       help="Skip the geonames names db gen.")
     dbgroup.add_option("--skip_iiab_db", action="store_true",
                       help="Skip convert geonames db to iiab db.")
+
     whooshgroup = OptionGroup(parser, "Generate Whoosh Index")
     whooshgroup.add_option("--mkwhoosh", action="store_true",
                       help="Make the whoosh index.")
@@ -60,6 +71,7 @@ if __name__ == '__main__':
     whooshgroup.add_option("--language_whitelist", dest="language_whitelist_filename", action="store",
                       default=None,
                       help="Simple list of language codes to permit in the index, one code per line. Defaults to include all")
+
     parser.add_option_group(dbgroup)
     parser.add_option_group(whooshgroup)
     parser.add_option("--timepro", action="store_true", default=False,
