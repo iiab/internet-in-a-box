@@ -25,7 +25,7 @@ class MultiFieldQueryCorrector(QueryCorrector):
         :param prefix: suggested replacement words must share this number of
             initial characters with the original word. Increasing this even to
             just ``1`` can dramatically speed up suggestions, and may be
-            justifiable since spellling mistakes rarely involve the first
+            justifiable since spelling mistakes rarely involve the first
             letter of a word.
         :param maxdist: the maximum number of "edits" (insertions, deletions,
             subsitutions, or transpositions of letters) allowed between the
