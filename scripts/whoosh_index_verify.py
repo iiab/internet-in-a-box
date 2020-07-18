@@ -114,7 +114,7 @@ def verify_indexes(zim_files, index_dir_base, indexed_count_cache=None, verbose=
         logger.info("----------------------")
     elif zim_indexable != None:
         logger.info("--------------------------------")
-        logger.info("Incompleted Indexes Not Computed")
+        logger.info("Incomplete Indexes Not Computed")
         logger.info("--------------------------------")
     for zim_fn, index_dir in incomplete_indexes:
         logging.info(zim_fn)
